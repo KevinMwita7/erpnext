@@ -24,19 +24,13 @@ def update_last_purchase_rate(doc, is_submit):
 		last_purchase_rate = None
 		if last_purchase_details and \
 				(last_purchase_details.purchase_date > this_purchase_date):
-			last_purchase_rate = last_purchase_details['base_net_rate']
+			last_purchase_rate = last_purchase_details['base_rate']
 		elif is_submit == 1:
 			# even if this transaction is the latest one, it should be submitted
 			# for it to be considered for latest purchase rate
 			if flt(d.conversion_factor):
-<<<<<<< HEAD
-				last_purchase_rate = flt(d.base_net_rate) / flt(d.conversion_factor)
-=======
 				last_purchase_rate = flt(d.base_rate) / flt(d.conversion_factor)
->>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
-			# Check if item code is present
-			# Conversion factor should not be mandatory for non itemized items
-			elif d.item_code:
+			else:
 				frappe.throw(_("UOM Conversion factor is required in row {0}").format(d.idx))
 
 		# update last purchsae rate
@@ -79,10 +73,10 @@ def validate_for_items(doc):
 		not cint(frappe.db.get_single_value("Buying Settings", "allow_multiple_items") or 0):
 		frappe.throw(_("Same item cannot be entered multiple times."))
 
-def check_on_hold_or_closed_status(doctype, docname):
+def check_for_closed_status(doctype, docname):
 	status = frappe.db.get_value(doctype, docname, "status")
 
-	if status in ("Closed", "On Hold"):
+	if status == "Closed":
 		frappe.throw(_("{0} {1} status is {2}").format(doctype, docname, status), frappe.InvalidStatusError)
 
 @frappe.whitelist()
@@ -90,13 +84,13 @@ def get_linked_material_requests(items):
 	items = json.loads(items)
 	mr_list = []
 	for item in items:
-		material_request = frappe.db.sql("""SELECT distinct mr.name AS mr_name,
-				(mr_item.qty - mr_item.ordered_qty) AS qty,
+		material_request = frappe.db.sql("""SELECT distinct mr.name AS mr_name, 
+				(mr_item.qty - mr_item.ordered_qty) AS qty, 
 				mr_item.item_code AS item_code,
-				mr_item.name AS mr_item
+				mr_item.name AS mr_item 
 			FROM `tabMaterial Request` mr, `tabMaterial Request Item` mr_item
 			WHERE mr.name = mr_item.parent
-				AND mr_item.item_code = %(item)s
+				AND mr_item.item_code = %(item)s 
 				AND mr.material_request_type = 'Purchase'
 				AND mr.per_ordered < 99.99
 				AND mr.docstatus = 1
@@ -104,6 +98,6 @@ def get_linked_material_requests(items):
                         ORDER BY mr_item.item_code ASC""",{"item": item}, as_dict=1)
 		if material_request:
 			mr_list.append(material_request)
-
+	
 	return mr_list
 

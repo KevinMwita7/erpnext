@@ -5,7 +5,6 @@
 from __future__ import unicode_literals
 import frappe, json
 from frappe.model.document import Document
-from frappe.model.rename_doc import rename_doc
 from frappe import _
 
 class LabTestTemplate(Document):
@@ -113,9 +112,9 @@ def change_test_code_from_template(lab_test_code, doc):
 	if(item_exist):
 		frappe.throw(_("Code {0} already exist").format(lab_test_code))
 	else:
-		rename_doc("Item", doc.name, lab_test_code, ignore_permissions=True)
+		frappe.rename_doc("Item", doc.name, lab_test_code, ignore_permissions = True)
 		frappe.db.set_value("Lab Test Template",doc.name,"lab_test_code",lab_test_code)
-		rename_doc("Lab Test Template", doc.name, lab_test_code, ignore_permissions=True)
+		frappe.rename_doc("Lab Test Template", doc.name, lab_test_code, ignore_permissions = True)
 	return lab_test_code
 
 @frappe.whitelist()

@@ -11,27 +11,17 @@ def get_data():
 					"type": "doctype",
 					"name": "Project",
 					"description": _("Project master."),
-					"onboard": 1,
+				},
+				{
+					"type": "doctype",
+					"name": "Project Update",
+					"description": _("Project Update."),
 				},
 				{
 					"type": "doctype",
 					"name": "Task",
-					"route": "#List/Task",
+					"route": "List/Task",
 					"description": _("Project activity / task."),
-					"onboard": 1,
-				},
-				{
-					"type": "report",
-					"route": "#List/Task/Gantt",
-					"doctype": "Task",
-					"name": "Gantt Chart",
-					"description": _("Gantt chart of all tasks."),
-					"onboard": 1,
-				},
-				{
-					"type": "doctype",
-					"name": "Project Template",
-					"description": _("Make project from a template."),
 				},
 				{
 					"type": "doctype",
@@ -39,10 +29,11 @@ def get_data():
 					"description": _("Define Project type."),
 				},
 				{
-					"type": "doctype",
-					"name": "Project Update",
-					"description": _("Project Update."),
-					"dependencies": ["Project"],
+					"type": "report",
+					"route": "List/Task/Gantt",
+					"doctype": "Task",
+					"name": "Gantt Chart",
+					"description": _("Gantt chart of all tasks.")
 				},
 			]
 		},
@@ -53,19 +44,16 @@ def get_data():
 					"type": "doctype",
 					"name": "Timesheet",
 					"description": _("Timesheet for tasks."),
-					"onboard": 1,
 				},
 				{
 					"type": "doctype",
 					"name": "Activity Type",
 					"description": _("Types of activities for Time Logs"),
-					"onboard": 1,
 				},
 				{
 					"type": "doctype",
 					"name": "Activity Cost",
 					"description": _("Cost of various activities"),
-					"dependencies": ["Activity Type"],
 				},
 			]
 		},
@@ -77,25 +65,25 @@ def get_data():
 					"type": "report",
 					"is_query_report": True,
 					"name": "Daily Timesheet Summary",
-					"doctype": "Timesheet",
-					"onboard": 1,
-					"dependencies": ["Timesheet"],
+					"doctype": "Timesheet"
 				},
 				{
 					"type": "report",
 					"is_query_report": True,
 					"name": "Project wise Stock Tracking",
-					"doctype": "Project",
-					"dependencies": ["Project"],
-				},
-				{
-					"type": "report",
-					"is_query_report": True,
-					"name": "Project Billing Summary",
-					"doctype": "Project",
-					"dependencies": ["Project"],
+					"doctype": "Project"
 				},
 			]
 		},
-		
+		{
+			"label": _("Help"),
+			"icon": "fa fa-facetime-video",
+			"items": [
+				{
+					"type": "help",
+					"label": _("Managing Projects"),
+					"youtube_id": "egxIGwtoKI4"
+				},
+			]
+		},
 	]

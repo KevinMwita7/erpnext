@@ -1,5 +1,3 @@
-from __future__ import unicode_literals
-
 def get_data():
 	return {
 		'fieldname': 'holiday_list',
@@ -13,9 +11,6 @@ def get_data():
 			},
 			{
 				'items': ['Leave Period', 'Shift Type']
-			},
-			{
-				'items': ['Service Level', 'Service Level Agreement']
 			}
 		]
 	}

@@ -59,12 +59,6 @@ erpnext.selling.SellingController = erpnext.TransactionController.extend({
 			});
 		}
 
-		if(this.frm.fields_dict.tc_name) {
-			this.frm.set_query("tc_name", function() {
-				return { filters: { selling: 1 } };
-			});
-		}
-
 		if(!this.frm.fields_dict["items"]) {
 			return;
 		}
@@ -84,13 +78,6 @@ erpnext.selling.SellingController = erpnext.TransactionController.extend({
 				return me.set_query_for_batch(doc, cdt, cdn)
 			});
 		}
-
-		if(this.frm.fields_dict["items"].grid.get_field('item_code')) {
-			this.frm.set_query("item_tax_template", "items", function(doc, cdt, cdn) {
-				return me.set_query_for_item_tax_template(doc, cdt, cdn)
-			});
-		}
-
 	},
 
 	refresh: function() {
@@ -116,12 +103,10 @@ erpnext.selling.SellingController = erpnext.TransactionController.extend({
 
 	customer_address: function() {
 		erpnext.utils.get_address_display(this.frm, "customer_address");
-		erpnext.utils.set_taxes_from_address(this.frm, "customer_address", "customer_address", "shipping_address_name");
 	},
 
 	shipping_address_name: function() {
 		erpnext.utils.get_address_display(this.frm, "shipping_address_name", "shipping_address");
-		erpnext.utils.set_taxes_from_address(this.frm, "shipping_address_name", "customer_address", "shipping_address_name");
 	},
 
 	sales_partner: function() {
@@ -153,25 +138,8 @@ erpnext.selling.SellingController = erpnext.TransactionController.extend({
 
 	discount_percentage: function(doc, cdt, cdn) {
 		var item = frappe.get_doc(cdt, cdn);
-		item.discount_amount = 0.0;
-		this.apply_discount_on_item(doc, cdt, cdn, 'discount_percentage');
-	},
-
-	discount_amount: function(doc, cdt, cdn) {
-
-		if(doc.name === cdn) {
-			return;
-		}
-
-		var item = frappe.get_doc(cdt, cdn);
-		item.discount_percentage = 0.0;
-		this.apply_discount_on_item(doc, cdt, cdn, 'discount_amount');
-	},
-
-	apply_discount_on_item: function(doc, cdt, cdn, field) {
-		var item = frappe.get_doc(cdt, cdn);
 		if(!item.price_list_rate) {
-			item[field] = 0.0;
+			item.discount_percentage = 0.0;
 		} else {
 			this.price_list_rate(doc, cdt, cdn);
 		}
@@ -241,15 +209,12 @@ erpnext.selling.SellingController = erpnext.TransactionController.extend({
 					args: {
 						item_code: item.item_code,
 						warehouse: item.warehouse,
-						has_batch_no: has_batch_no || 0,
+						has_batch_no: has_batch_no,
 						stock_qty: item.stock_qty,
 						serial_no: item.serial_no || "",
 					},
 					callback:function(r){
 						if (in_list(['Delivery Note', 'Sales Invoice'], doc.doctype)) {
-
-							if (doc.doctype === 'Sales Invoice' && (!doc.update_stock)) return;
-
 							me.set_batch_number(cdt, cdn);
 							me.batch_no(doc, cdt, cdn);
 						}
@@ -316,11 +281,7 @@ erpnext.selling.SellingController = erpnext.TransactionController.extend({
 					child: item,
 					args: {
 						"batch_no": item.batch_no,
-<<<<<<< HEAD
-						"stock_qty": item.stock_qty || item.qty, //if stock_qty field is not available fetch qty (in case of Packed Items table)
-=======
-						"stock_qty": item.stock_qty || item.qty, //if stock_qty field is not available, fetch qty (in case of Packed Items table)
->>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
+						"stock_qty": item.stock_qty,
 						"warehouse": item.warehouse,
 						"item_code": item.item_code,
 						"has_serial_no": has_serial_no
@@ -397,18 +358,13 @@ erpnext.selling.SellingController = erpnext.TransactionController.extend({
 	    this._super(doc, cdt, cdn, dont_fetch_price_list_rate);
 		if(frappe.meta.get_docfield(cdt, "stock_qty", cdn) &&
 			in_list(['Delivery Note', 'Sales Invoice'], doc.doctype)) {
-				if (doc.doctype === 'Sales Invoice' && (!doc.update_stock)) return;
-				this.set_batch_number(cdt, cdn);
-			}
+			this.set_batch_number(cdt, cdn);
+		}
 	},
 
 	qty: function(doc, cdt, cdn) {
 		this._super(doc, cdt, cdn);
-
-		if(in_list(['Delivery Note', 'Sales Invoice'], doc.doctype)) {
-			if (doc.doctype === 'Sales Invoice' && (!doc.update_stock)) return;
-			this.set_batch_number(cdt, cdn);
-		}
+		this.set_batch_number(cdt, cdn);
 	},
 
 	/* Determine appropriate batch number and set it in the form.
@@ -439,11 +395,7 @@ erpnext.selling.SellingController = erpnext.TransactionController.extend({
 	update_auto_repeat_reference: function(doc) {
 		if (doc.auto_repeat) {
 			frappe.call({
-<<<<<<< HEAD
-				method:"frappe.automation.doctype.auto_repeat.auto_repeat.update_reference",
-=======
 				method:"frappe.desk.doctype.auto_repeat.auto_repeat.update_reference",
->>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 				args:{
 					docname: doc.auto_repeat,
 					reference:doc.name

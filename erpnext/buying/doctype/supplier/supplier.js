@@ -17,13 +17,6 @@ frappe.ui.form.on("Supplier", {
 				}
 			}
 		});
-		frm.set_query("default_bank_account", function() {
-			return {
-				filters: {
-					"is_company_account":1
-				}
-			}
-		});
 	},
 	refresh: function (frm) {
 		frappe.dynamic_link = { doc: frm.doc, fieldname: 'name', doctype: 'Supplier' }

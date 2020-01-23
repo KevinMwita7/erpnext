@@ -8,7 +8,7 @@ from frappe import _, throw
 from erpnext.stock.get_item_details import get_bin_details
 from erpnext.stock.utils import get_incoming_rate
 from erpnext.stock.get_item_details import get_conversion_factor
-from erpnext.stock.doctype.item.item import set_item_default
+from erpnext.stock.doctype.item.item import get_item_defaults, set_item_default
 from frappe.contacts.doctype.address.address import get_address_display
 
 from erpnext.controllers.stock_controller import StockController
@@ -45,7 +45,6 @@ class SellingController(StockController):
 		self.set_gross_profit()
 		set_default_income_account_for_item(self)
 		self.set_customer_address()
-		self.validate_for_duplicate_items()
 
 	def set_missing_values(self, for_validate=False):
 
@@ -56,28 +55,14 @@ class SellingController(StockController):
 		self.set_price_list_and_item_details(for_validate=for_validate)
 
 	def set_missing_lead_customer_details(self):
-		customer, lead = None, None
 		if getattr(self, "customer", None):
-			customer = self.customer
-		elif self.doctype == "Opportunity" and self.party_name:
-			if self.opportunity_from == "Customer":
-				customer = self.party_name
-			else:
-				lead = self.party_name
-		elif self.doctype == "Quotation" and self.party_name:
-			if self.quotation_to == "Customer":
-				customer = self.party_name
-			else:
-				lead = self.party_name
-
-		if customer:
 			from erpnext.accounts.party import _get_party_details
 			fetch_payment_terms_template = False
 			if (self.get("__islocal") or
 				self.company != frappe.db.get_value(self.doctype, self.name, 'company')):
 				fetch_payment_terms_template = True
 
-			party_details = _get_party_details(customer,
+			party_details = _get_party_details(self.customer,
 				ignore_permissions=self.flags.ignore_permissions,
 				doctype=self.doctype, company=self.company,
 				fetch_payment_terms_template=fetch_payment_terms_template,
@@ -86,9 +71,10 @@ class SellingController(StockController):
 				party_details.pop("sales_team")
 			self.update_if_missing(party_details)
 
-		elif lead:
+		elif getattr(self, "lead", None):
 			from erpnext.crm.doctype.lead.lead import get_lead_details
-			self.update_if_missing(get_lead_details(lead,
+			self.update_if_missing(get_lead_details(
+				self.lead,
 				posting_date=self.get('transaction_date') or self.get('posting_date'),
 				company=self.company))
 
@@ -147,6 +133,13 @@ class SellingController(StockController):
 
 		if sales_team and total != 100.0:
 			throw(_("Total allocated percentage for sales team should be 100"))
+
+	def validate_order_type(self):
+		valid_types = ["Sales", "Maintenance", "Shopping Cart"]
+		if not self.order_type:
+			self.order_type = "Sales"
+		elif self.order_type not in valid_types:
+			throw(_("Order Type must be one of {0}").format(comma_or(valid_types)))
 
 	def validate_max_discount(self):
 		for d in self.get("items"):
@@ -264,11 +257,11 @@ class SellingController(StockController):
 		so_warehouse = so_item and so_item[0]["warehouse"] or ""
 		return so_qty, so_warehouse
 
-	def check_sales_order_on_hold_or_close(self, ref_fieldname):
+	def check_close_sales_order(self, ref_fieldname):
 		for d in self.get("items"):
 			if d.get(ref_fieldname):
 				status = frappe.db.get_value("Sales Order", d.get(ref_fieldname), "status")
-				if status in ("Closed", "On Hold"):
+				if status == "Closed":
 					frappe.throw(_("Sales Order {0} is {1}").format(d.get(ref_fieldname), status))
 
 	def update_reserved_qty(self):
@@ -299,9 +292,8 @@ class SellingController(StockController):
 				if flt(d.conversion_factor)==0.0:
 					d.conversion_factor = get_conversion_factor(d.item_code, d.uom).get("conversion_factor") or 1.0
 				return_rate = 0
-				if cint(self.is_return) and self.docstatus==1:
-					return_rate = self.get_incoming_rate_for_sales_return(d.item_code,
-						d.warehouse, self.return_against)
+				if cint(self.is_return) and self.return_against and self.docstatus==1:
+					return_rate = self.get_incoming_rate_for_sales_return(d.item_code, self.return_against)
 
 				# On cancellation or if return entry submission, make stock ledger entry for
 				# target warehouse first, to update serial no values properly
@@ -375,34 +367,6 @@ class SellingController(StockController):
 		for address_field, address_display_field in address_dict.items():
 			if self.get(address_field):
 				self.set(address_display_field, get_address_display(self.get(address_field)))
-
-	def validate_for_duplicate_items(self):
-		check_list, chk_dupl_itm = [], []
-		if cint(frappe.db.get_single_value("Selling Settings", "allow_multiple_items")):
-			return
-
-		for d in self.get('items'):
-			if self.doctype == "Sales Invoice":
-				e = [d.item_code, d.description, d.warehouse, d.sales_order or d.delivery_note, d.batch_no or '']
-				f = [d.item_code, d.description, d.sales_order or d.delivery_note]
-			elif self.doctype == "Delivery Note":
-				e = [d.item_code, d.description, d.warehouse, d.against_sales_order or d.against_sales_invoice, d.batch_no or '']
-				f = [d.item_code, d.description, d.against_sales_order or d.against_sales_invoice]
-			elif self.doctype in ["Sales Order", "Quotation"]:
-				e = [d.item_code, d.description, d.warehouse, '']
-				f = [d.item_code, d.description]
-
-			if frappe.db.get_value("Item", d.item_code, "is_stock_item") == 1:
-				if e in check_list:
-					frappe.throw(_("Note: Item {0} entered multiple times").format(d.item_code))
-				else:
-					check_list.append(e)
-			else:
-				if f in chk_dupl_itm:
-					frappe.throw(_("Note: Item {0} entered multiple times").format(d.item_code))
-				else:
-					chk_dupl_itm.append(f)
-
 
 	def validate_items(self):
 		# validate items to see if they have is_sales_item enabled

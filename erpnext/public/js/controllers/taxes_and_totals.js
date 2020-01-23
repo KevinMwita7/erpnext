@@ -20,9 +20,6 @@ erpnext.taxes_and_totals = erpnext.payments.extend({
 
 		if(item.discount_percentage){
 			item.discount_amount = flt(item.rate_with_margin) * flt(item.discount_percentage) / 100;
-		}
-
-		if (item.discount_amount) {
 			item.rate = flt((item.rate_with_margin) - (item.discount_amount), precision('rate', item));
 		}
 	},
@@ -42,12 +39,6 @@ erpnext.taxes_and_totals = erpnext.payments.extend({
 		if(in_list(["Quotation", "Sales Order", "Delivery Note", "Sales Invoice"], this.frm.doc.doctype)) {
 			this.calculate_commission();
 			this.calculate_contribution();
-		}
-
-		// Update paid amount on return/debit note creation
-		if(this.frm.doc.doctype === "Purchase Invoice" && this.frm.doc.is_return
-			&& (this.frm.doc.grand_total > this.frm.doc.paid_amount)) {
-			this.frm.doc.paid_amount = flt(this.frm.doc.grand_total, precision("grand_total"));
 		}
 
 		this.frm.refresh_fields();
@@ -98,13 +89,7 @@ erpnext.taxes_and_totals = erpnext.payments.extend({
 			$.each(this.frm.doc["items"] || [], function(i, item) {
 				frappe.model.round_floats_in(item);
 				item.net_rate = item.rate;
-
-				if ((!item.qty) && me.frm.doc.is_return) {
-					item.amount = flt(item.rate * -1, precision("amount", item));
-				} else {
-					item.amount = flt(item.rate * item.qty, precision("amount", item));
-				}
-
+				item.amount = flt(item.rate * item.qty, precision("amount", item));
 				item.net_amount = item.amount;
 				item.item_tax_amount = 0.0;
 				item.total_weight = flt(item.weight_per_unit * item.stock_qty);
@@ -388,14 +373,9 @@ erpnext.taxes_and_totals = erpnext.payments.extend({
 				var diff = me.frm.doc.total + non_inclusive_tax_amount
 					- flt(last_tax.total, precision("grand_total"));
 
-				if(me.discount_amount_applied && me.frm.doc.discount_amount) {
-					diff -= flt(me.frm.doc.discount_amount);
-				}
-
-				diff = flt(diff, precision("rounding_adjustment"));
-
 				if ( diff && Math.abs(diff) <= (5.0 / Math.pow(10, precision("tax_amount", last_tax))) ) {
-					me.frm.doc.rounding_adjustment = diff;
+					this.frm.doc.rounding_adjustment = flt(flt(this.frm.doc.rounding_adjustment) + diff,
+						precision("rounding_adjustment"));
 				}
 			}
 		}
@@ -532,7 +512,7 @@ erpnext.taxes_and_totals = erpnext.payments.extend({
 					net_total += item.net_amount;
 
 					// discount amount rounding loss adjustment if no taxes
-					if ((!(me.frm.doc.taxes || []).length || total_for_discount_amount==me.frm.doc.net_total || (me.frm.doc.apply_discount_on == "Net Total"))
+					if ((!(me.frm.doc.taxes || []).length || (me.frm.doc.apply_discount_on == "Net Total"))
 							&& i == (me.frm.doc.items || []).length - 1) {
 						var discount_amount_loss = flt(me.frm.doc.net_total - net_total
 							- me.frm.doc.discount_amount, precision("net_total"));

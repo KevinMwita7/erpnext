@@ -7,14 +7,6 @@ frappe.ui.form.on('Employee Onboarding', {
 		frm.add_fetch("employee_onboarding_template", "department", "department");
 		frm.add_fetch("employee_onboarding_template", "designation", "designation");
 		frm.add_fetch("employee_onboarding_template", "employee_grade", "employee_grade");
-
-		frm.set_query('job_offer', function () {
-			return {
-				filters: {
-					'job_applicant': frm.doc.job_applicant
-				}
-			};
-		});
 	},
 
 	refresh: function(frm) {
@@ -68,11 +60,12 @@ frappe.ui.form.on('Employee Onboarding', {
 				},
 				callback: function(r) {
 					if (r.message) {
-						r.message.forEach((d) => {
-							frm.add_child("activities", d);
+						$.each(r.message, function(i, d) {
+							var row = frappe.model.add_child(frm.doc, "Employee Boarding Activity", "activities");
+							$.extend(row, d);
 						});
-						refresh_field("activities");
 					}
+					refresh_field("activities");
 				}
 			});
 		}

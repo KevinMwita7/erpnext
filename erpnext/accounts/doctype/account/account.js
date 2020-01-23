@@ -42,14 +42,15 @@ frappe.ui.form.on('Account', {
 				// show / hide convert buttons
 				frm.trigger('add_toolbar_buttons');
 			}
-			if (frm.has_perm('write')) {
-				frm.add_custom_button(__('Update Account Name / Number'), function () {
-					frm.trigger("update_account_number");
-				});
-				frm.add_custom_button(__('Merge Account'), function () {
-					frm.trigger("merge_account");
-				});
-			}
+			frm.add_custom_button(__('Update Account Name / Number'), function () {
+				frm.trigger("update_account_number");
+			});
+		}
+
+		if(!frm.doc.__islocal) {
+			frm.add_custom_button(__('Merge Account'), function () {
+				frm.trigger("merge_account");
+			});
 		}
 	},
 	account_type: function (frm) {

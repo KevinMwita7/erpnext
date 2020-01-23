@@ -7,8 +7,8 @@ import frappe
 from frappe.utils import getdate, nowdate
 from frappe import _
 from frappe.model.document import Document
-from frappe.utils import cstr, get_datetime, get_datetime_str
-from frappe.utils import update_progress_bar
+from erpnext.hr.utils import set_employee_name
+from frappe.utils import cstr
 
 class Attendance(Document):
 	def validate_duplicate_record(self):
@@ -17,6 +17,8 @@ class Attendance(Document):
 			(self.employee, self.attendance_date, self.name))
 		if res:
 			frappe.throw(_("Attendance for employee {0} is already marked").format(self.employee))
+
+		set_employee_name(self)
 
 	def check_leave_record(self):
 		leave_record = frappe.db.sql("""select leave_type, half_day, half_day_date from `tabLeave Application`
@@ -38,8 +40,7 @@ class Attendance(Document):
 	def validate_attendance_date(self):
 		date_of_joining = frappe.db.get_value("Employee", self.employee, "date_of_joining")
 
-		# leaves can be marked for future dates
-		if self.status not in ('On Leave', 'Half Day') and getdate(self.attendance_date) > getdate(nowdate()):
+		if getdate(self.attendance_date) > getdate(nowdate()):
 			frappe.throw(_("Attendance can not be marked for future dates"))
 		elif date_of_joining and getdate(self.attendance_date) < getdate(date_of_joining):
 			frappe.throw(_("Attendance date can not be less than employee's joining date"))
@@ -89,86 +90,3 @@ def add_attendance(events, start, end, conditions=None):
 		}
 		if e not in events:
 			events.append(e)
-
-def mark_attendance(employee, attendance_date, status, shift=None):
-	employee_doc = frappe.get_doc('Employee', employee)
-	if not frappe.db.exists('Attendance', {'employee':employee, 'attendance_date':attendance_date, 'docstatus':('!=', '2')}):
-		doc_dict = {
-			'doctype': 'Attendance',
-			'employee': employee,
-			'attendance_date': attendance_date,
-			'status': status,
-			'company': employee_doc.company,
-			'shift': shift
-		}
-		attendance = frappe.get_doc(doc_dict).insert()
-		attendance.submit()
-		return attendance.name
-
-@frappe.whitelist()
-def mark_bulk_attendance(data):
-	import json
-	from pprint import pprint
-	if isinstance(data, frappe.string_types):
-		data = json.loads(data)
-	data = frappe._dict(data)
-	company = frappe.get_value('Employee', data.employee, 'company')
-	for date in data.unmarked_days:
-		doc_dict = {
-			'doctype': 'Attendance',
-			'employee': data.employee,
-			'attendance_date': get_datetime(date),
-			'status': data.status,
-			'company': company,
-		}
-		attendance = frappe.get_doc(doc_dict).insert()
-		attendance.submit()
-
-
-def get_month_map():
-	return frappe._dict({
-		"January": 1,
-		"February": 2,
-		"March": 3,
-		"April": 4,
-		"May": 5,
-		"June": 6,
-		"July": 7,
-		"August": 8,
-		"September": 9,
-		"October": 10,
-		"November": 11,
-		"December": 12
-		})
-
-@frappe.whitelist()
-def get_unmarked_days(employee, month):
-	import calendar
-	month_map = get_month_map()
-
-	today = get_datetime()
-
-	dates_of_month = ['{}-{}-{}'.format(today.year, month_map[month], r) for r in range(1, calendar.monthrange(today.year, month_map[month])[1] + 1)]
-
-	length = len(dates_of_month)
-	month_start, month_end = dates_of_month[0], dates_of_month[length-1]
-
-
-	records = frappe.get_all("Attendance", fields = ['attendance_date', 'employee'] , filters = [
-		["attendance_date", ">", month_start],
-		["attendance_date", "<", month_end],
-		["employee", "=", employee],
-		["docstatus", "!=", 2]
-	])
-
-	marked_days = [get_datetime(record.attendance_date) for record in records]
-	unmarked_days = []
-
-	for date in dates_of_month:
-		date_time = get_datetime(date)
-		if today.day == date_time.day and today.month == date_time.month:
-			break
-		if date_time not in marked_days:
-			unmarked_days.append(date)
-
-	return unmarked_days

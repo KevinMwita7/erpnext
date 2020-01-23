@@ -5,14 +5,11 @@ frappe.provide("erpnext.bom");
 
 frappe.ui.form.on("BOM", {
 	setup: function(frm) {
-<<<<<<< HEAD
-		frm.custom_make_buttons = {
-			'Work Order': 'Work Order',
-			'Quality Inspection': 'Quality Inspection'
-		};
+		frm.add_fetch("item", "description", "description");
+		frm.add_fetch("item", "image", "image");
+		frm.add_fetch("item", "item_name", "item_name");
+		frm.add_fetch("item", "stock_uom", "uom");
 
-=======
->>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 		frm.set_query("bom_no", "items", function() {
 			return {
 				filters: {
@@ -93,17 +90,9 @@ frappe.ui.form.on("BOM", {
 		}
 
 		if(frm.doc.docstatus!=0) {
-			frm.add_custom_button(__("Work Order"), function() {
-				frm.trigger("make_work_order");
-			}, __("Create"));
-
-			if (frm.doc.inspection_required) {
-				frm.add_custom_button(__("Quality Inspection"), function() {
-					frm.trigger("make_quality_inspection");
-				}, __("Create"));
-			}
-
-			frm.page.set_inner_btn_group_as_primary(__('Create'));
+			frm.add_custom_button(__("Duplicate"), function() {
+				frm.copy_doc();
+			});
 		}
 
 		if(frm.doc.items && frm.doc.allow_alternative_item) {
@@ -125,41 +114,6 @@ frappe.ui.form.on("BOM", {
 		}
 	},
 
-	make_work_order: function(frm) {
-		const fields = [{
-			fieldtype: 'Float',
-			label: __('Qty To Manufacture'),
-			fieldname: 'qty',
-			reqd: 1,
-			default: 1
-		}];
-
-		frappe.prompt(fields, data => {
-			frappe.call({
-				method: "erpnext.manufacturing.doctype.work_order.work_order.make_work_order",
-				args: {
-					item: frm.doc.item,
-					qty: data.qty || 0.0,
-					project: frm.doc.project
-				},
-				freeze: true,
-				callback: function(r) {
-					if(r.message) {
-						var doc = frappe.model.sync(r.message)[0];
-						frappe.set_route("Form", doc.doctype, doc.name);
-					}
-				}
-			});
-		}, __("Enter Value"), __("Create"));
-	},
-
-	make_quality_inspection: function(frm) {
-		frappe.model.open_mapped_doc({
-			method: "erpnext.stock.doctype.quality_inspection.quality_inspection.make_quality_inspection",
-			frm: frm
-		})
-	},
-
 	update_cost: function(frm) {
 		return frappe.call({
 			doc: frm.doc,
@@ -168,7 +122,7 @@ frappe.ui.form.on("BOM", {
 			args: {
 				update_parent: true,
 				from_child_bom:false,
-				save: frm.doc.docstatus === 1 ? true : false
+				save: false
 			},
 			callback: function(r) {
 				refresh_field("items");
@@ -256,12 +210,7 @@ var get_bom_material_detail= function(doc, cdt, cdn, scrap_items) {
 				'item_code': d.item_code,
 				'bom_no': d.bom_no != null ? d.bom_no: '',
 				"scrap_items": scrap_items,
-				'qty': d.qty,
-				"stock_qty": d.stock_qty,
-				"include_item_in_manufacturing": d.include_item_in_manufacturing,
-				"uom": d.uom,
-				"stock_uom": d.stock_uom,
-				"conversion_factor": d.conversion_factor
+				'qty': d.qty
 			},
 			callback: function(r) {
 				d = locals[cdt][cdn];
@@ -465,3 +414,7 @@ frappe.ui.form.on("BOM", "with_operations", function(frm) {
 	}
 	toggle_operations(frm);
 });
+
+cur_frm.cscript.image = function() {
+	refresh_field("image_view");
+};

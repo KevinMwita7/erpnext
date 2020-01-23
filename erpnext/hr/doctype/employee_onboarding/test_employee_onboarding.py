@@ -12,7 +12,7 @@ from erpnext.hr.doctype.employee_onboarding.employee_onboarding import Incomplet
 class TestEmployeeOnboarding(unittest.TestCase):
 	def test_employee_onboarding_incomplete_task(self):
 		if frappe.db.exists('Employee Onboarding', {'employee_name': 'Test Researcher'}):
-			frappe.delete_doc('Employee Onboarding', {'employee_name': 'Test Researcher'})
+			return frappe.get_doc('Employee Onboarding', {'employee_name': 'Test Researcher'})
 		_set_up()
 		applicant = get_job_applicant()
 		onboarding = frappe.new_doc('Employee Onboarding')
@@ -39,16 +39,8 @@ class TestEmployeeOnboarding(unittest.TestCase):
 
 		# complete the task
 		project = frappe.get_doc('Project', onboarding.project)
-<<<<<<< HEAD
-		for task in frappe.get_all('Task', dict(project=project.name)):
-			task = frappe.get_doc('Task', task.name)
-			task.status = 'Completed'
-			task.save()
-=======
-		project.load_tasks()
 		project.tasks[0].status = 'Closed'
 		project.save()
->>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 
 		# make employee
 		onboarding.reload()
@@ -78,3 +70,4 @@ def _set_up():
 	project = "Employee Onboarding : Test Researcher - test@researcher.com"
 	frappe.db.sql("delete from tabProject where name=%s", project)
 	frappe.db.sql("delete from tabTask where project=%s", project)
+	frappe.db.sql("delete from `tabProject Task` where parent=%s", project)

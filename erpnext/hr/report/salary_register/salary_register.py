@@ -14,21 +14,17 @@ def execute(filters=None):
 	columns, earning_types, ded_types = get_columns(salary_slips)
 	ss_earning_map = get_ss_earning_map(salary_slips)
 	ss_ded_map = get_ss_ded_map(salary_slips)
-	doj_map = get_employee_doj_map()
+
 
 	data = []
 	for ss in salary_slips:
-<<<<<<< HEAD
-		row = [ss.name, ss.employee, ss.employee_name, doj_map.get(ss.employee), ss.branch, ss.department, ss.designation,
-=======
 		row = [ss.name, ss.employee, ss.employee_name, ss.branch, ss.department, ss.designation,
->>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
-			ss.company, ss.start_date, ss.end_date, ss.leave_without_pay, ss.payment_days]
+			ss.company, ss.start_date, ss.end_date, ss.leave_withut_pay, ss.payment_days]
 
 		if not ss.branch == None:columns[3] = columns[3].replace('-1','120')
 		if not ss.department  == None: columns[4] = columns[4].replace('-1','120')
 		if not ss.designation  == None: columns[5] = columns[5].replace('-1','120')
-		if not ss.leave_without_pay  == None: columns[9] = columns[9].replace('-1','130')
+		if not ss.leave_withut_pay  == None: columns[9] = columns[9].replace('-1','130')
 
 
 		for e in earning_types:
@@ -39,8 +35,6 @@ def execute(filters=None):
 		for d in ded_types:
 			row.append(ss_ded_map.get(ss.name, {}).get(d))
 
-		row.append(ss.total_loan_repayment)
-
 		row += [ss.total_deduction, ss.net_pay]
 
 		data.append(row)
@@ -50,17 +44,17 @@ def execute(filters=None):
 def get_columns(salary_slips):
 	"""
 	columns = [
-		_("Salary Slip ID") + ":Link/Salary Slip:150",_("Employee") + ":Link/Employee:120", _("Employee Name") + "::140",
-		_("Date of Joining") + "::80", _("Branch") + ":Link/Branch:120", _("Department") + ":Link/Department:120",
-		_("Designation") + ":Link/Designation:120", _("Company") + ":Link/Company:120", _("Start Date") + "::80",
-		_("End Date") + "::80", _("Leave Without Pay") + ":Float:130", _("Payment Days") + ":Float:120"
+		_("Salary Slip ID") + ":Link/Salary Slip:150",_("Employee") + ":Link/Employee:120", _("Employee Name") + "::140", _("Branch") + ":Link/Branch:120",
+		_("Department") + ":Link/Department:120", _("Designation") + ":Link/Designation:120",
+		_("Company") + ":Link/Company:120", _("Start Date") + "::80", _("End Date") + "::80", _("Leave Without Pay") + ":Float:130",
+		_("Payment Days") + ":Float:120"
 	]
 	"""
 	columns = [
-		_("Salary Slip ID") + ":Link/Salary Slip:150",_("Employee") + ":Link/Employee:120", _("Employee Name") + "::140",
-		_("Date of Joining") + "::80", _("Branch") + ":Link/Branch:-1", _("Department") + ":Link/Department:-1",
-		_("Designation") + ":Link/Designation:-1", _("Company") + ":Link/Company:120", _("Start Date") + "::80",
-		_("End Date") + "::80", _("Leave Without Pay") + ":Float:-1", _("Payment Days") + ":Float:120"
+		_("Salary Slip ID") + ":Link/Salary Slip:150",_("Employee") + ":Link/Employee:120", _("Employee Name") + "::140", _("Branch") + ":Link/Branch:-1",
+		_("Department") + ":Link/Department:-1", _("Designation") + ":Link/Designation:-1",
+		_("Company") + ":Link/Company:120", _("Start Date") + "::80", _("End Date") + "::80", _("Leave Without Pay") + ":Float:-1",
+		_("Payment Days") + ":Float:120"
 	]
 
 	salary_components = {_("Earning"): [], _("Deduction"): []}
@@ -73,7 +67,7 @@ def get_columns(salary_slips):
 
 	columns = columns + [(e + ":Currency:120") for e in salary_components[_("Earning")]] + \
 		[_("Gross Pay") + ":Currency:120"] + [(d + ":Currency:120") for d in salary_components[_("Deduction")]] + \
-		[_("Loan Repayment") + ":Currency:120", _("Total Deduction") + ":Currency:120", _("Net Pay") + ":Currency:120"]
+		[_("Total Deduction") + ":Currency:120", _("Net Pay") + ":Currency:120"]
 
 	return columns, salary_components[_("Earning")], salary_components[_("Deduction")]
 
@@ -98,14 +92,6 @@ def get_conditions(filters):
 	if filters.get("employee"): conditions += " and employee = %(employee)s"
 
 	return conditions, filters
-
-def get_employee_doj_map():
-	return	frappe._dict(frappe.db.sql("""
-				SELECT
-					employee,
-					date_of_joining
-				FROM `tabEmployee`
-				"""))
 
 def get_ss_earning_map(salary_slips):
 	ss_earnings = frappe.db.sql("""select parent, salary_component, amount

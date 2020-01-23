@@ -14,31 +14,33 @@ class TestQualityGoal(unittest.TestCase):
 		create_unit()
 		test_create_goal = create_goal()
 		test_get_goal = get_goal()
-
 		self.assertEquals(test_create_goal, test_get_goal)
 
 def create_goal():
 	goal = frappe.get_doc({
 		"doctype": "Quality Goal",
 		"goal": "_Test Quality Goal",
-		"procedure": "PRC-_Test Quality Procedure",
-		"objectives": [
+		"revision": "1",
+		"procedure": "_Test Quality Procedure",
+		"frequency": "Daily",
+		"measureable": "Yes",
+		"objective": [
 			{
 				"objective": "_Test Quality Objective",
 				"target": "4",
-				"uom": "_Test UOM"
+				"unit": "_Test UOM"
 			}
 		]
 	})
-	goal_exist = frappe.db.exists("Quality Goal", {"goal": goal.goal})
+	goal_exist = frappe.db.exists("Quality Goal", ""+ goal.goal +"")
 	if not goal_exist:
 		goal.insert()
-		return goal.name
+		return goal.goal
 	else:
 		return goal_exist
 
 def get_goal():
-	goal = frappe.db.exists("Quality Goal", "GOAL-_Test Quality Goal")
+	goal = frappe.db.exists("Quality Goal", "_Test Quality Goal")
 	return goal
 
 def create_unit():
@@ -46,6 +48,6 @@ def create_unit():
 		"doctype": "UOM",
 		"uom_name": "_Test UOM",
 	})
-	unit_exist = frappe.db.exists("UOM", unit.uom_name)
+	unit_exist = frappe.db.exists("UOM", ""+ unit.uom_name +"")
 	if not unit_exist:
 		unit.insert()

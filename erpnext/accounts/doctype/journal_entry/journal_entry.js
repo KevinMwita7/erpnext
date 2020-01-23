@@ -6,10 +6,6 @@ frappe.provide("erpnext.journal_entry");
 
 
 frappe.ui.form.on("Journal Entry", {
-	setup: function(frm) {
-		frm.add_fetch("bank_account", "account", "account");
-	},
-
 	refresh: function(frm) {
 		erpnext.toggle_naming_series();
 		frm.cscript.voucher_type(frm.doc);
@@ -25,13 +21,13 @@ frappe.ui.form.on("Journal Entry", {
 					"group_by_voucher": 0
 				};
 				frappe.set_route("query-report", "General Ledger");
-			}, __('View'));
+			}, "fa fa-table");
 		}
 
 		if(frm.doc.docstatus==1) {
 			frm.add_custom_button(__('Reverse Journal Entry'), function() {
 				return erpnext.journal_entry.reverse_journal_entry(frm);
-			}, __('Make'));
+			});
 		}
 
 		if (frm.doc.__islocal) {
@@ -47,7 +43,8 @@ frappe.ui.form.on("Journal Entry", {
 			frm.add_custom_button(__("Create Inter Company Journal Entry"),
 				function() {
 					frm.trigger("make_inter_company_journal_entry");
-				}, __('Make'));
+				}
+			);
 		}
 	},
 
@@ -170,7 +167,7 @@ erpnext.accounts.JournalEntry = frappe.ui.form.Controller.extend({
 				filters: {
 					'account': row.account
 				}
-			};
+			}
 		});
 
 		me.frm.set_query("reference_name", "accounts", function(doc, cdt, cdn) {
@@ -190,6 +187,7 @@ erpnext.accounts.JournalEntry = frappe.ui.form.Controller.extend({
 			if(jvd.reference_type==="Employee Advance") {
 				return {
 					filters: {
+						'status': ['=', 'Unpaid'],
 						'docstatus': 1
 					}
 				};
@@ -207,13 +205,6 @@ erpnext.accounts.JournalEntry = frappe.ui.form.Controller.extend({
 				};
 			}
 
-			// payroll entry
-			if(jvd.reference_type==="Payroll Entry") {
-				return {
-					query: "erpnext.hr.doctype.payroll_entry.payroll_entry.get_payroll_entries_for_jv",
-				};
-			}
-
 			var out = {
 				filters: [
 					[jvd.reference_type, "docstatus", "=", 1]
@@ -222,18 +213,11 @@ erpnext.accounts.JournalEntry = frappe.ui.form.Controller.extend({
 
 			if(in_list(["Sales Invoice", "Purchase Invoice"], jvd.reference_type)) {
 				out.filters.push([jvd.reference_type, "outstanding_amount", "!=", 0]);
-				// Filter by cost center
-				if(jvd.cost_center) {
-					out.filters.push([jvd.reference_type, "cost_center", "in", ["", jvd.cost_center]]);
-				}
+
 				// account filter
 				frappe.model.validate_missing(jvd, "account");
 				var party_account_field = jvd.reference_type==="Sales Invoice" ? "debit_to": "credit_to";
 				out.filters.push([jvd.reference_type, party_account_field, "=", jvd.account]);
-
-				if (in_list(['Debit Note', 'Credit Note'], doc.voucher_type)) {
-					out.filters.push([jvd.reference_type, "is_return", "=", 1]);
-				}
 			}
 
 			if(in_list(["Sales Order", "Purchase Order"], jvd.reference_type)) {
@@ -245,16 +229,8 @@ erpnext.accounts.JournalEntry = frappe.ui.form.Controller.extend({
 			}
 
 			if(jvd.party_type && jvd.party) {
-				var party_field = "";
-				if(jvd.reference_type.indexOf("Sales")===0) {
-					var party_field = "customer";
-				} else if (jvd.reference_type.indexOf("Purchase")===0) {
-					var party_field = "supplier";
-				}
-
-				if (party_field) {
-					out.filters.push([jvd.reference_type, party_field, "=", jvd.party]);
-				}
+				out.filters.push([jvd.reference_type,
+					(jvd.reference_type.indexOf("Sales")===0 ? "customer" : "supplier"), "=", jvd.party]);
 			}
 
 			return out;
@@ -359,7 +335,9 @@ cur_frm.cscript.update_totals = function(doc) {
 
 cur_frm.cscript.get_balance = function(doc,dt,dn) {
 	cur_frm.cscript.update_totals(doc);
-	cur_frm.call('get_balance', null, () => { cur_frm.refresh(); });
+	return $c_obj(cur_frm.doc, 'get_balance', '', function(r, rt){
+		cur_frm.refresh();
+	});
 }
 
 cur_frm.cscript.validate = function(doc,cdt,cdn) {
@@ -397,7 +375,7 @@ cur_frm.cscript.voucher_type = function(doc, cdt, cdn) {
 				method: "erpnext.accounts.doctype.journal_entry.journal_entry.get_default_bank_cash_account",
 				args: {
 					"account_type": (doc.voucher_type=="Bank Entry" ?
-						"Bank" : (doc.voucher_type=="Cash Entry" ? "Cash" : null)),
+						"Bank" : (doc.voucher_type=="Cash" ? "Cash" : null)),
 					"company": doc.company
 				},
 				callback: function(r) {
@@ -569,7 +547,7 @@ $.extend(erpnext.journal_entry, {
 				},
 				{fieldtype: "Date", fieldname: "posting_date", label: __("Date"), reqd: 1,
 					default: frm.doc.posting_date},
-				{fieldtype: "Small Text", fieldname: "user_remark", label: __("User Remark")},
+				{fieldtype: "Small Text", fieldname: "user_remark", label: __("User Remark"), reqd: 1},
 				{fieldtype: "Select", fieldname: "naming_series", label: __("Series"), reqd: 1,
 					options: naming_series_options, default: naming_series_default},
 			]
@@ -607,9 +585,15 @@ $.extend(erpnext.journal_entry, {
 	},
 
 	account_query: function(frm) {
+		var inter_company = 0;
+		if (frm.doc.voucher_type == "Inter Company Journal Entry") {
+			inter_company = 1;
+		}
+
 		var filters = {
 			company: frm.doc.company,
-			is_group: 0
+			is_group: 0,
+			inter_company_account: inter_company
 		};
 		if(!frm.doc.multi_currency) {
 			$.extend(filters, {

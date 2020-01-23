@@ -1,4 +1,3 @@
-from __future__ import unicode_literals
 from frappe import _
 
 def get_data():
@@ -6,7 +5,7 @@ def get_data():
 		'fieldname': 'production_plan',
 		'transactions': [
 			{
-				'label': _('Transactions'),
+				'label': _('Related'),
 				'items': ['Work Order', 'Material Request']
 			},
 		]

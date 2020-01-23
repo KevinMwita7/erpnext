@@ -4,6 +4,7 @@ import frappe
 from frappe import _
 
 no_cache = 1
+no_sitemap = 1
 
 def get_context(context):
 	if frappe.session.user=='Guest':

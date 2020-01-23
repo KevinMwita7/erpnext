@@ -18,21 +18,14 @@ def execute(filters=None):
 	return columns, data
 
 def get_data(filters, show_party_name):
-	if filters.get('party_type') in ('Customer', 'Supplier', 'Employee', 'Member'):
-		party_name_field = "{0}_name".format(frappe.scrub(filters.get('party_type')))
-<<<<<<< HEAD
-	elif filters.get('party_type') == 'Student':
-=======
+	party_name_field = "{0}_name".format(frappe.scrub(filters.get('party_type')))
 	if filters.get('party_type') == 'Student':
->>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 		party_name_field = 'first_name'
 	elif filters.get('party_type') == 'Shareholder':
 		party_name_field = 'title'
-	else:
-		party_name_field = 'name'
 
 	party_filters = {"name": filters.get("party")} if filters.get("party") else {}
-	parties = frappe.get_all(filters.get("party_type"), fields = ["name", party_name_field],
+	parties = frappe.get_all(filters.get("party_type"), fields = ["name", party_name_field], 
 		filters = party_filters, order_by="name")
 	company_currency = frappe.get_cached_value('Company',  filters.company,  "default_currency")
 	opening_balances = get_opening_balances(filters)
@@ -77,7 +70,7 @@ def get_data(filters, show_party_name):
 		# totals
 		for col in total_row:
 			total_row[col] += row.get(col)
-
+		
 		row.update({
 			"currency": company_currency
 		})
@@ -85,7 +78,7 @@ def get_data(filters, show_party_name):
 		has_value = False
 		if (opening_debit or opening_credit or debit or credit or closing_debit or closing_credit):
 			has_value  =True
-
+		
 		if cint(filters.show_zero_values) or has_value:
 			data.append(row)
 
@@ -100,19 +93,13 @@ def get_data(filters, show_party_name):
 	return data
 
 def get_opening_balances(filters):
-
-	account_filter = ''
-	if filters.get('account'):
-		account_filter = "and account = %s" % (frappe.db.escape(filters.get('account')))
-
 	gle = frappe.db.sql("""
-		select party, sum(debit) as opening_debit, sum(credit) as opening_credit
+		select party, sum(debit) as opening_debit, sum(credit) as opening_credit 
 		from `tabGL Entry`
-		where company=%(company)s
+		where company=%(company)s 
 			and ifnull(party_type, '') = %(party_type)s and ifnull(party, '') != ''
 			and (posting_date < %(from_date)s or ifnull(is_opening, 'No') = 'Yes')
-			{account_filter}
-		group by party""".format(account_filter=account_filter), {
+		group by party""", {
 			"company": filters.company,
 			"from_date": filters.from_date,
 			"party_type": filters.party_type
@@ -126,20 +113,14 @@ def get_opening_balances(filters):
 	return opening
 
 def get_balances_within_period(filters):
-
-	account_filter = ''
-	if filters.get('account'):
-		account_filter = "and account = %s" % (frappe.db.escape(filters.get('account')))
-
 	gle = frappe.db.sql("""
-		select party, sum(debit) as debit, sum(credit) as credit
+		select party, sum(debit) as debit, sum(credit) as credit 
 		from `tabGL Entry`
-		where company=%(company)s
+		where company=%(company)s 
 			and ifnull(party_type, '') = %(party_type)s and ifnull(party, '') != ''
-			and posting_date >= %(from_date)s and posting_date <= %(to_date)s
+			and posting_date >= %(from_date)s and posting_date <= %(to_date)s 
 			and ifnull(is_opening, 'No') = 'No'
-			{account_filter}
-		group by party""".format(account_filter=account_filter), {
+		group by party""", {
 			"company": filters.company,
 			"from_date": filters.from_date,
 			"to_date": filters.to_date,

@@ -8,8 +8,7 @@ def get_data():
 			"items": [
 				{
 					"type": "doctype",
-					"name": "Student",
-					"onboard": 1,
+					"name": "Student"
 				},
 				{
 					"type": "doctype",
@@ -32,10 +31,6 @@ def get_data():
 				{
 					"type": "doctype",
 					"name": "Student Applicant"
-				},
-				{
-					"type": "doctype",
-					"name": "Web Academy Applicant"
 				},
 				{
 					"type": "doctype",
@@ -173,7 +168,7 @@ def get_data():
 				{
 					"type": "doctype",
 					"name": "Course Schedule",
-					"route": "#List/Course Schedule/Calendar"
+					"route": "List/Course Schedule/Calendar"
 				},
 				{
 					"type": "doctype",
@@ -186,65 +181,24 @@ def get_data():
 			"items": [
 				{
 					"type": "doctype",
-					"name": "Program",
+					"name": "Course"
 				},
 				{
 					"type": "doctype",
-					"name": "Course",
-					"onboard": 1,
+					"name": "Program"
 				},
 				{
 					"type": "doctype",
-					"name": "Topic",
+					"name": "Instructor"
 				},
 				{
 					"type": "doctype",
-					"name": "Instructor",
-					"onboard": 1,
-				},
-				{
-					"type": "doctype",
-					"name": "Room",
-					"onboard": 1,
+					"name": "Room"
 				}
 			]
 		},
 		{
-			"label": _("Content Masters"),
-			"items": [
-				{
-					"type": "doctype",
-					"name": "Article"
-				},
-				{
-					"type": "doctype",
-					"name": "Video"
-				},
-				{
-					"type": "doctype",
-					"name": "Quiz"
-				}
-			]
-		},
-		{
-			"label": _("LMS Activity"),
-			"items": [
-				{
-					"type": "doctype",
-					"name": "Course Enrollment"
-				},
-				{
-					"type": "doctype",
-					"name": "Course Activity"
-				},
-				{
-					"type": "doctype",
-					"name": "Quiz Activity"
-				}
-			]
-		},
-		{
-			"label": _("Settings"),
+			"label": _("Setup"),
 			"items": [
 				{
 					"type": "doctype",
@@ -256,8 +210,7 @@ def get_data():
 				},
 				{
 					"type": "doctype",
-					"name": "Grading Scale",
-					"onboard": 1,
+					"name": "Grading Scale"
 				},
 				{
 					"type": "doctype",

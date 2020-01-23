@@ -11,9 +11,6 @@ class EmployeeSeparation(EmployeeBoardingController):
 
 	def on_submit(self):
 		super(EmployeeSeparation, self).on_submit()
-
-	def on_update_after_submit(self):
-		self.create_task_and_notify_user()
-
+	
 	def on_cancel(self):
 		super(EmployeeSeparation, self).on_cancel()

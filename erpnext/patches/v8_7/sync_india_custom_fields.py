@@ -1,4 +1,3 @@
-from __future__ import unicode_literals
 import frappe
 from erpnext.regional.india.setup  import make_custom_fields
 
@@ -7,16 +6,8 @@ def execute():
 	if not company:
 		return
 
-	frappe.reload_doc('hr', 'doctype', 'payroll_period')
 	frappe.reload_doc('hr', 'doctype', 'employee_tax_exemption_declaration')
 	frappe.reload_doc('hr', 'doctype', 'employee_tax_exemption_proof_submission')
-	frappe.reload_doc('hr', 'doctype', 'employee_tax_exemption_declaration_category')
-	frappe.reload_doc('hr', 'doctype', 'employee_tax_exemption_proof_submission_detail')
-<<<<<<< HEAD
-
-	frappe.reload_doc('accounts', 'doctype', 'tax_category')
-=======
->>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 
 	for doctype in ["Sales Invoice", "Delivery Note", "Purchase Invoice"]:
 		frappe.db.sql("""delete from `tabCustom Field` where dt = %s

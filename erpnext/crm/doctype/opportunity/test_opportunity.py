@@ -3,7 +3,7 @@
 from __future__ import unicode_literals
 
 import frappe
-from frappe.utils import today, random_string
+from frappe.utils import today
 from erpnext.crm.doctype.lead.lead import make_customer
 from erpnext.crm.doctype.opportunity.opportunity import make_quotation
 import unittest
@@ -27,10 +27,9 @@ class TestOpportunity(unittest.TestCase):
 		self.assertEqual(doc.status, "Quotation")
 
 	def test_make_new_lead_if_required(self):
-		new_lead_email_id = "new{}@example.com".format(random_string(5))
 		args = {
 			"doctype": "Opportunity",
-			"contact_email": new_lead_email_id,
+			"contact_email":"new.opportunity@example.com",
 			"opportunity_type": "Sales",
 			"with_items": 0,
 			"transaction_date": today()
@@ -38,36 +37,27 @@ class TestOpportunity(unittest.TestCase):
 		# new lead should be created against the new.opportunity@example.com
 		opp_doc = frappe.get_doc(args).insert(ignore_permissions=True)
 
-		self.assertTrue(opp_doc.party_name)
-		self.assertEqual(opp_doc.opportunity_from, "Lead")
-		self.assertEqual(frappe.db.get_value("Lead", opp_doc.party_name, "email_id"),
-<<<<<<< HEAD
-			new_lead_email_id)
-
-		# create new customer and create new contact against 'new.opportunity@example.com'
-		customer = make_customer(opp_doc.party_name).insert(ignore_permissions=True)
-		contact = frappe.get_doc({
-=======
+		self.assertTrue(opp_doc.lead)
+		self.assertEqual(opp_doc.enquiry_from, "Lead")
+		self.assertEqual(frappe.db.get_value("Lead", opp_doc.lead, "email_id"),
 			'new.opportunity@example.com')
 
 		# create new customer and create new contact against 'new.opportunity@example.com'
-		customer = make_customer(opp_doc.party_name).insert(ignore_permissions=True)
+		customer = make_customer(opp_doc.lead).insert(ignore_permissions=True)
 		frappe.get_doc({
->>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 			"doctype": "Contact",
+			"email_id": "new.opportunity@example.com",
 			"first_name": "_Test Opportunity Customer",
 			"links": [{
 				"link_doctype": "Customer",
 				"link_name": customer.name
 			}]
-		})
-		contact.add_email(new_lead_email_id, is_primary=True)
-		contact.insert(ignore_permissions=True)
+		}).insert(ignore_permissions=True)
 
 		opp_doc = frappe.get_doc(args).insert(ignore_permissions=True)
-		self.assertTrue(opp_doc.party_name)
-		self.assertEqual(opp_doc.opportunity_from, "Customer")
-		self.assertEqual(opp_doc.party_name, customer.name)
+		self.assertTrue(opp_doc.customer)
+		self.assertEqual(opp_doc.enquiry_from, "Customer")
+		self.assertEqual(opp_doc.customer, customer.name)
 
 def make_opportunity(**args):
 	args = frappe._dict(args)
@@ -75,17 +65,17 @@ def make_opportunity(**args):
 	opp_doc = frappe.get_doc({
 		"doctype": "Opportunity",
 		"company": args.company or "_Test Company",
-		"opportunity_from": args.opportunity_from or "Customer",
+		"enquiry_from": args.enquiry_from or "Customer",
 		"opportunity_type": "Sales",
 		"with_items": args.with_items or 0,
 		"transaction_date": today()
 	})
 
-	if opp_doc.opportunity_from == 'Customer':
-		opp_doc.party_name= args.customer or "_Test Customer"
+	if opp_doc.enquiry_from == 'Customer':
+		opp_doc.customer = args.customer or "_Test Customer"
 
-	if opp_doc.opportunity_from == 'Lead':
-		opp_doc.party_name = args.lead or "_T-Lead-00001"
+	if opp_doc.enquiry_from == 'Lead':
+		opp_doc.customer = args.lead or "_T-Lead-00001"
 
 	if args.with_items:
 		opp_doc.append('items', {

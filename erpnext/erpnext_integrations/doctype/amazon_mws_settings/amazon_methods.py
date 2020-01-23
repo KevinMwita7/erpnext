@@ -4,7 +4,10 @@
 
 from __future__ import unicode_literals
 import frappe, time, dateutil, math, csv
-from six import StringIO
+try:
+    from StringIO import StringIO
+except ImportError:
+    from io import StringIO
 import erpnext.erpnext_integrations.doctype.amazon_mws_settings.amazon_mws_api as mws
 from frappe import _
 
@@ -23,7 +26,7 @@ def get_products_details():
 			listings_response = reports.get_report(report_id=report_id)
 
 			#Get ASIN Codes
-			string_io = StringIO(frappe.safe_decode(listings_response.original))
+			string_io = StringIO(listings_response.original)
 			csv_rows = list(csv.reader(string_io, delimiter=str('\t')))
 			asin_list = list(set([row[1] for row in csv_rows[1:]]))
 			#break into chunks of 10
@@ -37,7 +40,7 @@ def get_products_details():
 				products_response = call_mws_method(products.get_matching_product,marketplaceid=marketplace,
 					asins=asin_list)
 
-				matching_products_list = products_response.parsed
+				matching_products_list = products_response.parsed 
 				for product in matching_products_list:
 					skus = [row["sku"] for row in sku_asin if row["asin"]==product.ASIN]
 					for sku in skus:
@@ -86,6 +89,8 @@ def request_and_fetch_report_id(report_type, start_date=None, end_date=None, mar
 			end_date=end_date,
 			marketplaceids=marketplaceids)
 
+	#add time delay to wait for amazon to generate report
+	time.sleep(20)
 	report_request_id = report_response.parsed["ReportRequestInfo"]["ReportRequestId"]["value"]
 	generated_report_id = None
 	#poll to get generated report
@@ -111,7 +116,7 @@ def call_mws_method(mws_method, *args, **kwargs):
 	mws_settings = frappe.get_doc("Amazon MWS Settings")
 	max_retries = mws_settings.max_retry_limit
 
-	for x in range(0, max_retries):
+	for x in xrange(0, max_retries):
 		try:
 			response = mws_method(*args, **kwargs)
 			return response
@@ -156,8 +161,6 @@ def create_item_code(amazon_item_json, sku):
 		igroup.item_group_name = temp_item_group
 		igroup.parent_item_group =  mws_settings.item_group
 		igroup.insert()
-
-	item.append("item_defaults", {'company':mws_settings.company})
 
 	item.insert(ignore_permissions=True)
 	create_item_price(amazon_item_json, item.item_code)
@@ -210,7 +213,7 @@ def get_orders(after_date):
 			fulfillment_channels=["MFN", "AFN"],
 			lastupdatedafter=after_date,
 			orderstatus=statuses,
-			max_results='50')
+			max_results='20')
 
 		while True:
 			orders_list = []
@@ -291,8 +294,7 @@ def create_sales_order(order_json,after_date):
 			so.submit()
 
 		except Exception as e:
-			import traceback
-			frappe.log_error(message=traceback.format_exc(), title="Create Sales Order")
+			frappe.log_error(message=e, title="Create Sales Order")
 
 def create_customer(order_json):
 	order_customer_name = ""
@@ -430,8 +432,8 @@ def get_order_items(market_place_order_id):
 	return final_order_items
 
 def get_item_code(order_item):
-	sku = order_item.SellerSKU
-	item_code = frappe.db.get_value("Item", {"item_code": sku}, "item_code")
+	asin = order_item.ASIN
+	item_code = frappe.db.get_value("Item", {"amazon_item_code": asin}, "item_code")
 	if item_code:
 		return item_code
 
@@ -449,16 +451,11 @@ def get_charges_and_fees(market_place_order_id):
 			shipment_item_list = return_as_list(shipment_event.ShipmentEvent.ShipmentItemList.ShipmentItem)
 
 			for shipment_item in shipment_item_list:
-				charges, fees = [], []
-
-				if 'ItemChargeList' in shipment_item.keys():
-					charges = return_as_list(shipment_item.ItemChargeList.ChargeComponent)
-
-				if 'ItemFeeList' in shipment_item.keys():
-					fees = return_as_list(shipment_item.ItemFeeList.FeeComponent)
+				charges = return_as_list(shipment_item.ItemChargeList.ChargeComponent)
+				fees = return_as_list(shipment_item.ItemFeeList.FeeComponent)
 
 				for charge in charges:
-					if(charge.ChargeType != "Principal") and float(charge.ChargeAmount.CurrencyAmount) != 0:
+					if(charge.ChargeType != "Principal"):
 						charge_account = get_account(charge.ChargeType)
 						charges_fees.get("charges").append({
 							"charge_type":"Actual",
@@ -468,14 +465,13 @@ def get_charges_and_fees(market_place_order_id):
 							})
 
 				for fee in fees:
-					if float(fee.FeeAmount.CurrencyAmount) != 0:
-						fee_account = get_account(fee.FeeType)
-						charges_fees.get("fees").append({
-							"charge_type":"Actual",
-							"account_head": fee_account,
-							"tax_amount": fee.FeeAmount.CurrencyAmount,
-							"description": fee.FeeType + " for " + shipment_item.SellerSKU
-							})
+					fee_account = get_account(fee.FeeType)
+					charges_fees.get("fees").append({
+						"charge_type":"Actual",
+						"account_head": fee_account,
+						"tax_amount": fee.FeeAmount.CurrencyAmount,
+						"description": fee.FeeType + " for " + shipment_item.SellerSKU
+						})
 
 	return charges_fees
 

@@ -4,7 +4,6 @@
 
 from __future__ import unicode_literals
 import frappe, json
-from frappe import _
 from frappe.model.document import Document
 from erpnext.education.api import get_grade
 from frappe.utils.pdf import get_pdf
@@ -55,7 +54,7 @@ def preview_report_card(doc):
 			"courses": courses,
 			"assessment_groups": assessment_groups,
 			"course_criteria": course_criteria,
-			"letterhead": letterhead and letterhead.get('content', None),
+			"letterhead": letterhead.content,
 			"add_letterhead": doc.add_letterhead if doc.add_letterhead else 0
 		})
 	final_template = frappe.render_template(base_template_path, {"body": html, "title": "Report Card"})
@@ -80,7 +79,7 @@ def get_attendance_count(student, academic_year, academic_term=None):
 		from_date, to_date = frappe.db.get_value("Academic Term", academic_term, ["term_start_date", "term_end_date"])
 	if from_date and to_date:
 		attendance = dict(frappe.db.sql('''select status, count(student) as no_of_days
-			from `tabStudent Attendance` where student = %s
+			from `tabStudent Attendance` where student = %s 
 			and date between %s and %s group by status''',
 			(student, from_date, to_date)))
 		if "Absent" not in attendance.keys():
@@ -89,8 +88,4 @@ def get_attendance_count(student, academic_year, academic_term=None):
 			attendance["Present"] = 0
 		return attendance
 	else:
-<<<<<<< HEAD
-		frappe.throw(_("Provide the academic year and set the starting and ending date."))
-=======
-		frappe.throw(_("Provide the academic year and set the starting and ending date."))
->>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
+		frappe.throw("Provide the academic year and set the starting and ending date.") 

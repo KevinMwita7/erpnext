@@ -3,7 +3,7 @@
 from __future__ import unicode_literals
 
 import frappe
-from frappe.utils import flt, add_days, nowdate, add_months, getdate
+from frappe.utils import flt, add_days, nowdate, add_months
 import unittest
 
 test_dependencies = ["Product Bundle"]
@@ -18,7 +18,7 @@ class TestQuotation(unittest.TestCase):
 
 		self.assertTrue(quotation.payment_schedule)
 
-	def test_make_sales_order_terms_copied(self):
+	def test_make_sales_order_terms_not_copied(self):
 		from erpnext.selling.doctype.quotation.quotation import make_sales_order
 
 		quotation = frappe.copy_doc(test_records[0])
@@ -29,27 +29,7 @@ class TestQuotation(unittest.TestCase):
 
 		sales_order = make_sales_order(quotation.name)
 
-		self.assertTrue(sales_order.get('payment_schedule'))
-
-	def test_make_sales_order_with_different_currency(self):
-		from erpnext.selling.doctype.quotation.quotation import make_sales_order
-
-		quotation = frappe.copy_doc(test_records[0])
-		quotation.transaction_date = nowdate()
-		quotation.valid_till = add_months(quotation.transaction_date, 1)
-		quotation.insert()
-		quotation.submit()
-
-		sales_order = make_sales_order(quotation.name)
-		sales_order.currency = "USD"
-		sales_order.conversion_rate = 20.0
-		sales_order.delivery_date = "2019-01-01"
-		sales_order.naming_series = "_T-Quotation-"
-		sales_order.transaction_date = nowdate()
-		sales_order.insert()
-
-		self.assertEquals(sales_order.currency, "USD")
-		self.assertNotEqual(sales_order.currency, quotation.currency)
+		self.assertFalse(sales_order.get('payment_schedule'))
 
 	def test_make_sales_order(self):
 		from erpnext.selling.doctype.quotation.quotation import make_sales_order
@@ -109,10 +89,10 @@ class TestQuotation(unittest.TestCase):
 		sales_order.insert()
 
 		self.assertEqual(sales_order.payment_schedule[0].payment_amount, 8906.00)
-		self.assertEqual(sales_order.payment_schedule[0].due_date, getdate(quotation.transaction_date))
+		self.assertEqual(sales_order.payment_schedule[0].due_date, quotation.transaction_date)
 		self.assertEqual(sales_order.payment_schedule[1].payment_amount, 8906.00)
 		self.assertEqual(
-			sales_order.payment_schedule[1].due_date, getdate(add_days(quotation.transaction_date, 30))
+			sales_order.payment_schedule[1].due_date, add_days(quotation.transaction_date, 30)
 		)
 
 	def test_valid_till(self):
@@ -201,39 +181,17 @@ class TestQuotation(unittest.TestCase):
 		sec_qo = make_quotation(item_list=qo_item2, do_not_submit=True)
 		sec_qo.submit()
 
-	def test_quotation_expiry(self):
-		from erpnext.selling.doctype.quotation.quotation import set_expired_status
-
-		quotation_item = [
-			{
-				"item_code": "_Test Item",
-				"warehouse":"",
-				"qty": 1,
-				"rate": 500
-			}
-		]
-
-		yesterday = add_days(nowdate(), -1)
-		expired_quotation = make_quotation(item_list=quotation_item, transaction_date=yesterday, do_not_submit=True)
-		expired_quotation.valid_till = yesterday
-		expired_quotation.save()
-		expired_quotation.submit()
-		set_expired_status()
-		expired_quotation.reload()
-		self.assertEqual(expired_quotation.status, "Expired")
-
-
 test_records = frappe.get_test_records('Quotation')
 
-def get_quotation_dict(party_name=None, item_code=None):
-	if not party_name:
-		party_name = '_Test Customer'
+def get_quotation_dict(customer=None, item_code=None):
+	if not customer:
+		customer = '_Test Customer'
 	if not item_code:
 		item_code = '_Test Item'
 
 	return {
 		'doctype': 'Quotation',
-		'party_name': party_name,
+		'customer': customer,
 		'items': [
 			{
 				'item_code': item_code,
@@ -251,7 +209,7 @@ def make_quotation(**args):
 		qo.transaction_date = args.transaction_date
 
 	qo.company = args.company or "_Test Company"
-	qo.party_name = args.party_name or "_Test Customer"
+	qo.customer = args.customer or "_Test Customer"
 	qo.currency = args.currency or "INR"
 	if args.selling_price_list:
 		qo.selling_price_list = args.selling_price_list
@@ -280,5 +238,3 @@ def make_quotation(**args):
 			qo.submit()
 
 	return qo
-
-

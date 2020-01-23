@@ -14,16 +14,6 @@ frappe.ui.form.on('Stock Entry', {
 			}
 		});
 
-		frm.set_query('outgoing_stock_entry', function() {
-			return {
-				filters: [
-					['Stock Entry', 'docstatus', '=', 1],
-					['Stock Entry', 'per_transferred', '<','100'],
-					['Stock Entry', 'purpose', '=', 'Send to Warehouse']
-				]
-			}
-		});
-
 		frappe.db.get_value('Stock Settings', {name: 'Stock Settings'}, 'sample_retention_warehouse', (r) => {
 			if (r.sample_retention_warehouse) {
 				var filters = [
@@ -49,7 +39,7 @@ frappe.ui.form.on('Stock Entry', {
 			if(!item.item_code) {
 				frappe.throw(__("Please enter Item Code to get Batch Number"));
 			} else {
-				if (in_list(["Material Transfer for Manufacture", "Manufacture", "Repack", "Send to Subcontractor"], doc.purpose)) {
+				if (in_list(["Material Transfer for Manufacture", "Manufacture", "Repack", "Subcontract"], doc.purpose)) {
 					var filters = {
 						'item_code': item.item_code,
 						'posting_date': frm.doc.posting_date || frappe.datetime.nowdate()
@@ -66,16 +56,6 @@ frappe.ui.form.on('Stock Entry', {
 					filters: filters
 				}
 			}
-		});
-
-		frm.set_query("expense_account", "additional_costs", function() {
-			return {
-				query: "erpnext.controllers.queries.tax_account_query",
-				filters: {
-					"account_type": ["Tax", "Chargeable", "Income Account", "Expenses Included In Valuation", "Expenses Included In Asset Valuation"],
-					"company": frm.doc.company
-				}
-			};
 		});
 
 		frm.add_fetch("bom_no", "inspection_required", "inspection_required");
@@ -102,23 +82,12 @@ frappe.ui.form.on('Stock Entry', {
 
 		frm.set_query("quality_inspection", "items", function(doc, cdt, cdn) {
 			var d = locals[cdt][cdn];
-
 			return {
-				query:"erpnext.stock.doctype.quality_inspection.quality_inspection.quality_inspection_query",
 				filters: {
-					'item_code': d.item_code,
-					'reference_name': doc.name
+					docstatus: 1,
+					item_code: d.item_code,
+					reference_name: doc.name
 				}
-			}
-		});
-	},
-
-	outgoing_stock_entry: function(frm) {
-		frappe.call({
-			doc: frm.doc,
-			method: "set_items_for_stock_in",
-			callback: function() {
-				refresh_field('items');
 			}
 		});
 	},
@@ -170,28 +139,6 @@ frappe.ui.form.on('Stock Entry', {
 			}
 		}
 
-		if (frm.doc.docstatus === 1 && frm.doc.purpose == 'Send to Warehouse') {
-			if (frm.doc.per_transferred < 100) {
-				frm.add_custom_button(__('Receive at Warehouse Entry'), function() {
-					frappe.model.open_mapped_doc({
-						method: "erpnext.stock.doctype.stock_entry.stock_entry.make_stock_in_entry",
-						frm: frm
-					})
-				});
-			}
-
-			if (frm.doc.per_transferred > 0) {
-				frm.add_custom_button(__('Received Stock Entries'), function() {
-					frappe.route_options = {
-						'outgoing_stock_entry': frm.doc.name,
-						'docstatus': ['!=', 2]
-					};
-
-					frappe.set_route('List', 'Stock Entry');
-				}, __("View"));
-			}
-		}
-
 		if (frm.doc.docstatus===0) {
 			frm.add_custom_button(__('Purchase Invoice'), function() {
 				erpnext.utils.map_current_doc({
@@ -204,23 +151,6 @@ frappe.ui.form.on('Stock Entry', {
 					},
 					get_query_filters: {
 						docstatus: 1
-					}
-				})
-			}, __("Get items from"));
-
-			frm.add_custom_button(__('Material Request'), function() {
-				erpnext.utils.map_current_doc({
-					method: "erpnext.stock.doctype.material_request.material_request.make_stock_entry",
-					source_doctype: "Material Request",
-					target: frm,
-					date_field: "schedule_date",
-					setters: {
-						company: frm.doc.company,
-					},
-					get_query_filters: {
-						docstatus: 1,
-						material_request_type: "Material Transfer",
-						status: ['!=', 'Transferred']
 					}
 				})
 			}, __("Get items from"));
@@ -249,8 +179,6 @@ frappe.ui.form.on('Stock Entry', {
 			}, __("Get items from"));
 		}
 
-		frm.events.show_bom_custom_button(frm);
-
 		if (frm.doc.company) {
 			frm.trigger("toggle_display_account_head");
 		}
@@ -262,11 +190,6 @@ frappe.ui.form.on('Stock Entry', {
 		}
 
 		frm.trigger("setup_quality_inspection");
-	},
-
-	stock_entry_type: function(frm){
-		frm.remove_custom_button('Bill of Materials', "Get items from");
-		frm.events.show_bom_custom_button(frm);
 	},
 
 	purpose: function(frm) {
@@ -405,85 +328,6 @@ frappe.ui.form.on('Stock Entry', {
 		}
 	},
 
-	show_bom_custom_button: function(frm){
-		if (frm.doc.docstatus === 0 &&
-			['Material Issue', 'Material Receipt', 'Material Transfer', 'Send to Subcontractor'].includes(frm.doc.purpose)) {
-				frm.add_custom_button(__('Bill of Materials'), function() {
-					frm.events.get_items_from_bom(frm);
-				}, __("Get items from"));
-		}
-	},
-
-	get_items_from_bom: function(frm) {
-		let filters = function(){
-			return {filters: { docstatus:1 }};
-		}
-
-		let fields = [
-			{"fieldname":"bom", "fieldtype":"Link", "label":__("BOM"),
-			options:"BOM", reqd: 1, get_query: filters()},
-			{"fieldname":"source_warehouse", "fieldtype":"Link", "label":__("Source Warehouse"),
-			options:"Warehouse"},
-			{"fieldname":"target_warehouse", "fieldtype":"Link", "label":__("Target Warehouse"),
-			options:"Warehouse"},
-			{"fieldname":"qty", "fieldtype":"Float", "label":__("Quantity"),
-			reqd: 1, "default": 1},
-			{"fieldname":"fetch_exploded", "fieldtype":"Check",
-			"label":__("Fetch exploded BOM (including sub-assemblies)"), "default":1},
-			{"fieldname":"fetch", "label":__("Get Items from BOM"), "fieldtype":"Button"}
-		]
-
-		// Exclude field 'Target Warehouse' in case of Material Issue
-		if (frm.doc.purpose == 'Material Issue'){
-			fields.splice(2,1);
-		}
-		// Exclude field 'Source Warehouse' in case of Material Receipt
-		else if(frm.doc.purpose == 'Material Receipt'){
-			fields.splice(1,1);
-		}
-
-		let d = new frappe.ui.Dialog({
-			title: __("Get Items from BOM"),
-			fields: fields
-		});
-		d.get_input("fetch").on("click", function() {
-			let values = d.get_values();
-			if(!values) return;
-			values["company"] = frm.doc.company;
-			if(!frm.doc.company) frappe.throw(__("Company field is required"));
-			frappe.call({
-				method: "erpnext.manufacturing.doctype.bom.bom.get_bom_items",
-				args: values,
-				callback: function(r) {
-					if (!r.message) {
-						frappe.throw(__("BOM does not contain any stock item"));
-					} else {
-						erpnext.utils.remove_empty_first_row(frm, "items");
-						$.each(r.message, function(i, item) {
-							let d = frappe.model.add_child(cur_frm.doc, "Stock Entry Detail", "items");
-							d.item_code = item.item_code;
-							d.item_name = item.item_name;
-							d.item_group = item.item_group;
-							d.s_warehouse = values.source_warehouse;
-							d.t_warehouse = values.target_warehouse;
-							d.uom = item.stock_uom;
-							d.stock_uom = item.stock_uom;
-							d.conversion_factor = item.conversion_factor ? item.conversion_factor : 1;
-							d.qty = item.qty;
-							d.expense_account = item.expense_account;
-							d.project = item.project;
-							frm.events.set_basic_rate(frm, d.doctype, d.name);
-						});
-					}
-					d.hide();
-					refresh_field("items");
-				}
-			});
-
-		});
-		d.show();
-	},
-
 	calculate_basic_amount: function(frm, item) {
 		item.basic_amount = flt(flt(item.transfer_qty) * flt(item.basic_rate),
 			precision("basic_amount", item));
@@ -613,7 +457,6 @@ frappe.ui.form.on('Stock Entry Detail', {
 				'voucher_no'		: d.name,
 				'allow_zero_valuation': 1,
 			};
-
 			return frappe.call({
 				doc: frm.doc,
 				method: "get_item_details",
@@ -622,7 +465,7 @@ frappe.ui.form.on('Stock Entry Detail', {
 					if(r.message) {
 						var d = locals[cdt][cdn];
 						$.each(r.message, function(k, v) {
-							frappe.model.set_value(cdt, cdn, k, v); // qty and it's subsequent fields weren't triggered
+							d[k] = v;
 						});
 						refresh_field("items");
 						erpnext.stock.select_batch_and_serial_no(frm, d);
@@ -736,7 +579,9 @@ erpnext.stock.StockEntry = erpnext.stock.StockController.extend({
 			}
 		});
 
-		this.frm.get_field("items").grid.set_multiple_add("item_code", "qty");
+		// if(!this.item_selector && false) {
+		// 	this.item_selector = new erpnext.ItemSelector({frm: this.frm});
+		// }
 	},
 
 	refresh: function() {
@@ -824,8 +669,7 @@ erpnext.stock.StockEntry = erpnext.stock.StockController.extend({
 		return frappe.call({
 			method: "erpnext.stock.doctype.stock_entry.stock_entry.get_work_order_details",
 			args: {
-				work_order: me.frm.doc.work_order,
-				company: me.frm.doc.company
+				work_order: me.frm.doc.work_order
 			},
 			callback: function(r) {
 				if (!r.exc) {
@@ -841,8 +685,6 @@ erpnext.stock.StockEntry = erpnext.stock.StockController.extend({
 						if (me.frm.doc.purpose == "Manufacture") {
 							if (!me.frm.doc.to_warehouse) me.frm.set_value("to_warehouse", r.message["fg_warehouse"]);
 							if (r.message["additional_costs"].length) {
-								me.frm.clear_table("additional_costs");
-
 								$.each(r.message["additional_costs"], function(i, row) {
 									me.frm.add_child("additional_costs", row);
 								})
@@ -879,10 +721,8 @@ erpnext.stock.StockEntry = erpnext.stock.StockController.extend({
 		if(!row.t_warehouse) row.t_warehouse = this.frm.doc.to_warehouse;
 	},
 
-	source_mandatory: ["Material Issue", "Material Transfer", "Send to Subcontractor",
-		"Material Transfer for Manufacture", "Send to Warehouse", "Receive at Warehouse"],
-	target_mandatory: ["Material Receipt", "Material Transfer", "Send to Subcontractor",
-		"Material Transfer for Manufacture", "Send to Warehouse", "Receive at Warehouse"],
+	source_mandatory: ["Material Issue", "Material Transfer", "Subcontract", "Material Transfer for Manufacture"],
+	target_mandatory: ["Material Receipt", "Material Transfer", "Subcontract", "Material Transfer for Manufacture"],
 
 	from_warehouse: function(doc) {
 		var me = this;
@@ -922,12 +762,14 @@ erpnext.stock.StockEntry = erpnext.stock.StockController.extend({
 		this.frm.toggle_enable("from_warehouse", doc.purpose!='Material Receipt');
 		this.frm.toggle_enable("to_warehouse", doc.purpose!='Material Issue');
 
+		this.frm.fields_dict["items"].grid.set_column_disp("s_warehouse", doc.purpose!='Material Receipt');
+		this.frm.fields_dict["items"].grid.set_column_disp("t_warehouse", doc.purpose!='Material Issue');
 		this.frm.fields_dict["items"].grid.set_column_disp("retain_sample", doc.purpose=='Material Receipt');
 		this.frm.fields_dict["items"].grid.set_column_disp("sample_quantity", doc.purpose=='Material Receipt');
 
 		this.frm.cscript.toggle_enable_bom();
 
-		if (doc.purpose == 'Send to Subcontractor') {
+		if (doc.purpose == 'Subcontract') {
 			doc.customer = doc.customer_name = doc.customer_address =
 				doc.delivery_note_no = doc.sales_invoice_no = null;
 		} else {
@@ -945,8 +787,6 @@ erpnext.stock.StockEntry = erpnext.stock.StockController.extend({
 			doc.purpose!='Material Issue');
 
 		this.frm.fields_dict["items"].grid.set_column_disp("additional_cost", doc.purpose!='Material Issue');
-		this.frm.toggle_reqd("outgoing_stock_entry",
-			doc.purpose == 'Receive at Warehouse' ? 1: 0);
 	},
 
 	supplier: function(doc) {

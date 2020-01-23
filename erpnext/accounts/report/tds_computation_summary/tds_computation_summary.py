@@ -1,4 +1,3 @@
-from __future__ import unicode_literals
 import frappe
 from frappe import _
 from frappe.utils import flt
@@ -9,9 +8,7 @@ from erpnext.accounts.doctype.tax_withholding_category.tax_withholding_category 
 def execute(filters=None):
 	validate_filters(filters)
 
-	filters.naming_series = frappe.db.get_single_value('Buying Settings', 'supp_master_name')
-
-	columns = get_columns(filters)
+	columns = get_columns()
 	res = get_result(filters)
 
 	return columns, res
@@ -32,8 +29,7 @@ def get_result(filters):
 	# if no supplier selected, fetch data for all tds applicable supplier
 	# else fetch relevant data for selected supplier
 	pan = "pan" if frappe.db.has_column("Supplier", "pan") else "tax_id"
-	fields = ["name", pan+" as pan", "tax_withholding_category", "supplier_type", "supplier_name"]
-
+	fields = ["name", pan+" as pan", "tax_withholding_category", "supplier_type"]
 	if filters.supplier:
 		filters.supplier = frappe.db.get_list('Supplier',
 			{"name": filters.supplier}, fields)
@@ -53,13 +49,8 @@ def get_result(filters):
 			filters.company, filters.from_date, filters.to_date)
 
 		if total_invoiced_amount or tds_deducted:
-			row = [supplier.pan, supplier.name]
-
-			if filters.naming_series == 'Naming Series':
-				row.append(supplier.supplier_name)
-
-			row.extend([tds.name, supplier.supplier_type, rate, total_invoiced_amount, tds_deducted])
-			out.append(row)
+			out.append([supplier.pan, supplier.name, tds.name, supplier.supplier_type,
+				rate, total_invoiced_amount, tds_deducted])
 
 	return out
 
@@ -95,7 +86,7 @@ def get_invoice_and_tds_amount(supplier, account, company, from_date, to_date):
 
 	return total_invoiced_amount, tds_deducted
 
-def get_columns(filters):
+def get_columns():
 	columns = [
 		{
 			"label": _("PAN"),
@@ -109,17 +100,7 @@ def get_columns(filters):
 			"fieldname": "supplier",
 			"fieldtype": "Link",
 			"width": 180
-		}]
-
-	if filters.naming_series == 'Naming Series':
-		columns.append({
-			"label": _("Supplier Name"),
-			"fieldname": "supplier_name",
-			"fieldtype": "Data",
-			"width": 180
-		})
-
-	columns.extend([
+		},
 		{
 			"label": _("Section Code"),
 			"options": "Tax Withholding Category",
@@ -151,6 +132,6 @@ def get_columns(filters):
 			"fieldtype": "Float",
 			"width": 90
 		}
-	])
+	]
 
 	return columns

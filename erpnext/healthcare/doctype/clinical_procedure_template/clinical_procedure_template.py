@@ -6,7 +6,6 @@ from __future__ import unicode_literals
 import frappe, json
 from frappe import _
 from frappe.model.document import Document
-from frappe.model.rename_doc import rename_doc
 from frappe.utils import nowdate
 
 class ClinicalProcedureTemplate(Document):
@@ -31,7 +30,7 @@ class ClinicalProcedureTemplate(Document):
 			try:
 				frappe.delete_doc("Item",self.item)
 			except Exception:
-				frappe.throw(_("""Not permitted. Please disable the Procedure Template"""))
+				frappe.throw("""Not permitted. Please disable the Procedure Template""")
 
 	def get_item_details(self, args=None):
 		item = frappe.db.sql("""select stock_uom, item_name
@@ -64,11 +63,10 @@ def updating_rate(self):
 	 item_code=%s""",(self.template, self.rate, self.item))
 
 def create_item_from_template(doc):
-	disabled = 1
-	
 	if(doc.is_billable == 1):
 		disabled = 0
-
+	else:
+		disabled = 1
 	#insert item
 	item =  frappe.get_doc({
 	"doctype": "Item",
@@ -117,7 +115,7 @@ def change_item_code_from_template(item_code, doc):
 		"item_code": item_code})):
 		frappe.throw(_("Code {0} already exist").format(item_code))
 	else:
-		rename_doc("Item", doc.item_code, item_code, ignore_permissions=True)
+		frappe.rename_doc("Item", doc.item_code, item_code, ignore_permissions = True)
 		frappe.db.set_value("Clinical Procedure Template", doc.name, "item_code", item_code)
 	return
 

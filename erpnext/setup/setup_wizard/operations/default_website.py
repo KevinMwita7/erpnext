@@ -45,7 +45,7 @@ class website_maker(object):
 		website_settings.append("top_bar_items", {
 			"doctype": "Top Bar Item",
 			"label": _("Products"),
-			"url": "/all-products"
+			"url": "/products"
 		})
 		website_settings.save()
 

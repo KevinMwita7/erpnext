@@ -13,10 +13,6 @@ from six import iteritems
 # imported to enable erpnext.accounts.utils.get_account_currency
 from erpnext.accounts.doctype.account.account import get_account_currency
 
-from erpnext.stock.utils import get_stock_value_on
-from erpnext.stock import get_warehouse_account_map
-
-
 class FiscalYearError(frappe.ValidationError): pass
 
 @frappe.whitelist()
@@ -88,8 +84,7 @@ def validate_fiscal_year(date, fiscal_year, company, label="Date", doc=None):
 			throw(_("{0} '{1}' not in Fiscal Year {2}").format(label, formatdate(date), fiscal_year))
 
 @frappe.whitelist()
-def get_balance_on(account=None, date=None, party_type=None, party=None, company=None,
-	in_account_currency=True, cost_center=None, ignore_account_permission=False):
+def get_balance_on(account=None, date=None, party_type=None, party=None, company=None, in_account_currency=True, cost_center=None):
 	if not account and frappe.form_dict.get("account"):
 		account = frappe.form_dict.get("account")
 	if not date and frappe.form_dict.get("date"):
@@ -109,9 +104,6 @@ def get_balance_on(account=None, date=None, party_type=None, party=None, company
 		# get balance of all entries that exist
 		date = nowdate()
 
-	if account:
-		acc = frappe.get_doc("Account", account)
-
 	try:
 		year_start_date = get_fiscal_year(date, verbose=0)[1]
 	except FiscalYearError:
@@ -126,12 +118,7 @@ def get_balance_on(account=None, date=None, party_type=None, party=None, company
 
 	allow_cost_center_in_entry_of_bs_account = get_allow_cost_center_in_entry_of_bs_account()
 
-	if account:
-		report_type = acc.report_type
-	else:
-		report_type = ""
-
-	if cost_center and (allow_cost_center_in_entry_of_bs_account or report_type =='Profit and Loss'):
+	if cost_center and allow_cost_center_in_entry_of_bs_account:
 		cc = frappe.get_doc("Cost Center", cost_center)
 		if cc.is_group:
 			cond.append(""" exists (
@@ -145,12 +132,18 @@ def get_balance_on(account=None, date=None, party_type=None, party=None, company
 
 	if account:
 
-		if not (frappe.flags.ignore_account_permission
-			or ignore_account_permission):
+		acc = frappe.get_doc("Account", account)
+
+		if not frappe.flags.ignore_account_permission:
 			acc.check_permission("read")
 
-		if report_type == 'Profit and Loss':
+
+		if not allow_cost_center_in_entry_of_bs_account and acc.report_type == 'Profit and Loss':
 			# for pl accounts, get balance within a fiscal year
+			cond.append("posting_date >= '%s' and voucher_type != 'Period Closing Voucher'" \
+				% year_start_date)
+		elif allow_cost_center_in_entry_of_bs_account:
+			# for all accounts, get balance within a fiscal year if maintain cost center in balance account is checked
 			cond.append("posting_date >= '%s' and voucher_type != 'Period Closing Voucher'" \
 				% year_start_date)
 		# different filter for group and ledger - improved performance
@@ -340,9 +333,6 @@ def reconcile_against_document(args):
 		doc = frappe.get_doc(d.voucher_type, d.voucher_no)
 		doc.make_gl_entries(cancel = 0, adv_adj =1)
 
-		if d.voucher_type in ('Payment Entry', 'Journal Entry'):
-			doc.update_expense_claim()
-
 def check_if_advance_entry_modified(args):
 	"""
 		check if there is already a voucher reference
@@ -385,9 +375,9 @@ def check_if_advance_entry_modified(args):
 
 def validate_allocated_amount(args):
 	if args.get("allocated_amount") < 0:
-		throw(_("Allocated amount cannot be negative"))
+		throw(_("Allocated amount can not be negative"))
 	elif args.get("allocated_amount") > args.get("unadjusted_amount"):
-		throw(_("Allocated amount cannot be greater than unadjusted amount"))
+		throw(_("Allocated amount can not greater than unadjusted amount"))
 
 def update_reference_in_journal_entry(d, jv_obj):
 	"""
@@ -442,7 +432,7 @@ def update_reference_in_journal_entry(d, jv_obj):
 	jv_obj.flags.ignore_validate_update_after_submit = True
 	jv_obj.save(ignore_permissions=True)
 
-def update_reference_in_payment_entry(d, payment_entry, do_not_save=False):
+def update_reference_in_payment_entry(d, payment_entry):
 	reference_details = {
 		"reference_doctype": d.against_voucher_type,
 		"reference_name": d.against_voucher,
@@ -473,17 +463,7 @@ def update_reference_in_payment_entry(d, payment_entry, do_not_save=False):
 	payment_entry.setup_party_account_field()
 	payment_entry.set_missing_values()
 	payment_entry.set_amounts()
-
-	if d.difference_amount and d.difference_account:
-		payment_entry.set_gain_or_loss(account_details={
-			'account': d.difference_account,
-			'cost_center': payment_entry.cost_center or frappe.get_cached_value('Company',
-				payment_entry.company, "cost_center"),
-			'amount': d.difference_amount
-		})
-
-	if not do_not_save:
-		payment_entry.save(ignore_permissions=True)
+	payment_entry.save(ignore_permissions=True)
 
 def unlink_ref_doc_from_payment_entries(ref_doc):
 	remove_ref_doc_link_from_jv(ref_doc.doctype, ref_doc.name)
@@ -564,23 +544,23 @@ def fix_total_debit_credit():
 				(dr_or_cr, dr_or_cr, '%s', '%s', '%s', dr_or_cr),
 				(d.diff, d.voucher_type, d.voucher_no))
 
-def get_stock_and_account_balance(account=None, posting_date=None, company=None):
+def get_stock_and_account_difference(account_list=None, posting_date=None):
+	from erpnext.stock.utils import get_stock_value_on
+	from erpnext.stock import get_warehouse_account_map
+
 	if not posting_date: posting_date = nowdate()
 
-	warehouse_account = get_warehouse_account_map(company)
+	difference = {}
+	warehouse_account = get_warehouse_account_map()
 
-	account_balance = get_balance_on(account, posting_date, in_account_currency=False, ignore_account_permission=True)
+	for warehouse, account_data in iteritems(warehouse_account):
+		if account_data.get('account') in account_list:
+			account_balance = get_balance_on(account_data.get('account'), posting_date, in_account_currency=False)
+			stock_value = get_stock_value_on(warehouse, posting_date)
+			if abs(flt(stock_value) - flt(account_balance)) > 0.005:
+				difference.setdefault(account_data.get('account'), flt(stock_value) - flt(account_balance))
 
-	related_warehouses = [wh for wh, wh_details in warehouse_account.items()
-		if wh_details.account == account and not wh_details.is_group]
-
-	total_stock_value = 0.0
-	for warehouse in related_warehouses:
-		value = get_stock_value_on(warehouse, posting_date)
-		total_stock_value += value
-
-	precision = frappe.get_precision("Journal Entry Account", "debit_in_account_currency")
-	return flt(account_balance, precision), flt(total_stock_value, precision), related_warehouses
+	return difference
 
 def get_currency_precision():
 	precision = cint(frappe.db.get_default("currency_precision"))
@@ -630,40 +610,42 @@ def get_held_invoices(party_type, party):
 			'select name from `tabPurchase Invoice` where release_date IS NOT NULL and release_date > CURDATE()',
 			as_dict=1
 		)
-		held_invoices = set([d['name'] for d in held_invoices])
+		held_invoices = [d['name'] for d in held_invoices]
 
 	return held_invoices
 
 
-<<<<<<< HEAD
-def get_outstanding_invoices(party_type, party, account, condition=None, filters=None):
-=======
 def get_outstanding_invoices(party_type, party, account, condition=None):
->>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 	outstanding_invoices = []
-	precision = frappe.get_precision("Sales Invoice", "outstanding_amount") or 2
+	precision = frappe.get_precision("Sales Invoice", "outstanding_amount")
 
-	if account:
-		root_type = frappe.get_cached_value("Account", account, "root_type")
-		party_account_type = "Receivable" if root_type == "Asset" else "Payable"
-	else:
-		party_account_type = erpnext.get_party_account_type(party_type)
-
-	if party_account_type == 'Receivable':
+	if erpnext.get_party_account_type(party_type) == 'Receivable':
 		dr_or_cr = "debit_in_account_currency - credit_in_account_currency"
-		payment_dr_or_cr = "credit_in_account_currency - debit_in_account_currency"
+		payment_dr_or_cr = "payment_gl_entry.credit_in_account_currency - payment_gl_entry.debit_in_account_currency"
 	else:
 		dr_or_cr = "credit_in_account_currency - debit_in_account_currency"
-		payment_dr_or_cr = "debit_in_account_currency - credit_in_account_currency"
+		payment_dr_or_cr = "payment_gl_entry.debit_in_account_currency - payment_gl_entry.credit_in_account_currency"
 
+	invoice = 'Sales Invoice' if erpnext.get_party_account_type(party_type) == 'Receivable' else 'Purchase Invoice'
 	held_invoices = get_held_invoices(party_type, party)
 
 	invoice_list = frappe.db.sql("""
 		select
-			voucher_no, voucher_type, posting_date, due_date,
-			ifnull(sum({dr_or_cr}), 0) as invoice_amount
+			voucher_no, voucher_type, posting_date, ifnull(sum({dr_or_cr}), 0) as invoice_amount,
+			(
+				select ifnull(sum({payment_dr_or_cr}), 0)
+				from `tabGL Entry` payment_gl_entry
+				where payment_gl_entry.against_voucher_type = invoice_gl_entry.voucher_type
+					and if(invoice_gl_entry.voucher_type='Journal Entry',
+						payment_gl_entry.against_voucher = invoice_gl_entry.voucher_no,
+						payment_gl_entry.against_voucher = invoice_gl_entry.against_voucher)
+					and payment_gl_entry.party_type = invoice_gl_entry.party_type
+					and payment_gl_entry.party = invoice_gl_entry.party
+					and payment_gl_entry.account = invoice_gl_entry.account
+					and {payment_dr_or_cr} > 0
+			) as payment_amount
 		from
-			`tabGL Entry`
+			`tabGL Entry` invoice_gl_entry
 		where
 			party_type = %(party_type)s and party = %(party)s
 			and account = %(account)s and {dr_or_cr} > 0
@@ -672,12 +654,11 @@ def get_outstanding_invoices(party_type, party, account, condition=None):
 					and (against_voucher = '' or against_voucher is null))
 				or (voucher_type not in ('Journal Entry', 'Payment Entry')))
 		group by voucher_type, voucher_no
-		order by posting_date, name""".format(
+		having (invoice_amount - payment_amount) > 0.005
+		order by posting_date, creation""".format(
 			dr_or_cr=dr_or_cr,
-<<<<<<< HEAD
-=======
 			invoice = invoice,
->>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
+			payment_dr_or_cr=payment_dr_or_cr,
 			condition=condition or ""
 		), {
 			"party_type": party_type,
@@ -685,48 +666,25 @@ def get_outstanding_invoices(party_type, party, account, condition=None):
 			"account": account,
 		}, as_dict=True)
 
-	payment_entries = frappe.db.sql("""
-		select against_voucher_type, against_voucher,
-			ifnull(sum({payment_dr_or_cr}), 0) as payment_amount
-		from `tabGL Entry`
-		where party_type = %(party_type)s and party = %(party)s
-			and account = %(account)s
-			and {payment_dr_or_cr} > 0
-			and against_voucher is not null and against_voucher != ''
-		group by against_voucher_type, against_voucher
-	""".format(payment_dr_or_cr=payment_dr_or_cr), {
-		"party_type": party_type,
-		"party": party,
-		"account": account
-	}, as_dict=True)
-
-	pe_map = frappe._dict()
-	for d in payment_entries:
-		pe_map.setdefault((d.against_voucher_type, d.against_voucher), d.payment_amount)
-
 	for d in invoice_list:
-		payment_amount = pe_map.get((d.voucher_type, d.voucher_no), 0)
-		outstanding_amount = flt(d.invoice_amount - payment_amount, precision)
-		if outstanding_amount > 0.5 / (10**precision):
-			if (filters and filters.get("outstanding_amt_greater_than") and
-				not (outstanding_amount >= filters.get("outstanding_amt_greater_than") and
-				outstanding_amount <= filters.get("outstanding_amt_less_than"))):
-				continue
+		if not d.voucher_type == "Purchase Invoice" or d.voucher_no not in held_invoices:
+			due_date = frappe.db.get_value(
+				d.voucher_type, d.voucher_no, "posting_date" if party_type == "Employee" else "due_date")
 
-			if not d.voucher_type == "Purchase Invoice" or d.voucher_no not in held_invoices:
-				outstanding_invoices.append(
-					frappe._dict({
-						'voucher_no': d.voucher_no,
-						'voucher_type': d.voucher_type,
-						'posting_date': d.posting_date,
-						'invoice_amount': flt(d.invoice_amount),
-						'payment_amount': payment_amount,
-						'outstanding_amount': outstanding_amount,
-						'due_date': d.due_date
-					})
-				)
+			outstanding_invoices.append(
+				frappe._dict({
+					'voucher_no': d.voucher_no,
+					'voucher_type': d.voucher_type,
+					'posting_date': d.posting_date,
+					'invoice_amount': flt(d.invoice_amount),
+					'payment_amount': flt(d.payment_amount),
+					'outstanding_amount': flt(d.invoice_amount - d.payment_amount, precision),
+					'due_date': due_date
+				})
+			)
 
 	outstanding_invoices = sorted(outstanding_invoices, key=lambda k: k['due_date'] or getdate(nowdate()))
+
 	return outstanding_invoices
 
 
@@ -764,7 +722,7 @@ def get_children(doctype, parent, company, is_root=False):
 		filters.append(['company', '=', company])
 
 	else:
-		fields += ['root_type', 'account_currency'] if doctype == 'Account' else []
+		fields += ['account_currency'] if doctype == 'Account' else []
 		fields += [parent_fieldname + ' as parent']
 
 	acc = frappe.get_list(doctype, fields=fields, filters=filters)
@@ -900,8 +858,4 @@ def get_allow_cost_center_in_entry_of_bs_account():
 		return cint(frappe.db.get_value('Accounts Settings', None, 'allow_cost_center_in_entry_of_bs_account'))
 	return frappe.local_cache("get_allow_cost_center_in_entry_of_bs_account", (), generator, regenerate_if_none=True)
 
-def get_stock_accounts(company):
-	return frappe.get_all("Account", filters = {
-		"account_type": "Stock",
-		"company": company
-	})
+

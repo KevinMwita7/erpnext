@@ -58,19 +58,7 @@ $.extend(erpnext, {
 				.css({"margin-bottom": "10px", "margin-top": "10px"})
 				.appendTo(grid_row.grid_form.fields_dict.serial_no.$wrapper));
 
-		var me = this;
 		$btn.on("click", function() {
-<<<<<<< HEAD
-			let callback = '';
-			let on_close = '';
-
-			frappe.model.get_value('Item', {'name':grid_row.doc.item_code}, 'has_serial_no',
-				(data) => {
-					if(data) {
-						grid_row.doc.has_serial_no = data.has_serial_no;
-						me.show_serial_batch_selector(grid_row.frm, grid_row.doc,
-							callback, on_close, true);
-=======
 			var d = new frappe.ui.Dialog({
 				title: __("Add Serial No"),
 				fields: [
@@ -82,9 +70,8 @@ $.extend(erpnext, {
 						"get_query": function () {
 							return {
 								filters: {
-									item_code: grid_row.doc.item_code,
-									warehouse: cur_frm.doc.is_return ? null : grid_row.doc.warehouse,
-									batch_no: grid_row.doc.batch_no || null
+									item_code:grid_row.doc.item_code,
+									warehouse:cur_frm.doc.is_return ? null : grid_row.doc.warehouse
 								}
 							}
 						}
@@ -93,26 +80,21 @@ $.extend(erpnext, {
 						"fieldtype": "Button",
 						"fieldname": "add",
 						"label": __("Add")
->>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 					}
-				}
-			);
-		});
-	},
-
-	route_to_adjustment_jv: (args) => {
-		frappe.model.with_doctype('Journal Entry', () => {
-			// route to adjustment Journal Entry to handle Account Balance and Stock Value mismatch
-			let journal_entry = frappe.model.get_new_doc('Journal Entry');
-
-			args.accounts.forEach((je_account) => {
-				let child_row = frappe.model.add_child(journal_entry, "accounts");
-				child_row.account = je_account.account;
-				child_row.debit_in_account_currency = je_account.debit_in_account_currency;
-				child_row.credit_in_account_currency = je_account.credit_in_account_currency;
-				child_row.party_type = "" ;
+				]
 			});
-			frappe.set_route('Form','Journal Entry', journal_entry.name);
+
+			d.get_input("add").on("click", function() {
+				var serial_no = d.get_value("serial_no");
+				if(serial_no) {
+					var val = (grid_row.doc.serial_no || "").split("\n").concat([serial_no]).join("\n");
+					grid_row.grid_form.fields_dict.serial_no.set_model_value(val.trim());
+				}
+				d.hide();
+				return false;
+			});
+
+			d.show();
 		});
 	}
 });
@@ -218,7 +200,7 @@ $.extend(erpnext.utils, {
 
 	make_subscription: function(doctype, docname) {
 		frappe.call({
-			method: "frappe.automation.doctype.auto_repeat.auto_repeat.make_auto_repeat",
+			method: "frappe.desk.doctype.auto_repeat.auto_repeat.make_auto_repeat",
 			args: {
 				doctype: doctype,
 				docname: docname
@@ -273,16 +255,11 @@ $.extend(erpnext.utils, {
 		// get valid options for tree based on user permission & locals dict
 		let unscrub_option = frappe.model.unscrub(option);
 		let user_permission = frappe.defaults.get_user_permissions();
-		let options;
-
 		if(user_permission && user_permission[unscrub_option]) {
-			options = user_permission[unscrub_option].map(perm => perm.doc);
+			return user_permission[unscrub_option].map(perm => perm.doc);
 		} else {
-			options = $.map(locals[`:${unscrub_option}`], function(c) { return c.name; }).sort();
+			return $.map(locals[`:${unscrub_option}`], function(c) { return c.name; }).sort();
 		}
-
-		// filter unique values, as there may be multiple user permissions for any value
-		return options.filter((value, index, self) => self.indexOf(value) === index);
 	},
 	get_tree_default: function(option) {
 		// set default for a field based on user permission
@@ -303,16 +280,6 @@ $.extend(erpnext.utils, {
 		}
 		refresh_field(table_fieldname);
 	},
-
-	create_new_doc: function (doctype, update_fields) {
-		frappe.model.with_doctype(doctype, function() {
-			var new_doc = frappe.model.get_new_doc(doctype);
-			for (let [key, value] of Object.entries(update_fields)) {
-				new_doc[key] = value;
-			}
-			frappe.ui.form.make_quick_entry(doctype, null, null, new_doc);
-		});
-	}
 
 });
 
@@ -483,8 +450,7 @@ erpnext.utils.update_child_items = function(opts) {
 					fieldname:"item_code",
 					options: 'Item',
 					in_list_view: 1,
-					read_only: 0,
-					disabled: 0,
+					read_only: 1,
 					label: __('Item Code')
 				}, {
 					fieldtype:'Float',
@@ -527,7 +493,6 @@ erpnext.utils.update_child_items = function(opts) {
 	frm.doc[opts.child_docname].forEach(d => {
 		dialog.fields_dict.trans_items.df.data.push({
 			"docname": d.name,
-			"name": d.name,
 			"item_code": d.item_code,
 			"qty": d.qty,
 			"rate": d.rate,

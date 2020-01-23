@@ -8,7 +8,16 @@ import unittest
 
 class TestStockSettings(unittest.TestCase):
 	def setUp(self):
-		frappe.db.set_value("Stock Settings", None, "clean_description_html", 0)
+		settings = frappe.get_single('Stock Settings')
+		settings.clean_description_html = 0
+		settings.save()
+
+		frappe.delete_doc('Item', 'Item for description test')
+
+	def tearDown(self):
+		settings = frappe.get_single('Stock Settings')
+		settings.clean_description_html = 1
+		settings.save()
 
 	def test_settings(self):
 		item = frappe.get_doc(dict(

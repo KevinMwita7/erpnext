@@ -54,7 +54,6 @@ class SupplierScorecard(Document):
 				`tabSupplier Scorecard Period` scp
 			WHERE
 				scp.scorecard = %(sc)s
-				AND scp.docstatus = 1
 			ORDER BY
 				scp.end_date DESC""",
 				{"sc": self.name}, as_dict=1)
@@ -111,8 +110,7 @@ def get_timeline_data(doctype, name):
 		FROM
 			`tabSupplier Scorecard Period` sc
 		WHERE
-			sc.scorecard = %(scs)s
-			AND sc.docstatus = 1""",
+			sc.scorecard = %(scs)s""",
 			{"scs": scs.name}, as_dict=1)
 
 	for sc in scorecards:
@@ -138,7 +136,7 @@ def refresh_scorecards():
 		# Check to see if any new scorecard periods are created
 		if make_all_scorecards(sc.name) > 0:
 			# Save the scorecard to update the score and standings
-			frappe.get_doc('Supplier Scorecard', sc.name).save()
+			sc.save()
 
 
 @frappe.whitelist()
@@ -164,7 +162,6 @@ def make_all_scorecards(docname):
 				`tabSupplier Scorecard Period` scp
 			WHERE
 				scp.scorecard = %(sc)s
-				AND scp.docstatus = 1
 				AND (
 					(scp.start_date > %(end_date)s
 					AND scp.end_date < %(start_date)s)
@@ -173,12 +170,12 @@ def make_all_scorecards(docname):
 					AND scp.end_date > %(start_date)s))
 			ORDER BY
 				scp.end_date DESC""",
-				{"sc": docname, "start_date": start_date, "end_date": end_date}, as_dict=1)
+				{"sc": docname, "start_date": start_date, "end_date": end_date, "supplier": supplier}, as_dict=1)
 		if len(scorecards) == 0:
 			period_card = make_supplier_scorecard(docname, None)
 			period_card.start_date = start_date
 			period_card.end_date = end_date
-			period_card.submit()
+			period_card.save()
 			scp_count = scp_count + 1
 			if start_date < first_start_date:
 				first_start_date = start_date

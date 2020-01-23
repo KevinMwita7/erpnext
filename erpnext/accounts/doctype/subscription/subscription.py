@@ -9,7 +9,6 @@ from frappe import _
 from frappe.model.document import Document
 from frappe.utils.data import nowdate, getdate, cint, add_days, date_diff, get_last_day, add_to_date, flt
 from erpnext.accounts.doctype.subscription_plan.subscription_plan import get_plan_rate
-from erpnext.accounts.doctype.accounting_dimension.accounting_dimension import get_accounting_dimensions
 
 
 class Subscription(Document):
@@ -242,15 +241,6 @@ class Subscription(Document):
 		invoice.posting_date = self.current_invoice_start
 		invoice.customer = self.customer
 
-		## Add dimesnions in invoice for subscription:
-		accounting_dimensions = get_accounting_dimensions()
-
-		for dimension in accounting_dimensions:
-			if self.get(dimension):
-				invoice.update({
-					dimension: self.get(dimension)
-				})
-
 		# Subscription is better suited for service items. I won't update `update_stock`
 		# for that reason
 		items_list = self.get_items_from_plans(self.plans, prorate)
@@ -324,11 +314,13 @@ class Subscription(Document):
 
 		self.save()
 
+	@property
 	def is_postpaid_to_invoice(self):
 		return getdate(nowdate()) > getdate(self.current_invoice_end) or \
 			(getdate(nowdate()) >= getdate(self.current_invoice_end) and getdate(self.current_invoice_end) == getdate(self.current_invoice_start)) and \
 			not self.has_outstanding_invoice()
 
+	@property
 	def is_prepaid_to_invoice(self):
 		if not self.generate_invoice_at_period_start:
 			return False
@@ -338,16 +330,6 @@ class Subscription(Document):
 
 		# Check invoice dates and make sure it doesn't have outstanding invoices
 		return getdate(nowdate()) >= getdate(self.current_invoice_start) and not self.has_outstanding_invoice()
-	
-	def is_current_invoice_paid(self):
-		if self.is_new_subscription():
-			return False
-
-		last_invoice = frappe.get_doc('Sales Invoice', self.invoices[-1].invoice)
-		if getdate(last_invoice.posting_date) == getdate(self.current_invoice_start) and last_invoice.status == 'Paid':
-			return True
-		
-		return False
 
 	def process_for_active(self):
 		"""
@@ -358,11 +340,7 @@ class Subscription(Document):
 		2. Change the `Subscription` status to 'Past Due Date'
 		3. Change the `Subscription` status to 'Cancelled'
 		"""
-<<<<<<< HEAD
-		if not self.is_current_invoice_paid() and (self.is_postpaid_to_invoice() or self.is_prepaid_to_invoice()):
-=======
-		if self.is_postpaid_to_invoice() or self.is_prepaid_to_invoice():
->>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
+		if self.is_postpaid_to_invoice or self.is_prepaid_to_invoice:
 			self.generate_invoice()
 			if self.current_invoice_is_past_due():
 				self.status = 'Past Due Date'

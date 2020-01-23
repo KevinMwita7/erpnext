@@ -8,21 +8,16 @@ install_docs = [
 	{"doctype":"Role", "role_name":"Stock User", "name":"Stock User"},
 	{"doctype":"Role", "role_name":"Quality Manager", "name":"Quality Manager"},
 	{"doctype":"Item Group", "item_group_name":"All Item Groups", "is_group": 1},
-	{"doctype":"Item Group", "item_group_name":"Default",
+	{"doctype":"Item Group", "item_group_name":"Default", 
 		"parent_item_group":"All Item Groups", "is_group": 0},
 ]
 
-def get_warehouse_account_map(company=None):
+def get_warehouse_account_map():
 	if not frappe.flags.warehouse_account_map or frappe.flags.in_test:
 		warehouse_account = frappe._dict()
 
-		filters = {}
-		if company:
-			filters['company'] = company
-
 		for d in frappe.get_all('Warehouse',
-			fields = ["name", "account", "parent_warehouse", "company", "is_group"],
-			filters = filters,
+			fields = ["name", "account", "parent_warehouse", "company"],
 			order_by="lft, rgt"):
 			if not d.account:
 				d.account = get_warehouse_account(d, warehouse_account)
@@ -62,6 +57,6 @@ def get_warehouse_account(warehouse, warehouse_account=None):
 		frappe.throw(_("Please set Account in Warehouse {0} or Default Inventory Account in Company {1}")
 			.format(warehouse.name, warehouse.company))
 	return account
-
+	
 def get_company_default_inventory_account(company):
 	return frappe.get_cached_value('Company',  company,  'default_inventory_account')

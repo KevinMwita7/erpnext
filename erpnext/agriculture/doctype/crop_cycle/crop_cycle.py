@@ -51,25 +51,27 @@ class CropCycle(Document):
 		self.create_task(disease_doc.treatment_task, self.name, start_date)
 
 	def create_project(self, period, crop_tasks):
-		project = frappe.get_doc({
-			"doctype": "Project",
+		project = frappe.new_doc("Project")
+		project.update({
 			"project_name": self.title,
 			"expected_start_date": self.start_date,
 			"expected_end_date": add_days(self.start_date, period - 1)
-		}).insert()
+		})
+		project.insert()
 
 		return project.name
 
 	def create_task(self, crop_tasks, project_name, start_date):
 		for crop_task in crop_tasks:
-			frappe.get_doc({
-				"doctype": "Task",
+			task = frappe.new_doc("Task")
+			task.update({
 				"subject": crop_task.get("task_name"),
 				"priority": crop_task.get("priority"),
 				"project": project_name,
 				"exp_start_date": add_days(start_date, crop_task.get("start_day") - 1),
 				"exp_end_date": add_days(start_date, crop_task.get("end_day") - 1)
-			}).insert()
+			})
+			task.insert()
 
 	def reload_linked_analysis(self):
 		linked_doctypes = ['Soil Texture', 'Soil Analysis', 'Plant Analysis']

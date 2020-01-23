@@ -9,17 +9,14 @@ def get_data():
 				{
 					"type": "doctype",
 					"name": "Crop",
-					"onboard": 1,
 				},
 				{
 					"type": "doctype",
 					"name": "Crop Cycle",
-					"onboard": 1,
 				},
 				{
 					"type": "doctype",
-					"name": "Location",
-					"onboard": 1,
+					"name": "Location"
 				}
 			]
 		},
@@ -29,12 +26,10 @@ def get_data():
 				{
 					"type": "doctype",
 					"name": "Disease",
-					"onboard": 1,
 				},
 				{
 					"type": "doctype",
 					"name": "Fertilizer",
-					"onboard": 1,
 				}
 			]
 		},

@@ -7,46 +7,37 @@ import frappe
 from frappe.model.document import Document
 from frappe import _
 from frappe.utils import getdate, nowdate, cint, flt
-from frappe.utils.nestedset import get_descendants_of
 
 class SubsidiaryCompanyError(frappe.ValidationError): pass
 class ParentCompanyError(frappe.ValidationError): pass
 
 class StaffingPlan(Document):
 	def validate(self):
-		self.validate_period()
-		self.validate_details()
-		self.set_total_estimated_budget()
-
-	def validate_period(self):
 		# Validate Dates
 		if self.from_date and self.to_date and self.from_date > self.to_date:
 			frappe.throw(_("From Date cannot be greater than To Date"))
 
-	def validate_details(self):
+		self.total_estimated_budget = 0
+
 		for detail in self.get("staffing_details"):
 			self.validate_overlap(detail)
 			self.validate_with_subsidiary_plans(detail)
 			self.validate_with_parent_plan(detail)
 
-	def set_total_estimated_budget(self):
-		self.total_estimated_budget = 0
-
-		for detail in self.get("staffing_details"):
 			#Set readonly fields
-			self.set_number_of_positions(detail)
 			designation_counts = get_designation_counts(detail.designation, self.company)
 			detail.current_count = designation_counts['employee_count']
 			detail.current_openings = designation_counts['job_openings']
 
-			if detail.number_of_positions > 0:
+			if detail.number_of_positions < (detail.current_count + detail.current_openings):
+				frappe.throw(_("Number of positions cannot be less then current count of employees"))
+			elif detail.number_of_positions > 0:
+				detail.vacancies = detail.number_of_positions - (detail.current_count + detail.current_openings)
 				if detail.vacancies > 0 and detail.estimated_cost_per_position:
-					detail.total_estimated_cost = cint(detail.vacancies) * flt(detail.estimated_cost_per_position)
-
+					detail.total_estimated_cost = detail.vacancies * detail.estimated_cost_per_position
+				else: detail.total_estimated_cost = 0
+			else: detail.vacancies = detail.number_of_positions = detail.total_estimated_cost = 0
 			self.total_estimated_budget += detail.total_estimated_cost
-
-	def set_number_of_positions(self, detail):
-		detail.number_of_positions = cint(detail.vacancies) + cint(detail.current_count)
 
 	def validate_overlap(self, staffing_plan_detail):
 		# Validate if any submitted Staffing Plan exist for any Designations in this plan
@@ -131,25 +122,19 @@ def get_designation_counts(designation, company):
 	if not designation:
 		return False
 
-	employee_counts = {}
-	company_set = get_descendants_of('Company', company)
-	company_set.append(company)
+	employee_counts_dict = {}
+	lft, rgt = frappe.get_cached_value('Company',  company,  ["lft", "rgt"])
+	employee_counts_dict["employee_count"] = frappe.db.sql("""select count(*) from `tabEmployee`
+		where designation = %s and status='Active'
+			and company in (select name from tabCompany where lft>=%s and rgt<=%s)
+		""", (designation, lft, rgt))[0][0]
 
-	employee_counts["employee_count"] = frappe.db.get_value("Employee",
-		filters={
-			'designation': designation,
-			'status': 'Active',
-			'company': ('in', company_set)
-		}, fieldname=['count(name)'])
+	employee_counts_dict['job_openings'] = frappe.db.sql("""select count(*) from `tabJob Opening` \
+		where designation=%s and status='Open'
+			and company in (select name from tabCompany where lft>=%s and rgt<=%s)
+		""", (designation, lft, rgt))[0][0]
 
-	employee_counts['job_openings'] = frappe.db.get_value("Job Opening",
-		filters={
-			'designation': designation,
-			'status': 'Open',
-			'company': ('in', company_set)
-		}, fieldname=['count(name)'])
-
-	return employee_counts
+	return employee_counts_dict
 
 @frappe.whitelist()
 def get_active_staffing_plan_details(company, designation, from_date=getdate(nowdate()), to_date=getdate(nowdate())):

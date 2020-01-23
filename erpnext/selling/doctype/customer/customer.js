@@ -3,28 +3,6 @@
 
 frappe.ui.form.on("Customer", {
 	setup: function(frm) {
-
-		frm.make_methods = {
-<<<<<<< HEAD
-			'Quotation': () => frappe.model.open_mapped_doc({
-				method: "erpnext.selling.doctype.customer.customer.make_quotation",
-				frm: cur_frm
-			}),
-			'Opportunity': () => frappe.model.open_mapped_doc({
-				method: "erpnext.selling.doctype.customer.customer.make_opportunity",
-				frm: cur_frm
-=======
-			'Quotation': () => erpnext.utils.create_new_doc('Quotation', {
-				'quotation_to': frm.doc.doctype,
-				'party_name': frm.doc.name
-			}),
-			'Opportunity': () => erpnext.utils.create_new_doc('Opportunity', {
-				'opportunity_from': frm.doc.doctype,
-				'party_name': frm.doc.name
->>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
-			})
-		}
-
 		frm.add_fetch('lead_name', 'company_name', 'customer_name');
 		frm.add_fetch('default_sales_partner','commission_rate','default_commission_rate');
 		frm.set_query('customer_group', {'is_group': 0});
@@ -59,9 +37,9 @@ frappe.ui.form.on("Customer", {
 		})
 		frm.set_query('customer_primary_address', function(doc) {
 			return {
+				query: "erpnext.selling.doctype.customer.customer.get_customer_primary_address",
 				filters: {
-					'link_doctype': 'Customer',
-					'link_name': doc.name
+					'customer': doc.name
 				}
 			}
 		})
@@ -113,7 +91,7 @@ frappe.ui.form.on("Customer", {
 		}
 
 		frappe.dynamic_link = {doc: frm.doc, fieldname: 'name', doctype: 'Customer'}
-		frm.toggle_display(['address_html','contact_html'], !frm.doc.__islocal);
+		frm.toggle_display(['address_html','contact_html','primary_address_and_contact_detail'], !frm.doc.__islocal);
 
 		if(!frm.doc.__islocal) {
 			frappe.contacts.render_address_and_contact(frm);
@@ -145,6 +123,5 @@ frappe.ui.form.on("Customer", {
 	},
 	validate: function(frm) {
 		if(frm.doc.lead_name) frappe.model.clear_doc("Lead", frm.doc.lead_name);
-
 	},
 });

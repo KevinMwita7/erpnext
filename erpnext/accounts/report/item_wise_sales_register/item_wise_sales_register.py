@@ -17,7 +17,7 @@ def _execute(filters=None, additional_table_columns=None, additional_query_colum
 	filters.update({"from_date": filters.get("date_range") and filters.get("date_range")[0], "to_date": filters.get("date_range") and filters.get("date_range")[1]})
 	columns = get_columns(additional_table_columns)
 
-	company_currency = frappe.get_cached_value('Company',  filters.get("company"),  "default_currency")
+	company_currency = erpnext.get_company_currency(filters.get('company'))
 
 	item_list = get_items(filters, additional_query_columns)
 	if item_list:
@@ -42,24 +42,22 @@ def _execute(filters=None, additional_table_columns=None, additional_query_colum
 		if not delivery_note and d.update_stock:
 			delivery_note = d.parent
 
-		row = [d.item_code, d.item_name, d.item_group, d.description, d.parent, d.posting_date, d.customer, d.customer_name]
+		row = [d.item_code, d.item_name,  d.description, d.parent, d.posting_date,d.customer_name]
 
 		if additional_query_columns:
 			for col in additional_query_columns:
 				row.append(d.get(col))
 
 		row += [
-			d.customer_group, d.debit_to, ", ".join(mode_of_payments.get(d.parent, [])),
-			d.territory, d.project, d.company, d.sales_order,
-			delivery_note, d.income_account, d.cost_center, d.stock_qty, d.stock_uom
+			 d.debit_to, ", ".join(mode_of_payments.get(d.parent, [])),
+			 
+			d.stock_qty
 		]
 
-		if d.stock_uom != d.uom and d.stock_qty:
-			row += [(d.base_net_rate * d.qty)/d.stock_qty, d.base_net_amount]
-		else:
-			row += [d.base_net_rate, d.base_net_amount]
+		row += [(d.base_net_rate * d.qty)/d.stock_qty, d.base_net_amount] \
+			if d.stock_uom != d.uom and d.stock_qty != 0 else [d.base_net_rate, d.base_net_amount]
 
-		total_tax = 0
+		total_tax = 0 
 		for tax in tax_columns:
 			item_tax = itemised_tax.get(d.name, {}).get(tax, {})
 			row += [item_tax.get("tax_rate", 0), item_tax.get("tax_amount", 0)]
@@ -74,21 +72,21 @@ def _execute(filters=None, additional_table_columns=None, additional_query_colum
 def get_columns(additional_table_columns):
 	columns = [
 		_("Item Code") + ":Link/Item:120", _("Item Name") + "::120",
-		_("Item Group") + ":Link/Item Group:100", "Description::150", _("Invoice") + ":Link/Sales Invoice:120",
-		_("Posting Date") + ":Date:80", _("Customer") + ":Link/Customer:120",
+		"Description::150", _("Invoice") + ":Link/Sales Invoice:120",
+		_("Posting Date") + ":Date:80",
 		_("Customer Name") + "::120"]
 
 	if additional_table_columns:
 		columns += additional_table_columns
 
 	columns += [
-		_("Customer Group") + ":Link/Customer Group:120",
+		
 		_("Receivable Account") + ":Link/Account:120",
-		_("Mode of Payment") + "::120", _("Territory") + ":Link/Territory:80",
-		_("Project") + ":Link/Project:80", _("Company") + ":Link/Company:100",
-		_("Sales Order") + ":Link/Sales Order:100", _("Delivery Note") + ":Link/Delivery Note:100",
-		_("Income Account") + ":Link/Account:140", _("Cost Center") + ":Link/Cost Center:140",
-		_("Stock Qty") + ":Float:120", _("Stock UOM") + "::100",
+		_("Mode of Payment") + "::120",
+		
+	    
+	    
+		_("Stock Qty") + ":Float:120", 
 		_("Rate") + ":Currency/currency:120",
 		_("Amount") + ":Currency/currency:120"
 	]
@@ -102,9 +100,7 @@ def get_conditions(filters):
 		("customer", " and `tabSales Invoice`.customer = %(customer)s"),
 		("item_code", " and `tabSales Invoice Item`.item_code = %(item_code)s"),
 		("from_date", " and `tabSales Invoice`.posting_date>=%(from_date)s"),
-		("to_date", " and `tabSales Invoice`.posting_date<=%(to_date)s"),
-		("company_gstin", " and `tabSales Invoice`.company_gstin = %(company_gstin)s"),
-		("invoice_type", " and `tabSales Invoice`.invoice_type = %(invoice_type)s")):
+		("to_date", " and `tabSales Invoice`.posting_date<=%(to_date)s")):
 			if filters.get(opts[0]):
 				conditions += opts[1]
 
@@ -112,13 +108,13 @@ def get_conditions(filters):
 		conditions += """ and exists(select name from `tabSales Invoice Payment`
 			where parent=`tabSales Invoice`.name
 				and ifnull(`tabSales Invoice Payment`.mode_of_payment, '') = %(mode_of_payment)s)"""
-
+	
 	if filters.get("warehouse"):
 		conditions +=  """ and exists(select name from `tabSales Invoice Item`
 			 where parent=`tabSales Invoice`.name
 			 	and ifnull(`tabSales Invoice Item`.warehouse, '') = %(warehouse)s)"""
 
-
+	
 	if filters.get("brand"):
 		conditions +=  """ and exists(select name from `tabSales Invoice Item`
 			 where parent=`tabSales Invoice`.name
@@ -135,10 +131,10 @@ def get_conditions(filters):
 def get_items(filters, additional_query_columns):
 	conditions = get_conditions(filters)
 	match_conditions = frappe.build_match_conditions("Sales Invoice")
-
+	
 	if match_conditions:
 		match_conditions = " and {0} ".format(match_conditions)
-
+	
 	if additional_query_columns:
 		additional_query_columns = ', ' + ', '.join(additional_query_columns)
 

@@ -3,8 +3,9 @@
 
 from __future__ import unicode_literals
 
-import frappe
-
+import frappe, json
+from frappe import _
+from frappe.utils import cint, formatdate
 
 @frappe.whitelist(allow_guest=True)
 def send_message(subject="Website Query", message="", sender="", status="Open"):
@@ -15,7 +16,7 @@ def send_message(subject="Website Query", message="", sender="", status="Open"):
 
 	customer = frappe.db.sql("""select distinct dl.link_name from `tabDynamic Link` dl
 		left join `tabContact` c on dl.parent=c.name where dl.link_doctype='Customer'
-		and c.email_id = %s""", sender)
+		and c.email_id='{email_id}'""".format(email_id=sender))
 
 	if not customer:
 		lead = frappe.db.get_value('Lead', dict(email_id=sender))
@@ -28,7 +29,7 @@ def send_message(subject="Website Query", message="", sender="", status="Open"):
 
 	opportunity = frappe.get_doc(dict(
 		doctype ='Opportunity',
-		opportunity_from = 'Customer' if customer else 'Lead',
+		enquiry_from = 'Customer' if customer else 'Lead',
 		status = 'Open',
 		title = subject,
 		contact_email = sender,
@@ -36,11 +37,11 @@ def send_message(subject="Website Query", message="", sender="", status="Open"):
 	))
 
 	if customer:
-		opportunity.party_name = customer[0][0]
+		opportunity.customer = customer[0][0]
 	elif lead:
-		opportunity.party_name = lead
+		opportunity.lead = lead
 	else:
-		opportunity.party_name = new_lead.name
+		opportunity.lead = new_lead.name
 
 	opportunity.insert(ignore_permissions=True)
 

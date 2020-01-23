@@ -51,8 +51,7 @@ class TestProductionPlan(unittest.TestCase):
 
 		for name in material_requests:
 			mr = frappe.get_doc('Material Request', name[0])
-			if mr.docstatus != 0:
-				mr.cancel()
+			mr.cancel()
 
 		for name in work_orders:
 			mr = frappe.delete_doc('Work Order', name[0])
@@ -153,7 +152,7 @@ class TestProductionPlan(unittest.TestCase):
 				make_bom(item = item, raw_materials = raw_materials)
 		production_plan = create_production_plan(item_code = 'Production Item CUST')
 		production_plan.make_material_request()
-		material_request = frappe.db.get_value('Material Request Item', {'production_plan': production_plan.name, 'item_code': 'CUST-0987'}, 'parent')
+		material_request = frappe.get_value('Material Request Item', {'production_plan': production_plan.name}, 'parent')
 		mr = frappe.get_doc('Material Request', material_request)
 		self.assertTrue(mr.material_request_type, 'Customer Provided')
 		self.assertTrue(mr.customer, '_Test Customer')

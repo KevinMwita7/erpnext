@@ -1,4 +1,3 @@
-from __future__ import unicode_literals
 from frappe import _
 
 def get_data():
@@ -18,7 +17,7 @@ def get_data():
 		'transactions': [
 			{
 				'label': _('Payment'),
-				'items': ['Payment Entry', 'Payment Request', 'Journal Entry', 'Invoice Discounting']
+				'items': ['Payment Entry', 'Payment Request', 'Journal Entry']
 			},
 			{
 				'label': _('Reference'),

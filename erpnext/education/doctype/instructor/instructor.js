@@ -4,11 +4,11 @@ cur_frm.add_fetch("employee", "image", "image");
 frappe.ui.form.on("Instructor", {
 	employee: function(frm) {
 		if(!frm.doc.employee) return;
-		frappe.db.get_value('Employee', {name: frm.doc.employee}, 'company', (d) => {
+		frappe.db.get_value('Employee', {name: frm.doc.employee}, 'company', (company) => {
 			frm.set_query("department", function() {
 				return {
 					"filters": {
-						"company": d.company,
+						"company": company,
 					}
 				};
 			});
@@ -16,7 +16,7 @@ frappe.ui.form.on("Instructor", {
 			frm.set_query("department", "instructor_log", function() {
 				return {
 					"filters": {
-						"company": d.company,
+						"company": company,
 					}
 				};
 			});

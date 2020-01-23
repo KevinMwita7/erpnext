@@ -6,7 +6,7 @@ from __future__ import unicode_literals
 import frappe
 from frappe import _
 
-from .operations import install_fixtures as fixtures, company_setup, sample_data
+from .operations import install_fixtures as fixtures, company_setup, taxes_setup, sample_data
 
 def get_setup_stages(args=None):
 	if frappe.db.sql("select name from tabCompany"):
@@ -37,13 +37,18 @@ def get_setup_stages(args=None):
 				]
 			},
 			{
-				'status': _('Setting up company'),
+				'status': _('Setting up company and taxes'),
 				'fail_msg': _('Failed to setup company'),
 				'tasks': [
 					{
 						'fn': setup_company,
 						'args': args,
 						'fail_msg': _("Failed to setup company")
+					},
+					{
+						'fn': setup_taxes,
+						'args': args,
+						'fail_msg': _("Failed to setup taxes")
 					}
 				]
 			},
@@ -65,12 +70,7 @@ def get_setup_stages(args=None):
 						'fn': stage_four,
 						'args': args,
 						'fail_msg': _("Failed to create website")
-					},
-					{
-						'fn': set_active_domains,
-						'args': args,
-						'fail_msg': _("Failed to add Domain")
-					},
+					}
 				]
 			},
 			{
@@ -93,6 +93,9 @@ def stage_fixtures(args):
 
 def setup_company(args):
 	fixtures.install_company(args)
+
+def setup_taxes(args):
+	taxes_setup.create_sales_tax(args)
 
 def setup_post_company_fixtures(args):
 	fixtures.install_post_company_fixtures(args)
@@ -129,11 +132,8 @@ def login_as_first_user(args):
 def setup_complete(args=None):
 	stage_fixtures(args)
 	setup_company(args)
+	setup_taxes(args)
 	setup_post_company_fixtures(args)
 	setup_defaults(args)
 	stage_four(args)
 	fin(args)
-
-def set_active_domains(args):
-	domain_settings = frappe.get_single('Domain Settings')
-	domain_settings.set_active_domains(args.get('domains'))

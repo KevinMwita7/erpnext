@@ -26,10 +26,10 @@ class Gstr2Report(Gstr1Report):
 			place_of_supply,
 			ecommerce_gstin,
 			reverse_charge,
-			gst_category,
+			invoice_type,
 			return_against,
 			is_return,
-			gst_category,
+			invoice_type,
 			export_type,
 			reason_for_issuing_document,
 			eligibility_for_itc,
@@ -44,16 +44,12 @@ class Gstr2Report(Gstr1Report):
 		for inv, items_based_on_rate in self.items_based_on_tax_rate.items():
 			invoice_details = self.invoices.get(inv)
 			for rate, items in items_based_on_rate.items():
-				if inv not in self.igst_invoices:
-					rate = rate / 2
-					row, taxable_value = self.get_row_data_for_invoice(inv, invoice_details, rate, items)
-					tax_amount = taxable_value * rate / 100
-					row += [0, tax_amount, tax_amount]
-				else:
-					row, taxable_value = self.get_row_data_for_invoice(inv, invoice_details, rate, items)
-					tax_amount = taxable_value * rate / 100
+				row, taxable_value = self.get_row_data_for_invoice(inv, invoice_details, rate, items)
+				tax_amount = taxable_value * rate / 100
+				if inv in self.igst_invoices:
 					row += [tax_amount, 0, 0]
-
+				else:
+					row += [0, tax_amount / 2, tax_amount / 2]
 
 				row += [
 					self.invoice_cess.get(inv),
@@ -86,7 +82,7 @@ class Gstr2Report(Gstr1Report):
 					conditions += opts[1]
 
 		if self.filters.get("type_of_business") ==  "B2B":
-			conditions += "and ifnull(gst_category, '') != 'Overseas' and is_return != 1 "
+			conditions += "and ifnull(invoice_type, '') != 'Export' and is_return != 1 "
 
 		elif self.filters.get("type_of_business") ==  "CDNR":
 			conditions += """ and is_return = 1 """
@@ -204,7 +200,7 @@ class Gstr2Report(Gstr1Report):
 					"width": 80
 				},
 				{
-					"fieldname": "gst_category",
+					"fieldname": "invoice_type",
 					"label": "Invoice Type",
 					"fieldtype": "Data",
 					"width": 80

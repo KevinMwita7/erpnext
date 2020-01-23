@@ -135,13 +135,8 @@ class NamingSeries(Document):
 
 	def validate_series_name(self, n):
 		import re
-<<<<<<< HEAD
-		if not re.match("^[\w\- /.#{}]*$", n, re.UNICODE):
-			throw(_('Special Characters except "-", "#", ".", "/", "{" and "}" not allowed in naming series'))
-=======
-		if not (re.match("^[\w\- /.#]*$", n, re.UNICODE) or re.match("\{(.*?)\}", n, re.UNICODE)):
+		if not re.match("^[\w\- /.#]*$", n, re.UNICODE):
 			throw(_('Special Characters except "-", "#", "." and "/" not allowed in naming series'))
->>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 
 	def get_options(self, arg=None):
 		if frappe.get_meta(arg or self.select_doc_for_series).get_field("naming_series"):
@@ -156,7 +151,7 @@ class NamingSeries(Document):
 
 	def insert_series(self, series):
 		"""insert series if missing"""
-		if frappe.db.get_value('Series', series, 'name', order_by="name") == None:
+		if not frappe.db.get_value('Series', series, 'name', order_by="name"):
 			frappe.db.sql("insert into tabSeries (name, current) values (%s, 0)", (series))
 
 	def update_series_start(self):

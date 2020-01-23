@@ -39,12 +39,11 @@ cur_frm.fields_dict['item_code'].get_query = function(doc, cdt, cdn) {
 			query: "erpnext.stock.doctype.quality_inspection.quality_inspection.item_query",
 			filters: {
 				"from": doctype,
-				"parent": doc.reference_name,
-				"inspection_type": doc.inspection_type
+				"parent": doc.reference_name
 			}
-		};
+		}
 	}
-},
+}
 
 // Serial No based on item_code
 cur_frm.fields_dict['item_serial_no'].get_query = function(doc, cdt, cdn) {

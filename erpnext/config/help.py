@@ -30,7 +30,7 @@ def get_data():
 
 		},
 		{
-			"label": _("Settings"),
+			"label": _("Setup"),
 			"items": [
 				{
 					"type": "help",

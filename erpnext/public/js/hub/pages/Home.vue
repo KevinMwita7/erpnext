@@ -58,13 +58,6 @@ export default {
 		this.search_value = '';
 		this.get_items();
 	},
-	mounted() {
-		frappe.route.on('change', () => {
-			if (frappe.get_route_str() === 'marketplace/home') {
-				this.get_items();
-			}
-		})
-	},
 	methods: {
 		get_items() {
 			hub.call('get_data_for_homepage', frappe.defaults ? {
@@ -105,7 +98,7 @@ export default {
 		},
 
 		set_search_route() {
-			frappe.set_route('marketplace', 'search', 'All', this.search_value);
+			frappe.set_route('marketplace', 'search', this.search_value);
 		},
 	}
 }

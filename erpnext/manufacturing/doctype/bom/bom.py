@@ -9,7 +9,6 @@ from erpnext.setup.utils import get_exchange_rate
 from frappe.website.website_generator import WebsiteGenerator
 from erpnext.stock.get_item_details import get_conversion_factor
 from erpnext.stock.get_item_details import get_price_list_rate
-from frappe.core.doctype.version.version import get_diff
 
 import functools
 
@@ -35,15 +34,12 @@ class BOM(WebsiteGenerator):
 			# name can be BOM/ITEM/001, BOM/ITEM/001-1, BOM-ITEM-001, BOM-ITEM-001-1
 
 			# split by item
-			names = [name.split(self.item, 1) for name in names]
-			names = [d[-1][1:] for d in filter(lambda x: len(x) > 1 and x[-1], names)]
+			names = [name.split(self.item)[-1][1:] for name in names]
 
 			# split by (-) if cancelled
-			if names:
-				names = [cint(name.split('-')[-1]) for name in names]
-				idx = max(names) + 1
-			else:
-				idx = 1
+			names = [cint(name.split('-')[-1]) for name in names]
+
+			idx = max(names) + 1
 		else:
 			idx = 1
 
@@ -65,7 +61,6 @@ class BOM(WebsiteGenerator):
 		context.parents = [{'name': 'boms', 'title': _('All BOMs') }]
 
 	def on_update(self):
-		frappe.cache().hdel('bom_children', self.name)
 		self.check_recursion()
 		self.update_stock_qty()
 		self.update_exploded_items()
@@ -97,7 +92,6 @@ class BOM(WebsiteGenerator):
 
 	def get_routing(self):
 		if self.routing:
-			self.set("operations", [])
 			for d in frappe.get_all("BOM Operation", fields = ["*"],
 				filters = {'parenttype': 'Routing', 'parent': self.routing}):
 				child = self.append('operations', d)
@@ -169,40 +163,35 @@ class BOM(WebsiteGenerator):
 	def get_rm_rate(self, arg):
 		"""	Get raw material rate as per selected method, if bom exists takes bom cost """
 		rate = 0
-		if not self.rm_cost_as_per:
-			self.rm_cost_as_per = "Valuation Rate"
 
 		if arg.get('scrap_items'):
 			rate = self.get_valuation_rate(arg)
 		elif arg:
-<<<<<<< HEAD
 			#Customer Provided parts will have zero rate
 			if not frappe.db.get_value('Item', arg["item_code"], 'is_customer_provided_item'):
 				if arg.get('bom_no') and self.set_rate_of_sub_assembly_item_based_on_bom:
-					rate = flt(self.get_bom_unitcost(arg['bom_no'])) * (arg.get("conversion_factor") or 1)
+					rate = self.get_bom_unitcost(arg['bom_no'])
 				else:
 					if self.rm_cost_as_per == 'Valuation Rate':
-						rate = self.get_valuation_rate(arg) * (arg.get("conversion_factor") or 1)
+						rate = self.get_valuation_rate(arg)
 					elif self.rm_cost_as_per == 'Last Purchase Rate':
-						rate = (arg.get('last_purchase_rate') \
-							or frappe.db.get_value("Item", arg['item_code'], "last_purchase_rate")) \
-								* (arg.get("conversion_factor") or 1)
+						rate = arg.get('last_purchase_rate') \
+							or frappe.db.get_value("Item", arg['item_code'], "last_purchase_rate")
 					elif self.rm_cost_as_per == "Price List":
 						if not self.buying_price_list:
 							frappe.throw(_("Please select Price List"))
 						args = frappe._dict({
 							"doctype": "BOM",
 							"price_list": self.buying_price_list,
-							"qty": arg.get("qty") or 1,
+							"qty": arg.get("qty"),
 							"uom": arg.get("uom") or arg.get("stock_uom"),
 							"stock_uom": arg.get("stock_uom"),
 							"transaction_type": "buying",
 							"company": self.company,
 							"currency": self.currency,
-							"conversion_rate": 1, # Passed conversion rate as 1 purposefully, as conversion rate is applied at the end of the function
+							"conversion_rate": self.conversion_rate or 1,
 							"conversion_factor": arg.get("conversion_factor") or 1,
-							"plc_conversion_rate": 1,
-							"ignore_party": True
+							"plc_conversion_rate": 1
 						})
 						item_doc = frappe.get_doc("Item", arg.get("item_code"))
 						out = frappe._dict()
@@ -211,53 +200,13 @@ class BOM(WebsiteGenerator):
 
 					if not rate:
 						if self.rm_cost_as_per == "Price List":
-							frappe.msgprint(_("Price not found for item {0} in price list {1}")
+							frappe.msgprint(_("Price not found for item {0} and price list {1}")
 								.format(arg["item_code"], self.buying_price_list), alert=True)
 						else:
 							frappe.msgprint(_("{0} not found for item {1}")
 								.format(self.rm_cost_as_per, arg["item_code"]), alert=True)
-=======
-			if arg.get('bom_no') and self.set_rate_of_sub_assembly_item_based_on_bom:
-				rate = self.get_bom_unitcost(arg['bom_no']) * (arg.get("conversion_factor") or 1)
-			else:
-				if self.rm_cost_as_per == 'Valuation Rate':
-					rate = self.get_valuation_rate(arg) * (arg.get("conversion_factor") or 1)
-				elif self.rm_cost_as_per == 'Last Purchase Rate':
-					rate = (arg.get('last_purchase_rate') \
-						or frappe.db.get_value("Item", arg['item_code'], "last_purchase_rate")) \
-							* (arg.get("conversion_factor") or 1)
-				elif self.rm_cost_as_per == "Price List":
-					if not self.buying_price_list:
-						frappe.throw(_("Please select Price List"))
-					args = frappe._dict({
-						"doctype": "BOM",
-						"price_list": self.buying_price_list,
-						"qty": arg.get("qty") or 1,
-						"uom": arg.get("uom") or arg.get("stock_uom"),
-						"stock_uom": arg.get("stock_uom"),
-						"transaction_type": "buying",
-						"company": self.company,
-						"currency": self.currency,
-						"conversion_rate": 1, # Passed conversion rate as 1 purposefully, as conversion rate is applied at the end of the function
-						"conversion_factor": arg.get("conversion_factor") or 1,
-						"plc_conversion_rate": 1,
-						"ignore_party": True
-					})
-					item_doc = frappe.get_doc("Item", arg.get("item_code"))
-					out = frappe._dict()
-					get_price_list_rate(args, item_doc, out)
-					rate = out.price_list_rate
 
-				if not rate:
-					if self.rm_cost_as_per == "Price List":
-						frappe.msgprint(_("Price not found for item {0} in price list {1}")
-							.format(arg["item_code"], self.buying_price_list), alert=True)
-					else:
-						frappe.msgprint(_("{0} not found for item {1}")
-							.format(self.rm_cost_as_per, arg["item_code"]), alert=True)
->>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
-
-		return flt(rate) / (self.conversion_rate or 1)
+		return flt(rate)
 
 	def update_cost(self, update_parent=True, from_child_bom=False, save=True):
 		if self.docstatus == 2:
@@ -266,7 +215,7 @@ class BOM(WebsiteGenerator):
 		existing_bom_cost = self.total_cost
 
 		for d in self.get("items"):
-			rate = self.get_rm_rate({
+			d.rate = self.get_rm_rate({
 				"item_code": d.item_code,
 				"bom_no": d.bom_no,
 				"qty": d.qty,
@@ -274,8 +223,6 @@ class BOM(WebsiteGenerator):
 				"stock_uom": d.stock_uom,
 				"conversion_factor": d.conversion_factor
 			})
-			if rate:
-				d.rate = rate
 			d.amount = flt(d.rate) * flt(d.qty)
 
 		if self.docstatus == 1:
@@ -332,11 +279,10 @@ class BOM(WebsiteGenerator):
 		if not valuation_rate:
 			valuation_rate = frappe.db.get_value("Item", args['item_code'], "valuation_rate")
 
-		return flt(valuation_rate)
+		return valuation_rate
 
 	def manage_default_bom(self):
-		""" Uncheck others if current one is selected as default or
-			check the current one as default if it the only bom for the selected item,
+		""" Uncheck others if current one is selected as default,
 			update default bom in item master
 		"""
 		if self.is_default and self.is_active:
@@ -345,9 +291,6 @@ class BOM(WebsiteGenerator):
 			item = frappe.get_doc("Item", self.item)
 			if item.default_bom != self.name:
 				frappe.db.set_value('Item', self.item, 'default_bom', self.name)
-		elif not frappe.db.exists(dict(doctype='BOM', docstatus=1, item=self.item, is_default=1)) \
-			and self.is_active:
-			frappe.db.set(self, "is_default", 1)
 		else:
 			frappe.db.set(self, "is_default", 0)
 			item = frappe.get_doc("Item", self.item)
@@ -405,9 +348,15 @@ class BOM(WebsiteGenerator):
 	def validate_materials(self):
 		""" Validate raw material entries """
 
+		def get_duplicates(lst):
+			seen = set()
+			seen_add = seen.add
+			for item in lst:
+				if item.item_code in seen or seen_add(item.item_code):
+					yield item
+
 		if not self.get('items'):
 			frappe.throw(_("Raw Materials cannot be blank."))
-
 		check_list = []
 		for m in self.get('items'):
 			if m.bom_no:
@@ -416,7 +365,17 @@ class BOM(WebsiteGenerator):
 				frappe.throw(_("Quantity required for Item {0} in row {1}").format(m.item_code, m.idx))
 			check_list.append(m)
 
-	def check_recursion(self, bom_list=[]):
+		if not self.allow_same_item_multiple_times:
+			duplicate_items = list(get_duplicates(check_list))
+			if duplicate_items:
+				li = []
+				for i in duplicate_items:
+					li.append("{0} on row {1}".format(i.item_code, i.idx))
+				duplicate_list = '<br>' + '<br>'.join(li)
+
+				frappe.throw(_("Same item has been entered multiple times. {0}").format(duplicate_list))
+
+	def check_recursion(self):
 		""" Check whether recursion occurs in any bom"""
 		bom_list = self.traverse_tree()
 		bom_nos = frappe.get_all('BOM Item', fields=["bom_no"],
@@ -434,25 +393,21 @@ class BOM(WebsiteGenerator):
 				raise_exception = True
 
 		if raise_exception:
-			frappe.throw(_("BOM recursion: {0} cannot be parent or child of {1}").format(self.name, self.name))
+			frappe.throw(_("BOM recursion: {0} cannot be parent or child of {2}").format(self.name, self.name))
 
 	def update_cost_and_exploded_items(self, bom_list=[]):
 		bom_list = self.traverse_tree(bom_list)
 		for bom in bom_list:
 			bom_obj = frappe.get_doc("BOM", bom)
-			bom_obj.check_recursion(bom_list=bom_list)
+			bom_obj.check_recursion()
 			bom_obj.update_exploded_items()
 
 		return bom_list
 
 	def traverse_tree(self, bom_list=None):
 		def _get_children(bom_no):
-			children = frappe.cache().hget('bom_children', bom_no)
-			if children is None:
-				children = frappe.db.sql_list("""SELECT `bom_no` FROM `tabBOM Item`
-					WHERE `parent`=%s AND `bom_no`!='' AND `parenttype`='BOM'""", bom_no)
-				frappe.cache().hset('bom_children', bom_no, children)
-			return children
+			return [cstr(d[0]) for d in frappe.db.sql("""select bom_no from `tabBOM Item`
+				where parent = %s and ifnull(bom_no, '') != '' and parenttype='BOM'""", bom_no)]
 
 		count = 0
 		if not bom_list:
@@ -557,36 +512,20 @@ class BOM(WebsiteGenerator):
 		return erpnext.get_company_currency(self.company)
 
 	def add_to_cur_exploded_items(self, args):
-		key = (args.item_code)
-		if args.operation:
-			key = (args.item_code, args.operation)
-
-		if key in self.cur_exploded_items:
-			self.cur_exploded_items[key]["stock_qty"] += args.stock_qty
+		if self.cur_exploded_items.get(args.item_code):
+			self.cur_exploded_items[args.item_code]["stock_qty"] += args.stock_qty
 		else:
-			self.cur_exploded_items[key] = args
+			self.cur_exploded_items[args.item_code] = args
 
 	def get_child_exploded_items(self, bom_no, stock_qty):
 		""" Add all items from Flat BOM of child BOM"""
 		# Did not use qty_consumed_per_unit in the query, as it leads to rounding loss
-		child_fb_items = frappe.db.sql("""
-			SELECT
-				bom_item.item_code,
-				bom_item.item_name,
-				bom_item.description,
-				bom_item.source_warehouse,
-				bom_item.operation,
-				bom_item.stock_uom,
-				bom_item.stock_qty,
-				bom_item.rate,
-				bom_item.include_item_in_manufacturing,
-				bom_item.stock_qty / ifnull(bom.quantity, 1) AS qty_consumed_per_unit
-			FROM `tabBOM Explosion Item` bom_item, tabBOM bom
-			WHERE
-				bom_item.parent = bom.name
-				AND bom.name = %s
-				AND bom.docstatus = 1
-		""", bom_no, as_dict = 1)
+		child_fb_items = frappe.db.sql("""select bom_item.item_code, bom_item.item_name,
+			bom_item.description, bom_item.source_warehouse, bom_item.operation,
+			bom_item.stock_uom, bom_item.stock_qty, bom_item.rate, bom_item.include_item_in_manufacturing,
+			bom_item.stock_qty / ifnull(bom.quantity, 1) as qty_consumed_per_unit
+			from `tabBOM Explosion Item` bom_item, tabBOM bom
+			where bom_item.parent = bom.name and bom.name = %s and bom.docstatus = 1""", bom_no, as_dict = 1)
 
 		for d in child_fb_items:
 			self.add_to_cur_exploded_items(frappe._dict({
@@ -633,14 +572,12 @@ class BOM(WebsiteGenerator):
 			for d in self.operations:
 				if not d.description:
 					d.description = frappe.db.get_value('Operation', d.operation, 'description')
-				if not d.batch_size or d.batch_size <= 0:
-					d.batch_size = 1
 
 def get_list_context(context):
 	context.title = _("Bill of Materials")
 	# context.introduction = _('Boms')
 
-def get_bom_items_as_dict(bom, company, qty=1, fetch_exploded=1, fetch_scrap_items=0, include_non_stock_items=False, fetch_qty_in_stock_uom=True):
+def get_bom_items_as_dict(bom, company, qty=1, fetch_exploded=1, fetch_scrap_items=0, include_non_stock_items=False):
 	item_dict = {}
 
 	# Did not use qty_consumed_per_unit in the query, as it leads to rounding loss
@@ -648,11 +585,10 @@ def get_bom_items_as_dict(bom, company, qty=1, fetch_exploded=1, fetch_scrap_ite
 				bom_item.item_code,
 				bom_item.idx,
 				item.item_name,
-				sum(bom_item.{qty_field}/ifnull(bom.quantity, 1)) * %(qty)s as qty,
+				sum(bom_item.stock_qty/ifnull(bom.quantity, 1)) * %(qty)s as qty,
+				item.description,
 				item.image,
-				bom.project,
 				item.stock_uom,
-				item.item_group,
 				item.allow_alternative_item,
 				item_default.default_warehouse,
 				item_default.expense_account as expense_account,
@@ -669,7 +605,7 @@ def get_bom_items_as_dict(bom, company, qty=1, fetch_exploded=1, fetch_scrap_ite
 				and bom.name = %(bom)s
 				and item.is_stock_item in (1, {is_stock_item})
 				{where_conditions}
-				group by item_code, stock_uom {groupby_columns}
+				group by item_code, stock_uom
 				order by idx"""
 
 	is_stock_item = 0 if include_non_stock_items else 1
@@ -677,52 +613,26 @@ def get_bom_items_as_dict(bom, company, qty=1, fetch_exploded=1, fetch_scrap_ite
 		query = query.format(table="BOM Explosion Item",
 			where_conditions="",
 			is_stock_item=is_stock_item,
-			qty_field="stock_qty",
-<<<<<<< HEAD
-			select_columns = """, bom_item.source_warehouse, bom_item.operation,
-				bom_item.include_item_in_manufacturing, bom_item.description, bom_item.rate,
-				(Select idx from `tabBOM Item` where item_code = bom_item.item_code and parent = %(parent)s limit 1) as idx""")
-
-		items = frappe.db.sql(query, { "parent": bom, "qty": qty, "bom": bom, "company": company }, as_dict=True)
-	elif fetch_scrap_items:
-		query = query.format(table="BOM Scrap Item", where_conditions="",
-			select_columns=", bom_item.idx, item.description", is_stock_item=is_stock_item, qty_field="stock_qty")
-
-=======
 			select_columns = """, bom_item.source_warehouse, bom_item.operation, bom_item.include_item_in_manufacturing,
-				(Select idx from `tabBOM Item` where item_code = bom_item.item_code and parent = %(parent)s limit 1) as idx""",
-			groupby_columns = """, bom_item.operation""")
+				(Select idx from `tabBOM Item` where item_code = bom_item.item_code and parent = %(parent)s ) as idx""")
 
 		items = frappe.db.sql(query, { "parent": bom, "qty": qty, "bom": bom, "company": company }, as_dict=True)
 	elif fetch_scrap_items:
-		query = query.format(table="BOM Scrap Item", where_conditions="", select_columns=", bom_item.idx", is_stock_item=is_stock_item, qty_field="stock_qty", groupby_columns="")
->>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
+		query = query.format(table="BOM Scrap Item", where_conditions="", select_columns=", bom_item.idx", is_stock_item=is_stock_item)
 		items = frappe.db.sql(query, { "qty": qty, "bom": bom, "company": company }, as_dict=True)
 	else:
 		query = query.format(table="BOM Item", where_conditions="", is_stock_item=is_stock_item,
-			qty_field="stock_qty" if fetch_qty_in_stock_uom else "qty",
-<<<<<<< HEAD
-			select_columns = """, bom_item.uom, bom_item.conversion_factor, bom_item.source_warehouse,
-				bom_item.idx, bom_item.operation, bom_item.include_item_in_manufacturing,
-				bom_item.description, bom_item.base_rate as rate """)
-=======
-			select_columns = ", bom_item.uom, bom_item.conversion_factor, bom_item.source_warehouse, bom_item.idx, bom_item.operation, bom_item.include_item_in_manufacturing",
-			groupby_columns = """, bom_item.operation""")
->>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
+			select_columns = ", bom_item.source_warehouse, bom_item.idx, bom_item.operation, bom_item.include_item_in_manufacturing")
 		items = frappe.db.sql(query, { "qty": qty, "bom": bom, "company": company }, as_dict=True)
 
 	for item in items:
-		key = (item.item_code)
-		if item.operation:
-			key = (item.item_code, item.operation)
-
-		if key in item_dict:
-			item_dict[key]["qty"] += flt(item.qty)
+		if item.item_code in item_dict:
+			item_dict[item.item_code]["qty"] += flt(item.qty)
 		else:
-			item_dict[key] = item
+			item_dict[item.item_code] = item
 
 	for item, item_details in item_dict.items():
-		for d in [["Account", "expense_account", "stock_adjustment_account"],
+		for d in [["Account", "expense_account", "default_expense_account"],
 			["Cost Center", "cost_center", "cost_center"], ["Warehouse", "default_warehouse", ""]]:
 				company_in_record = frappe.db.get_value(d[0], item_details.get(d[1]), "company")
 				if not item_details.get(d[1]) or (company_in_record and company != company_in_record):
@@ -765,9 +675,6 @@ def get_children(doctype, parent=None, is_root=False, **filters):
 		frappe.msgprint(_('Please select a BOM'))
 		return
 
-	if parent:
-		frappe.form_dict.parent = parent
-
 	if frappe.form_dict.parent:
 		bom_doc = frappe.get_doc("BOM", frappe.form_dict.parent)
 		frappe.has_permission("BOM", doc=bom_doc, throw=True)
@@ -780,7 +687,7 @@ def get_children(doctype, parent=None, is_root=False, **filters):
 		item_names = tuple(d.get('item_code') for d in bom_items)
 
 		items = frappe.get_list('Item',
-			fields=['image', 'description', 'name', 'stock_uom', 'item_name'],
+			fields=['image', 'description', 'name'],
 			filters=[['name', 'in', item_names]]) # to get only required item dicts
 
 		for bom_item in bom_items:
@@ -790,19 +697,14 @@ def get_children(doctype, parent=None, is_root=False, **filters):
 				next(item for item in items if item.get('name')
 					== bom_item.get('item_code'))
 			)
-
-			bom_item.parent_bom_qty = bom_doc.quantity
 			bom_item.expandable = 0 if bom_item.value in ('', None)  else 1
 
 		return bom_items
 
 def get_boms_in_bottom_up_order(bom_no=None):
 	def _get_parent(bom_no):
-		return frappe.db.sql_list("""
-			select distinct bom_item.parent from `tabBOM Item` bom_item
-			where bom_item.bom_no = %s and bom_item.docstatus=1 and bom_item.parenttype='BOM'
-				and exists(select bom.name from `tabBOM` bom where bom.name=bom_item.parent and bom.is_active=1)
-		""", bom_no)
+		return frappe.db.sql_list("""select distinct parent from `tabBOM Item`
+			where bom_no = %s and docstatus=1 and parenttype='BOM'""", bom_no)
 
 	count = 0
 	bom_list = []
@@ -810,10 +712,9 @@ def get_boms_in_bottom_up_order(bom_no=None):
 		bom_list.append(bom_no)
 	else:
 		# get all leaf BOMs
-		bom_list = frappe.db.sql_list("""select name from `tabBOM` bom
-			where docstatus=1 and is_active=1
-				and not exists(select bom_no from `tabBOM Item`
-					where parent=bom.name and ifnull(bom_no, '')!='')""")
+		bom_list = frappe.db.sql_list("""select name from `tabBOM` bom where docstatus=1
+			and not exists(select bom_no from `tabBOM Item`
+				where parent=bom.name and ifnull(bom_no, '')!='')""")
 
 	while(count < len(bom_list)):
 		for child_bom in _get_parent(bom_list[count]):
@@ -825,100 +726,18 @@ def get_boms_in_bottom_up_order(bom_no=None):
 
 def add_additional_cost(stock_entry, work_order):
 	# Add non stock items cost in the additional cost
-	stock_entry.additional_costs = []
-	expenses_included_in_valuation = frappe.get_cached_value("Company", work_order.company,
-		"expenses_included_in_valuation")
-
-	add_non_stock_items_cost(stock_entry, work_order, expenses_included_in_valuation)
-	add_operations_cost(stock_entry, work_order, expenses_included_in_valuation)
-
-def add_non_stock_items_cost(stock_entry, work_order, expense_account):
 	bom = frappe.get_doc('BOM', work_order.bom_no)
 	table = 'exploded_items' if work_order.get('use_multi_level_bom') else 'items'
 
 	items = {}
 	for d in bom.get(table):
-		items.setdefault(d.item_code, d.amount)
+		items.setdefault(d.item_code, d.rate)
 
 	non_stock_items = frappe.get_all('Item',
 		fields="name", filters={'name': ('in', list(items.keys())), 'ifnull(is_stock_item, 0)': 0}, as_list=1)
 
-	non_stock_items_cost = 0.0
 	for name in non_stock_items:
-		non_stock_items_cost += flt(items.get(name[0])) * flt(stock_entry.fg_completed_qty) / flt(bom.quantity)
-
-	stock_entry.append('additional_costs', {
-		'expense_account': expense_account,
-		'description': _("Non stock items"),
-		'amount': non_stock_items_cost
-	})
-
-def add_operations_cost(stock_entry, work_order=None, expense_account=None):
-	from erpnext.stock.doctype.stock_entry.stock_entry import get_operating_cost_per_unit
-	operating_cost_per_unit = get_operating_cost_per_unit(work_order, stock_entry.bom_no)
-
-	if operating_cost_per_unit:
 		stock_entry.append('additional_costs', {
-			"expense_account": expense_account,
-			"description": _("Operating Cost as per Work Order / BOM"),
-			"amount": operating_cost_per_unit * flt(stock_entry.fg_completed_qty)
+			'description': name[0],
+			'amount': items.get(name[0])
 		})
-
-	if work_order and work_order.additional_operating_cost and work_order.qty:
-		additional_operating_cost_per_unit = \
-			flt(work_order.additional_operating_cost) / flt(work_order.qty)
-
-		stock_entry.append('additional_costs', {
-			"expense_account": expense_account,
-			"description": "Additional Operating Cost",
-			"amount": additional_operating_cost_per_unit * flt(stock_entry.fg_completed_qty)
-		})
-
-@frappe.whitelist()
-def get_bom_diff(bom1, bom2):
-	from frappe.model import table_fields
-
-	doc1 = frappe.get_doc('BOM', bom1)
-	doc2 = frappe.get_doc('BOM', bom2)
-
-	out = get_diff(doc1, doc2)
-	out.row_changed = []
-	out.added = []
-	out.removed = []
-
-	meta = doc1.meta
-
-	identifiers = {
-		'operations': 'operation',
-		'items': 'item_code',
-		'scrap_items': 'item_code',
-		'exploded_items': 'item_code'
-	}
-
-	for df in meta.fields:
-		old_value, new_value = doc1.get(df.fieldname), doc2.get(df.fieldname)
-
-		if df.fieldtype in table_fields:
-			identifier = identifiers[df.fieldname]
-			# make maps
-			old_row_by_identifier, new_row_by_identifier = {}, {}
-			for d in old_value:
-				old_row_by_identifier[d.get(identifier)] = d
-			for d in new_value:
-				new_row_by_identifier[d.get(identifier)] = d
-
-			# check rows for additions, changes
-			for i, d in enumerate(new_value):
-				if d.get(identifier) in old_row_by_identifier:
-					diff = get_diff(old_row_by_identifier[d.get(identifier)], d, for_child=True)
-					if diff and diff.changed:
-						out.row_changed.append((df.fieldname, i, d.get(identifier), diff.changed))
-				else:
-					out.added.append([df.fieldname, d.as_dict()])
-
-			# check for deletions
-			for d in old_value:
-				if not d.get(identifier) in new_row_by_identifier:
-					out.removed.append([df.fieldname, d.as_dict()])
-
-	return out

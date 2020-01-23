@@ -157,12 +157,9 @@ class update_entries_after(object):
 		if sle.serial_no:
 			self.get_serialized_values(sle)
 			self.qty_after_transaction += flt(sle.actual_qty)
-			if sle.voucher_type == "Stock Reconciliation":
-				self.qty_after_transaction = sle.qty_after_transaction
-
 			self.stock_value = flt(self.qty_after_transaction) * flt(self.valuation_rate)
 		else:
-			if sle.voucher_type=="Stock Reconciliation" and not sle.batch_no:
+			if sle.voucher_type=="Stock Reconciliation":
 				# assert
 				self.valuation_rate = sle.valuation_rate
 				self.qty_after_transaction = sle.qty_after_transaction
@@ -181,7 +178,10 @@ class update_entries_after(object):
 		# rounding as per precision
 		self.stock_value = flt(self.stock_value, self.precision)
 
-		stock_value_difference = self.stock_value - self.prev_stock_value
+		if self.prev_stock_value < 0 and self.stock_value >= 0 and sle.voucher_type != 'Stock Reconciliation':
+			stock_value_difference = sle.actual_qty * self.valuation_rate
+		else:
+			stock_value_difference = self.stock_value - self.prev_stock_value
 
 		self.prev_stock_value = self.stock_value
 
@@ -212,7 +212,7 @@ class update_entries_after(object):
 	def get_serialized_values(self, sle):
 		incoming_rate = flt(sle.incoming_rate)
 		actual_qty = flt(sle.actual_qty)
-		serial_nos = cstr(sle.serial_no).split("\n")
+		serial_no = cstr(sle.serial_no).split("\n")
 
 		if incoming_rate < 0:
 			# wrong incoming rate
@@ -224,14 +224,9 @@ class update_entries_after(object):
 		elif actual_qty < 0:
 			# In case of delivery/stock issue, get average purchase rate
 			# of serial nos of current entry
-<<<<<<< HEAD
-			outgoing_value = self.get_incoming_value_for_serial_nos(sle, serial_nos)
-			stock_value_change = -1 * outgoing_value
-=======
-			stock_value_change = -1 * flt(frappe.get_all("Serial No",
-				fields=["sum(purchase_rate)"],
-				filters = {'name': ('in', serial_no)}, as_list=1)[0][0])
->>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
+			stock_value_change = -1 * flt(frappe.db.sql("""select sum(purchase_rate)
+				from `tabSerial No` where name in (%s)""" % (", ".join(["%s"]*len(serial_no))),
+				tuple(serial_no))[0][0])
 
 		new_stock_qty = self.qty_after_transaction + actual_qty
 
@@ -248,36 +243,6 @@ class update_entries_after(object):
 				self.valuation_rate = get_valuation_rate(sle.item_code, sle.warehouse,
 					sle.voucher_type, sle.voucher_no, self.allow_zero_rate,
 					currency=erpnext.get_company_currency(sle.company))
-
-	def get_incoming_value_for_serial_nos(self, sle, serial_nos):
-		# get rate from serial nos within same company
-		all_serial_nos = frappe.get_all("Serial No",
-			fields=["purchase_rate", "name", "company"],
-			filters = {'name': ('in', serial_nos)})
-
-		incoming_values = sum([flt(d.purchase_rate) for d in all_serial_nos if d.company==sle.company])
-
-		# Get rate for serial nos which has been transferred to other company
-		invalid_serial_nos = [d.name for d in all_serial_nos if d.company!=sle.company]
-		for serial_no in invalid_serial_nos:
-			incoming_rate = frappe.db.sql("""
-				select incoming_rate
-				from `tabStock Ledger Entry`
-				where
-					company = %s
-					and actual_qty > 0
-					and (serial_no = %s
-						or serial_no like %s
-						or serial_no like %s
-						or serial_no like %s
-					)
-				order by posting_date desc
-				limit 1
-			""", (sle.company, serial_no, serial_no+'\n%', '%\n'+serial_no, '%\n'+serial_no+'\n%'))
-
-			incoming_values += flt(incoming_rate[0][0]) if incoming_rate else 0
-
-		return incoming_values
 
 	def get_moving_average_values(self, sle):
 		actual_qty = flt(sle.actual_qty)
@@ -395,17 +360,8 @@ class update_entries_after(object):
 			self.stock_queue.append([0, sle.incoming_rate or sle.outgoing_rate or self.valuation_rate])
 
 	def check_if_allow_zero_valuation_rate(self, voucher_type, voucher_detail_no):
-		ref_item_dt = ""
-
-		if voucher_type == "Stock Entry":
-			ref_item_dt = voucher_type + " Detail"
-		elif voucher_type in ["Purchase Invoice", "Sales Invoice", "Delivery Note", "Purchase Receipt"]:
-			ref_item_dt = voucher_type + " Item"
-
-		if ref_item_dt:
-			return frappe.db.get_value(ref_item_dt, voucher_detail_no, "allow_zero_valuation_rate")
-		else:
-			return 0
+		ref_item_dt = voucher_type + (" Detail" if voucher_type == "Stock Entry" else " Item")
+		return frappe.db.get_value(ref_item_dt, voucher_detail_no, "allow_zero_valuation_rate")
 
 	def get_sle_before_datetime(self):
 		"""get previous stock ledger entry before current time-bucket"""
@@ -415,7 +371,7 @@ class update_entries_after(object):
 		"""get Stock Ledger Entries after a particular datetime, for reposting"""
 		return get_stock_ledger_entries(self.previous_sle or frappe._dict({
 				"item_code": self.args.get("item_code"), "warehouse": self.args.get("warehouse") }),
-			">", "asc", for_update=True, check_serial_no=False)
+			">", "asc", for_update=True)
 
 	def raise_exceptions(self):
 		deficiency = min(e["diff"] for e in self.exceptions)
@@ -456,17 +412,13 @@ def get_previous_sle(args, for_update=False):
 	sle = get_stock_ledger_entries(args, "<=", "desc", "limit 1", for_update=for_update)
 	return sle and sle[0] or {}
 
-def get_stock_ledger_entries(previous_sle, operator=None,
-	order="desc", limit=None, for_update=False, debug=False, check_serial_no=True):
+def get_stock_ledger_entries(previous_sle, operator=None, order="desc", limit=None, for_update=False, debug=False):
 	"""get stock ledger entries filtered by specific posting datetime conditions"""
 	conditions = " and timestamp(posting_date, posting_time) {0} timestamp(%(posting_date)s, %(posting_time)s)".format(operator)
 	if previous_sle.get("warehouse"):
 		conditions += " and warehouse = %(warehouse)s"
 	elif previous_sle.get("warehouse_condition"):
 		conditions += " and " + previous_sle.get("warehouse_condition")
-
-	if check_serial_no and previous_sle.get("serial_no"):
-		conditions += " and serial_no like {}".format(frappe.db.escape('%{0}%'.format(previous_sle.get("serial_no"))))
 
 	if not previous_sle.get("posting_date"):
 		previous_sle["posting_date"] = "1900-01-01"
@@ -496,22 +448,16 @@ def get_valuation_rate(item_code, warehouse, voucher_type, voucher_no,
 
 	last_valuation_rate = frappe.db.sql("""select valuation_rate
 		from `tabStock Ledger Entry`
-		where
-			item_code = %s
-			AND warehouse = %s
-			AND valuation_rate >= 0
-			AND NOT (voucher_no = %s AND voucher_type = %s)
-		order by posting_date desc, posting_time desc, name desc limit 1""", (item_code, warehouse, voucher_no, voucher_type))
+		where item_code = %s and warehouse = %s
+		and valuation_rate >= 0
+		order by posting_date desc, posting_time desc, creation desc limit 1""", (item_code, warehouse))
 
 	if not last_valuation_rate:
 		# Get valuation rate from last sle for the item against any warehouse
 		last_valuation_rate = frappe.db.sql("""select valuation_rate
 			from `tabStock Ledger Entry`
-			where
-				item_code = %s
-				AND valuation_rate > 0
-				AND NOT(voucher_no = %s AND voucher_type = %s)
-			order by posting_date desc, posting_time desc, name desc limit 1""", (item_code, voucher_no, voucher_type))
+			where item_code = %s and valuation_rate > 0
+			order by posting_date desc, posting_time desc, creation desc limit 1""", item_code)
 
 	if last_valuation_rate:
 		return flt(last_valuation_rate[0][0]) # as there is previous records, it might come with zero rate
@@ -533,7 +479,6 @@ def get_valuation_rate(item_code, warehouse, voucher_type, voucher_no,
 	if not allow_zero_rate and not valuation_rate and raise_error_if_no_rate \
 			and cint(erpnext.is_perpetual_inventory_enabled(company)):
 		frappe.local.message_log = []
-		frappe.throw(_("Valuation rate not found for the Item {0}, which is required to do accounting entries for {1} {2}. If the item is transacting as a zero valuation rate item in the {1}, please mention that in the {1} Item table. Otherwise, please create an incoming stock transaction for the item or mention valuation rate in the Item record, and then try submiting / cancelling this entry.")
-			.format(item_code, voucher_type, voucher_no))
+		frappe.throw(_("Valuation rate not found for the Item {0}, which is required to do accounting entries for {1} {2}. If the item is transacting as a zero valuation rate item in the {1}, please mention that in the {1} Item table. Otherwise, please create an incoming stock transaction for the item or mention valuation rate in the Item record, and then try submiting/cancelling this entry").format(item_code, voucher_type, voucher_no))
 
 	return valuation_rate

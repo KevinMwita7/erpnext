@@ -1,4 +1,3 @@
-from __future__ import unicode_literals
 import frappe
 
 def execute():
@@ -19,10 +18,9 @@ def execute():
 			SELECT
 				parent, SUM(qty) as qty
 			FROM
-				`tab{0} Item`
-			where parenttype = '{0}'
+				`tab%s Item`
 			GROUP BY parent
-		'''.format(doctype), as_dict = True)
+		''' % (doctype), as_dict = True)
 
 		# Query to update total_qty might become too big, Update in batches
 		# batch_size is chosen arbitrarily, Don't try too hard to reason about it
@@ -40,11 +38,7 @@ def execute():
 			# This is probably never used anywhere else as of now, but should be
 			values = []
 			for d in batch_transactions:
-<<<<<<< HEAD
-				values.append("({0}, {1})".format(frappe.db.escape(d.parent), d.qty))
-=======
-				values.append("('{}', {})".format(frappe.db.escape(d.parent), d.qty))
->>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
+				values.append("('{}', {})".format(d.parent, d.qty))
 			conditions = ",".join(values)
 			frappe.db.sql("""
 				INSERT INTO `tab{}` (name, total_qty) VALUES {}

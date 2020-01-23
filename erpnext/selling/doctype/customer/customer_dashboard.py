@@ -1,24 +1,10 @@
-from __future__ import unicode_literals
-
 from frappe import _
-
 
 def get_data():
 	return {
 		'heatmap': True,
 		'heatmap_message': _('This is based on transactions against this Customer. See timeline below for details'),
 		'fieldname': 'customer',
-		'non_standard_fieldnames': {
-<<<<<<< HEAD
-			'Payment Entry': 'party',
-=======
->>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
-			'Quotation': 'party_name',
-			'Opportunity': 'party_name'
-		},
-		'dynamic_links': {
-			'party_name': ['Customer', 'quotation_to']
-		},
 		'transactions': [
 			{
 				'label': _('Pre Sales'),
@@ -27,10 +13,6 @@ def get_data():
 			{
 				'label': _('Orders'),
 				'items': ['Sales Order', 'Delivery Note', 'Sales Invoice']
-			},
-			{
-				'label': _('Payments'),
-				'items': ['Payment Entry']
 			},
 			{
 				'label': _('Support'),

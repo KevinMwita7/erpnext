@@ -4,14 +4,6 @@
 erpnext.get_purchase_trends_filters = function() {
 	return [
 		{
-			"fieldname":"company",
-			"label": __("Company"),
-			"fieldtype": "Link",
-			"options": "Company",
-			"reqd": 1,
-			"default": frappe.defaults.get_user_default("Company")
-		},
-		{
 			"fieldname":"period",
 			"label": __("Period"),
 			"fieldtype": "Select",
@@ -22,23 +14,6 @@ erpnext.get_purchase_trends_filters = function() {
 				{ "value": "Yearly", "label": __("Yearly") }
 			],
 			"default": "Monthly"
-		},
-		{
-			"fieldname":"fiscal_year",
-			"label": __("Fiscal Year"),
-			"fieldtype": "Link",
-			"options":'Fiscal Year',
-			"default": frappe.sys_defaults.fiscal_year
-		},
-		{
-			"fieldname":"period_based_on",
-			"label": __("Period based On"),
-			"fieldtype": "Select",
-			"options": [
-				{ "value": "posting_date", "label": __("Posting Date") },
-				{ "value": "bill_date", "label": __("Billing Date") },
-			],
-			"default": "posting_date"
 		},
 		{
 			"fieldname":"based_on",
@@ -63,6 +38,20 @@ erpnext.get_purchase_trends_filters = function() {
 				{ "value": "Supplier", "label": __("Supplier") }
 			],
 			"default": ""
+		},
+		{
+			"fieldname":"fiscal_year",
+			"label": __("Fiscal Year"),
+			"fieldtype": "Link",
+			"options":'Fiscal Year',
+			"default": frappe.sys_defaults.fiscal_year
+		},
+		{
+			"fieldname":"company",
+			"label": __("Company"),
+			"fieldtype": "Link",
+			"options": "Company",
+			"default": frappe.defaults.get_user_default("Company")
 		},
 	];
 }

@@ -18,13 +18,13 @@ class TestStaffingPlan(unittest.TestCase):
 		if frappe.db.exists("Staffing Plan", "Test"):
 			return
 		staffing_plan = frappe.new_doc("Staffing Plan")
-		staffing_plan.company = "_Test Company 10"
+		staffing_plan.company = "_Test Company 3"
 		staffing_plan.name = "Test"
 		staffing_plan.from_date = nowdate()
 		staffing_plan.to_date = add_days(nowdate(), 10)
 		staffing_plan.append("staffing_details", {
 			"designation": "Designer",
-			"vacancies": 6,
+			"number_of_positions": 6,
 			"estimated_cost_per_position": 50000
 		})
 		staffing_plan.insert()
@@ -42,7 +42,7 @@ class TestStaffingPlan(unittest.TestCase):
 		staffing_plan.to_date = add_days(nowdate(), 10)
 		staffing_plan.append("staffing_details", {
 			"designation": "Designer",
-			"vacancies": 3,
+			"number_of_positions": 3,
 			"estimated_cost_per_position": 45000
 		})
 		self.assertRaises(SubsidiaryCompanyError, staffing_plan.insert)
@@ -58,7 +58,7 @@ class TestStaffingPlan(unittest.TestCase):
 		staffing_plan.to_date = add_days(nowdate(), 10)
 		staffing_plan.append("staffing_details", {
 			"designation": "Designer",
-			"vacancies": 7,
+			"number_of_positions": 7,
 			"estimated_cost_per_position": 50000
 		})
 		staffing_plan.insert()
@@ -67,13 +67,13 @@ class TestStaffingPlan(unittest.TestCase):
 		if frappe.db.exists("Staffing Plan", "Test 1"):
 			return
 		staffing_plan = frappe.new_doc("Staffing Plan")
-		staffing_plan.company = "_Test Company 10"
+		staffing_plan.company = "_Test Company 3"
 		staffing_plan.name = "Test 1"
 		staffing_plan.from_date = nowdate()
 		staffing_plan.to_date = add_days(nowdate(), 10)
 		staffing_plan.append("staffing_details", {
 			"designation": "Designer",
-			"vacancies": 7,
+			"number_of_positions": 7,
 			"estimated_cost_per_position": 60000
 		})
 		staffing_plan.insert()
@@ -85,16 +85,12 @@ def _set_up():
 	make_company()
 
 def make_company():
-	if frappe.db.exists("Company", "_Test Company 10"):
+	if frappe.db.exists("Company", "_Test Company 3"):
 		return
 	company = frappe.new_doc("Company")
-	company.company_name = "_Test Company 10"
-	company.abbr = "_TC10"
+	company.company_name = "_Test Company 3"
+	company.abbr = "_TC3"
 	company.parent_company = "_Test Company"
 	company.default_currency = "INR"
-	company.country = "Pakistan"
-<<<<<<< HEAD
+	company.country = "India"
 	company.insert()
-=======
-	company.insert()
->>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2

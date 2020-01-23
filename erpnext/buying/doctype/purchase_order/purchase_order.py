@@ -11,14 +11,12 @@ from erpnext.controllers.buying_controller import BuyingController
 from erpnext.stock.doctype.item.item import get_last_purchase_details
 from erpnext.stock.stock_balance import update_bin_qty, get_ordered_qty
 from frappe.desk.notifications import clear_doctype_notifications
-from erpnext.buying.utils import validate_for_items, check_on_hold_or_closed_status
+from erpnext.buying.utils import validate_for_items, check_for_closed_status
 from erpnext.stock.utils import get_bin
 from erpnext.accounts.party import get_party_account_currency
 from six import string_types
 from erpnext.stock.doctype.item.item import get_item_defaults
 from erpnext.setup.doctype.item_group.item_group import get_item_group_defaults
-from erpnext.accounts.doctype.sales_invoice.sales_invoice import validate_inter_company_party, update_linked_doc,\
-	unlink_inter_company_doc
 
 form_grid_templates = {
 	"items": "templates/form_grid/item_grid.html"
@@ -47,7 +45,7 @@ class PurchaseOrder(BuyingController):
 		self.validate_supplier()
 		self.validate_schedule_date()
 		validate_for_items(self)
-		self.check_on_hold_or_closed_status()
+		self.check_for_closed_status()
 
 		self.validate_uom_is_integer("uom", "qty")
 		self.validate_uom_is_integer("stock_uom", "stock_qty")
@@ -58,7 +56,6 @@ class PurchaseOrder(BuyingController):
 		self.validate_bom_for_subcontracting_items()
 		self.create_raw_materials_supplied("supplied_items")
 		self.set_received_qty_for_drop_ship_items()
-		validate_inter_company_party(self.doctype, self.supplier, self.company, self.inter_company_order_reference)
 
 	def validate_with_previous_doc(self):
 		super(PurchaseOrder, self).validate_with_previous_doc({
@@ -147,12 +144,12 @@ class PurchaseOrder(BuyingController):
 							= d.rate = d.last_purchase_rate = item_last_purchase_rate
 
 	# Check for Closed status
-	def check_on_hold_or_closed_status(self):
+	def check_for_closed_status(self):
 		check_list =[]
 		for d in self.get('items'):
 			if d.meta.get_field('material_request') and d.material_request and d.material_request not in check_list:
 				check_list.append(d.material_request)
-				check_on_hold_or_closed_status('Material Request', d.material_request)
+				check_for_closed_status('Material Request', d.material_request)
 
 	def update_requested_qty(self):
 		material_request_map = {}
@@ -222,7 +219,6 @@ class PurchaseOrder(BuyingController):
 
 		self.update_blanket_order()
 
-		update_linked_doc(self.doctype, self.name, self.inter_company_order_reference)
 
 	def on_cancel(self):
 		super(PurchaseOrder, self).on_cancel()
@@ -236,7 +232,7 @@ class PurchaseOrder(BuyingController):
 		if self.is_subcontracted == "Yes":
 			self.update_reserved_qty_for_subcontract()
 
-		self.check_on_hold_or_closed_status()
+		self.check_for_closed_status()
 
 		frappe.db.set(self,'status','Cancelled')
 
@@ -248,7 +244,6 @@ class PurchaseOrder(BuyingController):
 
 		self.update_blanket_order()
 
-		unlink_inter_company_doc(self.doctype, self.name, self.inter_company_order_reference)
 
 	def on_update(self):
 		pass
@@ -313,7 +308,7 @@ def item_last_purchase_rate(name, conversion_rate, item_code, conversion_factor=
 
 	last_purchase_details =  get_last_purchase_details(item_code, name)
 	if last_purchase_details:
-		last_purchase_rate = (last_purchase_details['base_net_rate'] * (flt(conversion_factor) or 1.0)) / conversion_rate
+		last_purchase_rate = (last_purchase_details['base_rate'] * (flt(conversion_factor) or 1.0)) / conversion_rate
 		return last_purchase_rate
 	else:
 		item_last_purchase_rate = frappe.get_cached_value("Item", item_code, "last_purchase_rate")
@@ -369,9 +364,7 @@ def make_purchase_receipt(source_name, target_doc=None):
 			"field_map": {
 				"name": "purchase_order_item",
 				"parent": "purchase_order",
-				"bom": "bom",
-				"material_request": "material_request",
-				"material_request_item": "material_request_item"
+				"bom": "bom"
 			},
 			"postprocess": update_item,
 			"condition": lambda doc: abs(doc.received_qty) < abs(doc.qty) and doc.delivered_by_supplier!=1
@@ -386,26 +379,10 @@ def make_purchase_receipt(source_name, target_doc=None):
 
 @frappe.whitelist()
 def make_purchase_invoice(source_name, target_doc=None):
-	return get_mapped_purchase_invoice(source_name, target_doc)
-
-@frappe.whitelist()
-def make_purchase_invoice_from_portal(purchase_order_name):
-	doc = get_mapped_purchase_invoice(purchase_order_name, ignore_permissions=True)
-	if doc.contact_email != frappe.session.user:
-		frappe.throw(_('Not Permitted'), frappe.PermissionError)
-	doc.save()
-	frappe.db.commit()
-	frappe.response['type'] = 'redirect'
-	frappe.response.location = '/purchase-invoices/' + doc.name
-
-def get_mapped_purchase_invoice(source_name, target_doc=None, ignore_permissions=False):
 	def postprocess(source, target):
-		target.flags.ignore_permissions = ignore_permissions
 		set_missing_values(source, target)
 		#Get the advance paid Journal Entries in Purchase Invoice Advance
-
-		if target.get("allocate_advances_automatically"):
-			target.set_advances()
+		target.set_advances()
 
 	def update_item(obj, target, source_parent):
 		target.amount = flt(obj.amount) - flt(obj.billed_amt)
@@ -414,12 +391,11 @@ def get_mapped_purchase_invoice(source_name, target_doc=None, ignore_permissions
 
 		item = get_item_defaults(target.item_code, source_parent.company)
 		item_group = get_item_group_defaults(target.item_code, source_parent.company)
-		target.cost_center = (obj.cost_center
-			or frappe.db.get_value("Project", obj.project, "cost_center")
-			or item.get("buying_cost_center")
-			or item_group.get("buying_cost_center"))
+		target.cost_center = frappe.db.get_value("Project", obj.project, "cost_center") \
+			or item.get("buying_cost_center") \
+			or item_group.get("buying_cost_center")
 
-	fields = {
+	doc = get_mapped_doc("Purchase Order", source_name,	{
 		"Purchase Order": {
 			"doctype": "Purchase Invoice",
 			"field_map": {
@@ -442,29 +418,8 @@ def get_mapped_purchase_invoice(source_name, target_doc=None, ignore_permissions
 		"Purchase Taxes and Charges": {
 			"doctype": "Purchase Taxes and Charges",
 			"add_if_empty": True
-		},
-	}
-
-	if frappe.get_single("Accounts Settings").automatically_fetch_payment_terms == 1:
-		fields["Payment Schedule"] = {
-			"doctype": "Payment Schedule",
-			"add_if_empty": True
 		}
-<<<<<<< HEAD
-
-	doc = get_mapped_doc("Purchase Order", source_name,	fields,
-		target_doc, postprocess, ignore_permissions=ignore_permissions)
-=======
-	}
-
-	if frappe.get_single("Accounts Settings").automatically_fetch_payment_terms == 1:
-		fields["Payment Schedule"] = {
-			"doctype": "Payment Schedule",
-			"add_if_empty": True
-		}
-
-	doc = get_mapped_doc("Purchase Order", source_name,	fields, target_doc, postprocess)
->>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
+	}, target_doc, postprocess)
 
 	return doc
 
@@ -488,7 +443,7 @@ def make_rm_stock_entry(purchase_order, rm_items):
 		item_wh = get_item_details(items)
 
 		stock_entry = frappe.new_doc("Stock Entry")
-		stock_entry.purpose = "Send to Subcontractor"
+		stock_entry.purpose = "Subcontract"
 		stock_entry.purchase_order = purchase_order.name
 		stock_entry.supplier = purchase_order.supplier
 		stock_entry.supplier_name = purchase_order.supplier_name
@@ -496,7 +451,6 @@ def make_rm_stock_entry(purchase_order, rm_items):
 		stock_entry.address_display = purchase_order.address_display
 		stock_entry.company = purchase_order.company
 		stock_entry.to_warehouse = purchase_order.supplier_warehouse
-		stock_entry.set_stock_entry_type()
 
 		for item_code in fg_items:
 			for rm_item_data in rm_items_list:
@@ -504,14 +458,13 @@ def make_rm_stock_entry(purchase_order, rm_items):
 					rm_item_code = rm_item_data["rm_item_code"]
 					items_dict = {
 						rm_item_code: {
-							"po_detail": rm_item_data.get("name"),
 							"item_name": rm_item_data["item_name"],
-							"description": item_wh.get(rm_item_code, {}).get('description', ""),
+							"description": item_wh[rm_item_code].get('description'),
 							'qty': rm_item_data["qty"],
 							'from_warehouse': rm_item_data["warehouse"],
 							'stock_uom': rm_item_data["stock_uom"],
 							'main_item_code': rm_item_data["item_code"],
-							'allow_alternative_item': item_wh.get(rm_item_code, {}).get('allow_alternative_item')
+							'allow_alternative_item': item_wh[rm_item_code].get('allow_alternative_item')
 						}
 					}
 					stock_entry.add_to_stock_entry_detail(items_dict)
@@ -528,24 +481,8 @@ def get_item_details(items):
 
 	return item_details
 
-def get_list_context(context=None):
-	from erpnext.controllers.website_list_for_contact import get_list_context
-	list_context = get_list_context(context)
-	list_context.update({
-		'show_sidebar': True,
-		'show_search': True,
-		'no_breadcrumbs': True,
-		'title': _('Purchase Orders'),
-	})
-	return list_context
-
 @frappe.whitelist()
 def update_status(status, name):
 	po = frappe.get_doc("Purchase Order", name)
 	po.update_status(status)
 	po.update_delivered_qty_in_sales_order()
-
-@frappe.whitelist()
-def make_inter_company_sales_order(source_name, target_doc=None):
-	from erpnext.accounts.doctype.sales_invoice.sales_invoice import make_inter_company_transaction
-	return make_inter_company_transaction("Purchase Order", source_name, target_doc)

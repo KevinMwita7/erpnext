@@ -2,8 +2,8 @@
 // For license information, please see license.txt
 frappe.views.calendar["Attendance"] = {
 	field_map: {
-		"start": "attendance_date",
-		"end": "attendance_date",
+		"start": "date",
+		"end": "date",
 		"id": "name",
 		"docstatus": 1
 	},

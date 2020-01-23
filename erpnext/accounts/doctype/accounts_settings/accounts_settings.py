@@ -15,9 +15,6 @@ class AccountsSettings(Document):
 		frappe.clear_cache()
 
 	def validate(self):
-		frappe.db.set_default("add_taxes_from_item_tax_template",
-			self.get("add_taxes_from_item_tax_template", 0))
-
 		self.validate_stale_days()
 		self.enable_payment_schedule_in_print()
 		self.enable_fields_for_cost_center_settings()

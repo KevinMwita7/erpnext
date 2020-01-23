@@ -6,18 +6,15 @@ from __future__ import unicode_literals
 import frappe
 from erpnext.shopping_cart.cart import _get_cart_quotation
 from erpnext.shopping_cart.doctype.shopping_cart_settings.shopping_cart_settings \
-	import get_shopping_cart_settings, show_quantity_in_website
+	import is_cart_enabled, get_shopping_cart_settings, show_quantity_in_website
 from erpnext.utilities.product import get_price, get_qty_in_stock
 
 @frappe.whitelist(allow_guest=True)
 def get_product_info_for_website(item_code):
 	"""get product price / stock info for website"""
 
-	cart_settings = get_shopping_cart_settings()
-	if not cart_settings.enabled:
-		return frappe._dict()
-
 	cart_quotation = _get_cart_quotation()
+	cart_settings = get_shopping_cart_settings()
 
 	price = get_price(
 		item_code,
@@ -44,10 +41,10 @@ def get_product_info_for_website(item_code):
 			if item:
 				product_info["qty"] = item[0].qty
 
-	return frappe._dict({
+	return {
 		"product_info": product_info,
 		"cart_settings": cart_settings
-	})
+	}
 
 def set_product_info_for_website(item):
 	"""set product price uom for website"""

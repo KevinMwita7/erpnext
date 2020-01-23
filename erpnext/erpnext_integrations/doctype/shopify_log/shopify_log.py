@@ -12,37 +12,22 @@ class ShopifyLog(Document):
 	pass
 
 
-def make_shopify_log(status="Queued", exception=None, rollback=False):
+def make_shopify_log(status="Queued", message=None, exception=False):
 	# if name not provided by log calling method then fetch existing queued state log
-	make_new = False
-
 	if not frappe.flags.request_id:
-		make_new = True
+		return
 
-	if rollback:
+	log = frappe.get_doc("Shopify Log", frappe.flags.request_id)
+
+	if exception:
 		frappe.db.rollback()
-
-	if make_new:
 		log = frappe.get_doc({"doctype":"Shopify Log"}).insert(ignore_permissions=True)
-	else:
-		log = log = frappe.get_doc("Shopify Log", frappe.flags.request_id)
 
-	log.message = get_message(exception)
+	log.message = message if message else ''
 	log.traceback = frappe.get_traceback()
 	log.status = status
 	log.save(ignore_permissions=True)
 	frappe.db.commit()
-
-def get_message(exception):
-	message = None
-
-	if hasattr(exception, 'message'):
-		message = exception.message
-	elif hasattr(exception, '__str__'):
-		message = exception.__str__()
-	else:
-		message = "Something went wrong while syncing"
-	return message
 
 def dump_request_data(data, event="create/order"):
 	event_mapper = {
@@ -58,11 +43,11 @@ def dump_request_data(data, event="create/order"):
 	}).insert(ignore_permissions=True)
 
 	frappe.db.commit()
-	frappe.enqueue(method=event_mapper[event], queue='short', timeout=300, is_async=True,
+	frappe.enqueue(method=event_mapper[event], queue='short', timeout=300, is_async=True, 
 		**{"order": data, "request_id": log.name})
 
 @frappe.whitelist()
 def resync(method, name, request_data):
 	frappe.db.set_value("Shopify Log", name, "status", "Queued", update_modified=False)
-	frappe.enqueue(method=method, queue='short', timeout=300, is_async=True,
+	frappe.enqueue(method=method, queue='short', timeout=300, is_async=True, 
 		**{"order": json.loads(request_data), "request_id": name})

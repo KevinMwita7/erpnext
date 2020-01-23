@@ -20,16 +20,6 @@ frappe.ui.form.on('POS Closing Voucher', {
 			};
 		});
 	},
-
-	total_amount: function(frm) {
-		get_difference_amount(frm);
-	},
-	custody_amount: function(frm){
-		get_difference_amount(frm);
-	},
-	expense_amount: function(frm){
-		get_difference_amount(frm);
-	},
 	refresh: function(frm) {
 		get_closing_voucher_details(frm);
 	},
@@ -57,10 +47,6 @@ frappe.ui.form.on('POS Closing Voucher Details', {
 	}
 });
 
-var get_difference_amount = function(frm){
-	frm.doc.difference = frm.doc.total_amount - frm.doc.custody_amount - frm.doc.expense_amount;
-	refresh_field("difference");
-};
 
 var get_closing_voucher_details = function(frm) {
 	if (frm.doc.period_end_date && frm.doc.period_start_date && frm.doc.company && frm.doc.pos_profile && frm.doc.user) {
@@ -76,7 +62,6 @@ var get_closing_voucher_details = function(frm) {
 					refresh_field("grand_total");
 					refresh_field("net_total");
 					refresh_field("total_quantity");
-					refresh_field("total_amount");
 
 					frm.get_field("payment_reconciliation_details").$wrapper.html(r.message);
 				}

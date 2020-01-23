@@ -3,8 +3,8 @@
 
 from __future__ import unicode_literals
 import frappe
+import urllib
 import copy
-from frappe import _
 from frappe.utils import nowdate, cint, cstr
 from frappe.utils.nestedset import NestedSet
 from frappe.website.website_generator import WebsiteGenerator
@@ -12,7 +12,7 @@ from frappe.website.render import clear_cache
 from frappe.website.doctype.website_slideshow.website_slideshow import get_slideshow
 from erpnext.shopping_cart.product_info import set_product_info_for_website
 from erpnext.utilities.product import get_qty_in_stock
-from six.moves.urllib.parse import quote
+from frappe.utils.html_utils import clean_html
 
 class ItemGroup(NestedSet, WebsiteGenerator):
 	nsm_parent_field = 'parent_item_group'
@@ -27,11 +27,7 @@ class ItemGroup(NestedSet, WebsiteGenerator):
 
 	def validate(self):
 		super(ItemGroup, self).validate()
-
-		if not self.parent_item_group and not frappe.flags.in_test:
-			if frappe.db.exists("Item Group", _('All Item Groups')):
-				self.parent_item_group = _('All Item Groups')
-
+		self.description = clean_html(self.description)
 		self.make_route()
 
 	def on_update(self):
@@ -39,7 +35,6 @@ class ItemGroup(NestedSet, WebsiteGenerator):
 		invalidate_cache_for(self)
 		self.validate_name_with_item()
 		self.validate_one_root()
-		self.delete_child_item_groups_key()
 
 	def make_route(self):
 		'''Make website route'''
@@ -59,7 +54,6 @@ class ItemGroup(NestedSet, WebsiteGenerator):
 	def on_trash(self):
 		NestedSet.on_trash(self)
 		WebsiteGenerator.on_trash(self)
-		self.delete_child_item_groups_key()
 
 	def validate_name_with_item(self):
 		if frappe.db.exists("Item", self.name):
@@ -77,21 +71,14 @@ class ItemGroup(NestedSet, WebsiteGenerator):
 			"items": get_product_list_for_group(product_group = self.name, start=start,
 				limit=context.page_length + 1, search=frappe.form_dict.get("search")),
 			"parents": get_parent_item_groups(self.parent_item_group),
-<<<<<<< HEAD
-			"title": self.name
-=======
 			"title": self.name,
-			"products_as_list": cint(frappe.db.get_single_value('Products Settings', 'products_as_list'))
->>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
+			"products_as_list": cint(frappe.db.get_single_value('Website Settings', 'products_as_list'))
 		})
 
 		if self.slideshow:
 			context.update(get_slideshow(self))
 
 		return context
-
-	def delete_child_item_groups_key(self):
-		frappe.cache().hdel("child_item_groups", self.name)
 
 @frappe.whitelist(allow_guest=True)
 def get_product_list_for_group(product_group=None, start=0, limit=10, search=None):
@@ -129,11 +116,10 @@ def get_product_list_for_group(product_group=None, start=0, limit=10, search=Non
 	data = frappe.db.sql(query, {"product_group": product_group,"search": search, "today": nowdate()}, as_dict=1)
 	data = adjust_qty_for_expired_items(data)
 
-	if cint(frappe.db.get_single_value("Shopping Cart Settings", "enabled")):
-		for item in data:
-			set_product_info_for_website(item)
+	for item in data:
+		set_product_info_for_website(item)
 
-	return data
+	return [get_item_for_list_in_html(r) for r in data]
 
 def get_child_groups_for_list_in_html(item_group, start, limit, search):
 	search_filters = None
@@ -146,7 +132,6 @@ def get_child_groups_for_list_in_html(item_group, start, limit, search):
 		fields = ['name', 'route', 'description', 'image'],
 		filters = dict(
 			show_in_website = 1,
-			parent_item_group = item_group.name,
 			lft = ('>', item_group.lft),
 			rgt = ('<', item_group.rgt),
 		),
@@ -156,7 +141,7 @@ def get_child_groups_for_list_in_html(item_group, start, limit, search):
 		limit = limit
 	)
 
-	return data
+	return [get_item_for_list_in_html(r) for r in data]
 
 def adjust_qty_for_expired_items(data):
 	adjusted_data = []
@@ -165,7 +150,7 @@ def adjust_qty_for_expired_items(data):
 		if item.get('has_batch_no') and item.get('website_warehouse'):
 			stock_qty_dict = get_qty_in_stock(
 				item.get('name'), 'website_warehouse', item.get('website_warehouse'))
-			qty = stock_qty_dict.stock_qty[0][0] if stock_qty_dict.stock_qty else 0
+			qty = stock_qty_dict.stock_qty[0][0]
 			item['in_stock'] = 1 if qty else 0
 		adjusted_data.append(item)
 
@@ -178,29 +163,18 @@ def get_child_groups(item_group_name):
 		from `tabItem Group` where lft>=%(lft)s and rgt<=%(rgt)s
 			and show_in_website = 1""", {"lft": item_group.lft, "rgt": item_group.rgt})
 
-def get_child_item_groups(item_group_name):
-	child_item_groups = frappe.cache().hget("child_item_groups", item_group_name)
-
-	if not child_item_groups:
-		item_group = frappe.get_cached_doc("Item Group", item_group_name)
-
-		child_item_groups = [d.name for d in frappe.get_all('Item Group',
-			filters= {'lft': ('>=', item_group.lft),'rgt': ('>=', item_group.rgt)})]
-
-		frappe.cache().hset("child_item_groups", item_group_name, child_item_groups)
-
-	return child_item_groups or {}
-
 def get_item_for_list_in_html(context):
 	# add missing absolute link in files
 	# user may forget it during upload
 	if (context.get("website_image") or "").startswith("files/"):
-		context["website_image"] = "/" + quote(context["website_image"])
+		context["website_image"] = "/" + urllib.quote(context["website_image"])
 
 	context["show_availability_status"] = cint(frappe.db.get_single_value('Products Settings',
 		'show_availability_status'))
 
-	products_template = 'templates/includes/products_as_list.html'
+	products_template = 'templates/includes/products_as_grid.html'
+	if cint(frappe.db.get_single_value('Products Settings', 'products_as_list')):
+		products_template = 'templates/includes/products_as_list.html'
 
 	return frappe.get_template(products_template).render(context)
 
@@ -214,20 +188,15 @@ def get_group_item_count(item_group):
 
 
 def get_parent_item_groups(item_group_name):
-	base_parents = [
-		{"name": frappe._("Home"), "route":"/"},
-		{"name": frappe._("All Products"), "route":"/all-products"},
-	]
 	if not item_group_name:
-		return base_parents
-
+		return [{"name": frappe._("Home"), "route":"/"}]
 	item_group = frappe.get_doc("Item Group", item_group_name)
 	parent_groups = frappe.db.sql("""select name, route from `tabItem Group`
 		where lft <= %s and rgt >= %s
 		and show_in_website=1
 		order by lft asc""", (item_group.lft, item_group.rgt), as_dict=True)
 
-	return base_parents + parent_groups
+	return 	[{"name": frappe._("Home"), "route":"/"}] + parent_groups
 
 def invalidate_cache_for(doc, item_group=None):
 	if not item_group:

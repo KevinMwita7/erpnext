@@ -1,19 +1,7 @@
-cur_frm.add_fetch("payment_gateway_account", "payment_account", "payment_account")
-cur_frm.add_fetch("payment_gateway_account", "payment_gateway", "payment_gateway")
-cur_frm.add_fetch("payment_gateway_account", "message", "message")
-<<<<<<< HEAD
-
-frappe.ui.form.on("Payment Request", {
-	setup: function(frm) {
-		frm.set_query("party_type", function() {
-			return {
-				query: "erpnext.setup.doctype.party_type.party_type.get_party_type",
-			};
-		});
-	}
-})
-=======
->>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
+cur_frm.add_fetch("payment_gateway", "payment_account", "payment_account")
+cur_frm.add_fetch("payment_gateway", "payment_gateway", "payment_gateway")
+cur_frm.add_fetch("payment_gateway", "message", "message")
+cur_frm.add_fetch("payment_gateway", "payment_url_message", "payment_url_message")
 
 frappe.ui.form.on("Payment Request", "onload", function(frm, dt, dn){
 	if (frm.doc.reference_doctype) {
@@ -66,7 +54,7 @@ frappe.ui.form.on("Payment Request", "is_a_subscription", function(frm) {
 	frm.toggle_reqd("payment_gateway_account", frm.doc.is_a_subscription);
 	frm.toggle_reqd("subscription_plans", frm.doc.is_a_subscription);
 
-	if (frm.doc.is_a_subscription && frm.doc.reference_doctype && frm.doc.reference_name) {
+	if (frm.doc.is_a_subscription) {
 		frappe.call({
 			method: "erpnext.accounts.doctype.payment_request.payment_request.get_subscription_details",
 			args: {"reference_doctype": frm.doc.reference_doctype, "reference_name": frm.doc.reference_name},

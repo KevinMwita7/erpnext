@@ -27,16 +27,6 @@ class TestTaxes(unittest.TestCase):
             'item_group_name': uuid4(),
             'parent_item_group': 'All Item Groups',
         }).insert()
-        self.item_tax_template = frappe.get_doc({
-            'doctype': 'Item Tax Template',
-            'title': uuid4(),
-            'taxes': [
-                {
-                    'tax_type': self.account.name,
-                    'tax_rate': 2,
-                }
-            ]
-        }).insert()
         self.item = frappe.get_doc({
             'doctype': 'Item',
             'item_code': uuid4(),
@@ -44,8 +34,8 @@ class TestTaxes(unittest.TestCase):
             'is_stock_item': 0,
             'taxes': [
                 {
-                    'item_tax_template': self.item_tax_template.name,
-                    'tax_category': '',
+                    'tax_type': self.account.name,
+                    'tax_rate': 2,
                 }
             ],
         }).insert()
@@ -68,7 +58,6 @@ class TestTaxes(unittest.TestCase):
                 'doctype': dt,
                 'company': self.company.name,
                 'supplier': self.supplier.name,
-                'currency': "USD",
                 'schedule_date': frappe.utils.nowdate(),
                 'delivery_date': frappe.utils.nowdate(),
                 'customer': self.customer.name,
@@ -101,6 +90,5 @@ class TestTaxes(unittest.TestCase):
             doc.delete()
         self.item.delete()
         self.item_group.delete()
-        self.item_tax_template.delete()
         self.account.delete()
         self.company.delete()

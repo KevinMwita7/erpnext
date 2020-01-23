@@ -17,30 +17,31 @@ class TestQualityReview(unittest.TestCase):
 		create_goal()
 		test_create_review = create_review()
 		test_get_review = get_review()
-		self.assertEquals(test_create_review, test_get_review)
+		self.assertEquals(test_create_review.name, test_get_review.name)
 
 def create_review():
 	review = frappe.get_doc({
 		"doctype": "Quality Review",
-		"goal": "GOAL-_Test Quality Goal",
-		"procedure": "PRC-_Test Quality Procedure",
-		"date": frappe.utils.nowdate(),
-		"reviews": [
+		"goal": "_Test Quality Goal",
+		"procedure": "_Test Quality Procedure",
+		"scope": "Company",
+		"date": ""+ frappe.utils.nowdate() +"",
+		"values": [
 			{
 				"objective": "_Test Quality Objective",
 				"target": "100",
-				"uom": "_Test UOM",
-				"review": "Test Review"
+				"achieved": "100",
+				"unit": "_Test UOM"
 			}
 		]
 	})
-	review_exist = frappe.db.exists("Quality Review", {"goal": "GOAL-_Test Quality Goal"})
-	if not review_exist:
-		review.insert(ignore_permissions=True)
-		return review.name
+	review_exist = frappe.get_list("Quality Review", filters={"goal": "_Test Quality Goal"}, limit=1)
+	if len(review_exist) == 0:
+		review.insert()
+		return review
 	else:
-		return review_exist
+		return review_exist[0]
 
 def get_review():
-	review = frappe.db.exists("Quality Review", {"goal": "GOAL-_Test Quality Goal"})
-	return review
+	review = frappe.get_list("Quality Review", filters={"goal": "_Test Quality Goal"}, limit=1)
+	return review[0]

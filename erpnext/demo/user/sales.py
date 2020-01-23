@@ -21,26 +21,17 @@ def work(domain="Manufacturing"):
 		if random.random() < 0.5:
 			make_quotation(domain)
 
-	try:
-		lost_reason = frappe.get_doc({
-			"doctype": "Opportunity Lost Reason",
-			"lost_reason": "Did not ask"
-		})
-		lost_reason.save(ignore_permissions=True)
-	except frappe.exceptions.DuplicateEntryError:
-		pass
-
 	# lost quotations / inquiries
 	if random.random() < 0.3:
 		for i in range(random.randint(1,3)):
 			quotation = get_random('Quotation', doc=True)
 			if quotation and quotation.status == 'Submitted':
-				quotation.declare_order_lost([{'lost_reason': 'Did not ask'}])
+				quotation.declare_order_lost('Did not ask')
 
 		for i in range(random.randint(1,3)):
 			opportunity = get_random('Opportunity', doc=True)
 			if opportunity and opportunity.status in ('Open', 'Replied'):
-				opportunity.declare_enquiry_lost([{'lost_reason': 'Did not ask'}])
+				opportunity.declare_enquiry_lost('Did not ask')
 
 	for i in range(random.randint(1,3)):
 		if random.random() < 0.6:
@@ -65,12 +56,8 @@ def work(domain="Manufacturing"):
 def make_opportunity(domain):
 	b = frappe.get_doc({
 		"doctype": "Opportunity",
-		"opportunity_from": "Customer",
-<<<<<<< HEAD
-		"party_name": frappe.get_value("Customer", get_random("Customer"), 'name'),
-=======
+		"enquiry_from": "Customer",
 		"customer": get_random("Customer"),
->>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 		"opportunity_type": "Sales",
 		"with_items": 1,
 		"transaction_date": frappe.flags.current_date,
@@ -112,7 +99,7 @@ def make_quotation(domain):
 			"creation": frappe.flags.current_date,
 			"doctype": "Quotation",
 			"quotation_to": "Customer",
-			"party_name": customer,
+			"customer": customer,
 			"currency": party_account_currency or company_currency,
 			"conversion_rate": exchange_rate,
 			"order_type": "Sales",

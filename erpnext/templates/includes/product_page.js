@@ -14,9 +14,7 @@ frappe.ready(function() {
 		callback: function(r) {
 			if(r.message) {
 				if(r.message.cart_settings.enabled) {
-					let hide_add_to_cart = !r.message.product_info.price
-						|| (!r.message.product_info.in_stock && !r.message.cart_settings.allow_items_not_in_stock);
-					$(".item-cart, .item-price, .item-stock").toggleClass('hide', hide_add_to_cart);
+					$(".item-cart, .item-price, .item-stock").toggleClass("hide", (!!!r.message.product_info.price || !!!r.message.product_info.in_stock));
 				}
 				if(r.message.cart_settings.show_price) {
 					$(".item-price").toggleClass("hide", false);
@@ -29,14 +27,10 @@ frappe.ready(function() {
 						.html(r.message.product_info.price.formatted_price_sales_uom + "<div style='font-size: small'>\
 							(" + r.message.product_info.price.formatted_price + " / " + r.message.product_info.uom + ")</div>");
 
-<<<<<<< HEAD
-					if(r.message.product_info.in_stock===0) {
-=======
-					if(r.message.product_info.in_stock==0 && r.message.cart_settings.show_stock_availability) {
->>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
+					if(r.message.product_info.in_stock==0) {
 						$(".item-stock").html("<div style='color: red'> <i class='fa fa-close'></i> {{ _("Not in stock") }}</div>");
 					}
-					else if(r.message.product_info.in_stock===1 && r.message.cart_settings.show_stock_availability) {
+					else if(r.message.product_info.in_stock==1) {
 						var qty_display = "{{ _("In stock") }}";
 						if (r.message.product_info.show_stock_qty) {
 							qty_display += " ("+r.message.product_info.stock_qty+")";
@@ -79,13 +73,13 @@ frappe.ready(function() {
 			newVal = 0;
 
 		if (btn.attr('data-dir') == 'up') {
-			newVal = Number.parseInt(oldValue) + 1;
+			newVal = parseInt(oldValue) + 1;
 		} else if (btn.attr('data-dir') == 'dwn')  {
-			if (Number.parseInt(oldValue) > 1) {
-				newVal = Number.parseInt(oldValue) - 1;
+			if (parseInt(oldValue) > 1) {
+				newVal = parseInt(oldValue) - 1;
 			}
 			else {
-				newVal = Number.parseInt(oldValue);
+				newVal = parseInt(oldValue);
 			}
 		}
 		input.val(newVal);

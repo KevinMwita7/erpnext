@@ -15,11 +15,9 @@ class TrainingFeedback(Document):
 
 	def on_submit(self):
 		training_event = frappe.get_doc("Training Event", self.training_event)
-		event_status = None
 		for e in training_event.employees:
 			if e.employee == self.employee:
-				event_status = 'Feedback Submitted'
+				training_event.status = 'Feedback Submitted'
 				break
 
-		if event_status:
-			frappe.db.set_value("Training Event", self.training_event, "event_status", event_status)
+		training_event.save()

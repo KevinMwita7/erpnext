@@ -1,14 +1,12 @@
-from __future__ import unicode_literals
 import frappe
 from frappe import _
-from erpnext import get_default_company
 from frappe.utils import cstr, cint, get_request_session
 from erpnext.erpnext_integrations.doctype.shopify_settings.shopify_settings import get_shopify_url, get_header
 
 shopify_variants_attr_list = ["option1", "option2", "option3"]
 
 def sync_item_from_shopify(shopify_settings, item):
-	url = get_shopify_url("admin/api/2019-04/products/{0}.json".format(item.get("product_id")), shopify_settings)
+	url = get_shopify_url("/admin/products/{0}.json".format(item.get("product_id")), shopify_settings)
 	session = get_request_session()
 
 	try:
@@ -108,12 +106,7 @@ def create_item(shopify_item, warehouse, has_variant=0, attributes=None,variant_
 		"image": get_item_image(shopify_item),
 		"weight_uom": shopify_item.get("weight_unit"),
 		"weight_per_unit": shopify_item.get("weight"),
-		"default_supplier": get_supplier(shopify_item),
-		"item_defaults": [
-			{
-				"company": get_default_company()
-			}
-		]
+		"default_supplier": get_supplier(shopify_item)
 	}
 
 	if not is_item_exists(item_dict, attributes, variant_of=variant_of):
@@ -122,7 +115,7 @@ def create_item(shopify_item, warehouse, has_variant=0, attributes=None,variant_
 
 		if not item_details:
 			new_item = frappe.get_doc(item_dict)
-			new_item.insert(ignore_permissions=True, ignore_mandatory=True)
+			new_item.insert()
 			name = new_item.name
 
 		if not name:
