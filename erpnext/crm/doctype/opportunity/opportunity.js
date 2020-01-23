@@ -31,9 +31,15 @@ frappe.ui.form.on("Opportunity", {
 
 	party_name: function(frm) {
 		frm.toggle_display("contact_info", frm.doc.party_name);
+<<<<<<< HEAD
 		frm.trigger('set_contact_link');
 
 		if (frm.doc.opportunity_from == "Customer") {
+=======
+
+		if (frm.doc.opportunity_from == "Customer") {
+			frm.trigger('set_contact_link');
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 			erpnext.utils.get_party_details(frm);
 		} else if (frm.doc.opportunity_from == "Lead") {
 			erpnext.utils.map_current_doc({
@@ -42,10 +48,13 @@ frappe.ui.form.on("Opportunity", {
 				frm: frm
 			});
 		}
+<<<<<<< HEAD
 	},
 
 	onload_post_render: function(frm) {
 		frm.get_field("items").grid.set_multiple_add("item_code", "qty");
+=======
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 	},
 
 	with_items: function(frm) {
@@ -133,6 +142,7 @@ frappe.ui.form.on("Opportunity", {
 erpnext.crm.Opportunity = frappe.ui.form.Controller.extend({
 	onload: function() {
 
+<<<<<<< HEAD
 		if(!this.frm.doc.status) {
 			frm.set_value('status', 'Open');
 		}
@@ -142,6 +152,15 @@ erpnext.crm.Opportunity = frappe.ui.form.Controller.extend({
 		if(!this.frm.doc.currency) {
 			frm.set_value('currency', frappe.defaults.get_user_default("Currency"));
 		}
+=======
+		if(!this.frm.doc.status)
+			set_multiple(this.frm.doc.doctype, this.frm.doc.name, { status:'Open' });
+		if(!this.frm.doc.company && frappe.defaults.get_user_default("Company"))
+			set_multiple(this.frm.doc.doctype, this.frm.doc.name,
+				{ company:frappe.defaults.get_user_default("Company") });
+		if(!this.frm.doc.currency)
+			set_multiple(this.frm.doc.doctype, this.frm.doc.name, { currency:frappe.defaults.get_user_default("Currency") });
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 
 		this.setup_queries();
 	},
@@ -167,7 +186,11 @@ erpnext.crm.Opportunity = frappe.ui.form.Controller.extend({
 		if (me.frm.doc.opportunity_from == "Lead") {
 			me.frm.set_query('party_name', erpnext.queries['lead']);
 		}
+<<<<<<< HEAD
 		else if (me.frm.doc.opportunity_from == "Customer") {
+=======
+		else if (me.frm.doc.opportunity_from == "Cuatomer") {
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 			me.frm.set_query('party_name', erpnext.queries['customer']);
 		}
 	},
@@ -198,4 +221,39 @@ cur_frm.cscript.item_code = function(doc, cdt, cdn) {
 			}
 		})
 	}
+<<<<<<< HEAD
 }
+=======
+}
+
+cur_frm.cscript['Declare Opportunity Lost'] = function() {
+	var dialog = new frappe.ui.Dialog({
+		title: __("Set as Lost"),
+		fields: [
+			{"fieldtype": "Text", "label": __("Reason for losing"), "fieldname": "reason",
+				"reqd": 1 },
+			{"fieldtype": "Button", "label": __("Update"), "fieldname": "update"},
+		]
+	});
+
+	dialog.fields_dict.update.$input.click(function() {
+		var args = dialog.get_values();
+		if(!args) return;
+		return cur_frm.call({
+			doc: cur_frm.doc,
+			method: "declare_enquiry_lost",
+			args: args.reason,
+			callback: function(r) {
+				if(r.exc) {
+					frappe.msgprint(__("There were errors."));
+				} else {
+					dialog.hide();
+					cur_frm.refresh();
+				}
+			},
+			btn: this
+		})
+	});
+	dialog.show();
+}
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2

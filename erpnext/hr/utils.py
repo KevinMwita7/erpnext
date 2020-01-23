@@ -270,6 +270,7 @@ def get_leave_period(from_date, to_date, company):
 	if leave_period:
 		return leave_period
 
+<<<<<<< HEAD
 def generate_leave_encashment():
 	''' Generates a draft leave encashment on allocation expiry '''
 	from erpnext.hr.doctype.leave_encashment.leave_encashment import create_leave_encashment
@@ -285,6 +286,8 @@ def generate_leave_encashment():
 
 		create_leave_encashment(leave_allocation=leave_allocation)
 
+=======
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 def allocate_earned_leaves():
 	'''Allocate earned leaves to Employees'''
 	e_leave_types = frappe.get_all("Leave Type",

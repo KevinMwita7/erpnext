@@ -122,8 +122,12 @@ class Item(WebsiteGenerator):
 		self.validate_item_defaults()
 		self.validate_customer_provided_part()
 		self.update_defaults_from_item_group()
+<<<<<<< HEAD
 		self.validate_auto_reorder_enabled_in_stock_settings()
 		self.cant_change()
+=======
+		self.validate_stock_for_has_batch_and_has_serial()
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 		self.update_show_in_website()
 
 		if not self.get("__islocal"):
@@ -820,9 +824,12 @@ class Item(WebsiteGenerator):
 
 	def validate_variant_attributes(self):
 		if self.is_new() and self.variant_of and self.variant_based_on == 'Item Attribute':
+<<<<<<< HEAD
 			# remove attributes with no attribute_value set
 			self.attributes = [d for d in self.attributes if cstr(d.attribute_value).strip()]
 
+=======
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 			args = {}
 			for i, d in enumerate(self.attributes):
 				d.idx = i + 1

@@ -13,6 +13,10 @@ class Loan(AccountsController):
 	def validate(self):
 		validate_repayment_method(self.repayment_method, self.loan_amount, self.monthly_repayment_amount, self.repayment_periods)
 		self.set_missing_fields()
+<<<<<<< HEAD
+=======
+		self.validate_loan_application()
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 		self.make_repayment_schedule()
 		self.set_repayment_period()
 		self.calculate_totals()
@@ -33,6 +37,16 @@ class Loan(AccountsController):
 		if self.status == "Repaid/Closed":
 			self.total_amount_paid = self.total_payment
 
+<<<<<<< HEAD
+=======
+	def validate_loan_application(self):
+		if self.loan_application:
+			loan = frappe.db.get_value("Loan", {"loan_application": self.loan_application}, "name")
+
+			if loan and loan != self.name:
+				frappe.throw(_("Loan {0} already created for Loan Application {1}").format(frappe.bold(loan),
+					frappe.bold(self.loan_application)))
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 
 	def make_jv_entry(self):
 		self.check_permission('write')
@@ -116,6 +130,10 @@ def update_disbursement_status(doc):
 	""", (doc.payment_account, doc.name), as_dict=1)[0]
 
 	disbursement_date = None
+<<<<<<< HEAD
+=======
+	status = ''
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 	if not disbursement or disbursement.disbursed_amount == 0:
 		status = "Sanctioned"
 	elif disbursement.disbursed_amount == doc.loan_amount:

@@ -99,7 +99,11 @@ def get_paid_amount(payment_entry, currency):
 		return frappe.db.get_value(payment_entry.payment_document, payment_entry.payment_entry, "total_amount_reimbursed")
 
 	else:
+<<<<<<< HEAD
 		frappe.throw("Please reconcile {0}: {1} manually".format(payment_entry.payment_document, payment_entry.payment_entry))
+=======
+		frappe.throw(_("Please reconcile {0}: {1} manually".format(payment_entry.payment_document, payment_entry.payment_entry)))
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 
 @frappe.whitelist()
 def unclear_reference_payment(doctype, docname):

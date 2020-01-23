@@ -269,7 +269,11 @@ class Company(NestedSet):
 	def set_mode_of_payment_account(self):
 		cash = frappe.db.get_value('Mode of Payment', {'type': 'Cash'}, 'name')
 		if cash and self.default_cash_account \
+<<<<<<< HEAD
 			and not frappe.db.get_value('Mode of Payment Account', {'company': self.name, 'parent': cash}):
+=======
+				and not frappe.db.get_value('Mode of Payment Account', {'company': self.name, 'parent': cash}):
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 			mode_of_payment = frappe.get_doc('Mode of Payment', cash)
 			mode_of_payment.append('accounts', {
 				'company': self.name,

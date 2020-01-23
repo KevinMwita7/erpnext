@@ -5,11 +5,14 @@ frappe.provide("erpnext.bom");
 
 frappe.ui.form.on("BOM", {
 	setup: function(frm) {
+<<<<<<< HEAD
 		frm.custom_make_buttons = {
 			'Work Order': 'Work Order',
 			'Quality Inspection': 'Quality Inspection'
 		};
 
+=======
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 		frm.set_query("bom_no", "items", function() {
 			return {
 				filters: {

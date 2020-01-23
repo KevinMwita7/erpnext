@@ -18,11 +18,15 @@ from erpnext.accounts.doctype.account.test_account import get_inventory_account,
 from erpnext.controllers.taxes_and_totals import get_itemised_tax_breakup_data
 from erpnext.stock.doctype.item.test_item import create_item
 from six import iteritems
+<<<<<<< HEAD
 from erpnext.accounts.doctype.sales_invoice.sales_invoice import make_inter_company_transaction
 from erpnext.regional.india.utils import get_ewb_data
 from erpnext.stock.doctype.stock_entry.stock_entry_utils import make_stock_entry
 from erpnext.stock.doctype.purchase_receipt.test_purchase_receipt import make_purchase_receipt
 from erpnext.stock.doctype.delivery_note.delivery_note import make_sales_invoice
+=======
+from erpnext.regional.india.utils import get_ewb_data
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 
 class TestSalesInvoice(unittest.TestCase):
 	def make(self):
@@ -1688,6 +1692,7 @@ class TestSalesInvoice(unittest.TestCase):
 			self.assertEqual(expected_gle[i][2], gle.credit)
 			self.assertEqual(getdate(expected_gle[i][3]), gle.posting_date)
 
+<<<<<<< HEAD
 	def test_inter_company_transaction(self):
 
 		if not frappe.db.exists("Customer", "_Test Internal Customer"):
@@ -1743,6 +1748,8 @@ class TestSalesInvoice(unittest.TestCase):
 		self.assertEqual(target_doc.company, "_Test Company 1")
 		self.assertEqual(target_doc.supplier, "_Test Internal Supplier")
 
+=======
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 	def test_eway_bill_json(self):
 		if not frappe.db.exists('Address', '_Test Address for Eway bill-Billing'):
 			address = frappe.get_doc({
@@ -1814,7 +1821,10 @@ class TestSalesInvoice(unittest.TestCase):
 		si.company_address = "_Test Address for Eway bill-Billing"
 		si.customer_address = "_Test Customer-Address for Eway bill-Shipping"
 		si.vehicle_no = "KA12KA1234"
+<<<<<<< HEAD
 		si.gst_category = "Registered Regular"
+=======
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 
 		si.append("taxes", {
 			"charge_type": "On Net Total",
@@ -1847,6 +1857,7 @@ class TestSalesInvoice(unittest.TestCase):
 		self.assertEqual(data['billLists'][0]['vehicleNo'], 'KA12KA1234')
 		self.assertEqual(data['billLists'][0]['itemList'][0]['taxableAmount'], 60000)
 
+<<<<<<< HEAD
 	def test_item_tax_validity(self):
 		item = frappe.get_doc("Item", "_Test Item 2")
 
@@ -1867,6 +1878,8 @@ class TestSalesInvoice(unittest.TestCase):
 
 		item.taxes = []
 		item.save()
+=======
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 
 def create_sales_invoice(**args):
 	si = frappe.new_doc("Sales Invoice")

@@ -41,8 +41,13 @@ class AccountingPeriod(Document):
 
 	def get_doctypes_for_closing(self):
 		docs_for_closing = []
+<<<<<<< HEAD
 		doctypes = ["Sales Invoice", "Purchase Invoice", "Journal Entry", "Payroll Entry", \
 			"Bank Reconciliation", "Asset", "Stock Entry"]
+=======
+		doctypes = ["Sales Invoice", "Purchase Invoice", "Journal Entry", "Payroll Entry", "Bank Reconciliation",
+			"Asset", "Purchase Order", "Sales Order", "Leave Application", "Leave Allocation", "Stock Entry"]
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 		closed_doctypes = [{"document_type": doctype, "closed": 1} for doctype in doctypes]
 		for closed_doctype in closed_doctypes:
 			docs_for_closing.append(closed_doctype)

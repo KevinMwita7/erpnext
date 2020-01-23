@@ -334,9 +334,12 @@ def sort_accounts(accounts, is_root=False, key="name"):
 				return -1
 			if a.root_type == "Income" and b.root_type == "Expense":
 				return -1
+<<<<<<< HEAD
 		else:
 			# sort by key (number) or name
 			return cmp(a[key], b[key])
+=======
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 		return 1
 
 	accounts.sort(key = functools.cmp_to_key(compare_accounts))
@@ -373,7 +376,21 @@ def set_gl_entries_by_account(
 		where company=%(company)s
 		{additional_conditions}
 		and posting_date <= %(to_date)s
+<<<<<<< HEAD
 		order by account, posting_date""".format(additional_conditions=additional_conditions), gl_filters, as_dict=True) #nosec
+=======
+		order by account, posting_date""".format(additional_conditions=additional_conditions),
+		{
+			"company": company,
+			"from_date": from_date,
+			"to_date": to_date,
+			"cost_center": filters.cost_center,
+			"project": filters.project,
+			"finance_book": filters.get("finance_book"),
+			"company_fb": frappe.db.get_value("Company", company, 'default_finance_book')
+		},
+		as_dict=True)
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 
 	if filters and filters.get('presentation_currency'):
 		convert_to_presentation_currency(gl_entries, get_currency(filters))
@@ -411,11 +428,14 @@ def get_additional_conditions(from_date, ignore_closing_entries, filters):
 				additional_conditions.append("finance_book in (%(finance_book)s, %(company_fb)s)")
 			else:
 				additional_conditions.append("finance_book in (%(finance_book)s)")
+<<<<<<< HEAD
 
 	if accounting_dimensions:
 		for dimension in accounting_dimensions:
 			if filters.get(dimension):
 				additional_conditions.append("{0} in (%({0})s)".format(dimension))
+=======
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 
 	return " and {}".format(" and ".join(additional_conditions)) if additional_conditions else ""
 

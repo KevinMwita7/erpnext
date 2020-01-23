@@ -60,6 +60,7 @@ $.extend(erpnext, {
 
 		var me = this;
 		$btn.on("click", function() {
+<<<<<<< HEAD
 			let callback = '';
 			let on_close = '';
 
@@ -69,6 +70,30 @@ $.extend(erpnext, {
 						grid_row.doc.has_serial_no = data.has_serial_no;
 						me.show_serial_batch_selector(grid_row.frm, grid_row.doc,
 							callback, on_close, true);
+=======
+			var d = new frappe.ui.Dialog({
+				title: __("Add Serial No"),
+				fields: [
+					{
+						"fieldtype": "Link",
+						"fieldname": "serial_no",
+						"options": "Serial No",
+						"label": __("Serial No"),
+						"get_query": function () {
+							return {
+								filters: {
+									item_code: grid_row.doc.item_code,
+									warehouse: cur_frm.doc.is_return ? null : grid_row.doc.warehouse,
+									batch_no: grid_row.doc.batch_no || null
+								}
+							}
+						}
+					},
+					{
+						"fieldtype": "Button",
+						"fieldname": "add",
+						"label": __("Add")
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 					}
 				}
 			);

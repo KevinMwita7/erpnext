@@ -135,11 +135,19 @@ def get_chart_data(filters, columns, asset, liability, equity):
 
 	datasets = []
 	if asset_data:
+<<<<<<< HEAD
 		datasets.append({'name': _('Assets'), 'values': asset_data})
 	if liability_data:
 		datasets.append({'name': _('Liabilities'), 'values': liability_data})
 	if equity_data:
 		datasets.append({'name': _('Equity'), 'values': equity_data})
+=======
+		datasets.append({'name':_('Assets'), 'values': asset_data})
+	if liability_data:
+		datasets.append({'name':_('Liabilities'), 'values': liability_data})
+	if equity_data:
+		datasets.append({'name':_('Equity'), 'values': equity_data})
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 
 	chart = {
 		"data": {

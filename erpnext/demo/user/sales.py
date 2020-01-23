@@ -66,7 +66,11 @@ def make_opportunity(domain):
 	b = frappe.get_doc({
 		"doctype": "Opportunity",
 		"opportunity_from": "Customer",
+<<<<<<< HEAD
 		"party_name": frappe.get_value("Customer", get_random("Customer"), 'name'),
+=======
+		"customer": get_random("Customer"),
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 		"opportunity_type": "Sales",
 		"with_items": 1,
 		"transaction_date": frappe.flags.current_date,

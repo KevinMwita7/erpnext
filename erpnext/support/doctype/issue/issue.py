@@ -11,7 +11,10 @@ from frappe.utils import now, time_diff_in_hours, now_datetime, getdate, get_wee
 from datetime import datetime, timedelta
 from frappe.model.mapper import get_mapped_doc
 from frappe.utils.user import is_website_user
+<<<<<<< HEAD
 from erpnext.support.doctype.service_level_agreement.service_level_agreement import get_active_service_level_agreement_for
+=======
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 from frappe.email.inbox import link_communication_to_document
 
 sender_field = "raised_by"
@@ -118,6 +121,7 @@ class Issue(Document):
 		replicated_issue = deepcopy(self)
 		replicated_issue.subject = subject
 		replicated_issue.issue_split_from = self.name
+<<<<<<< HEAD
 		replicated_issue.mins_to_first_response = 0
 		replicated_issue.first_responded_on = None
 		replicated_issue.creation = now_datetime()
@@ -132,6 +136,8 @@ class Issue(Document):
 			replicated_issue.resolution_by = None
 			replicated_issue.resolution_by_variance = None
 
+=======
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 		frappe.get_doc(replicated_issue).insert()
 
 		# Replicate linked Communications
@@ -152,7 +158,11 @@ class Issue(Document):
 			"comment_type": "Info",
 			"reference_doctype": "Issue",
 			"reference_name": replicated_issue.name,
+<<<<<<< HEAD
 			"content": " - Split the Issue from <a href='#Form/Issue/{0}'>{1}</a>".format(self.name, frappe.bold(self.name)),
+=======
+			"content": " - Split the Issue from <a href='#Form/Issue/{0}'>{1}</a>".format(self.name, frappe.bold(self.name))
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 		}).insert(ignore_permissions=True)
 
 		return replicated_issue.name
@@ -381,6 +391,7 @@ def update_issue(contact, method):
 	"""Called when Contact is deleted"""
 	frappe.db.sql("""UPDATE `tabIssue` set contact='' where contact=%s""", contact.name)
 
+<<<<<<< HEAD
 def get_holidays(holiday_list_name):
 	holiday_list = frappe.get_cached_doc("Holiday List", holiday_list_name)
 	holidays = [holiday.holiday_date for holiday in holiday_list.holidays]
@@ -397,6 +408,8 @@ def make_task(source_name, target_doc=None):
 		}
 	}, target_doc)
 
+=======
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 @frappe.whitelist()
 def make_issue_from_communication(communication, ignore_communication_links=False):
 	""" raise a issue from email """
@@ -413,6 +426,7 @@ def make_issue_from_communication(communication, ignore_communication_links=Fals
 	link_communication_to_document(doc, "Issue", issue.name, ignore_communication_links)
 
 	return issue.name
+<<<<<<< HEAD
 
 def get_time_in_timedelta(time):
 	"""
@@ -420,3 +434,5 @@ def get_time_in_timedelta(time):
 	"""
 	import datetime
 	return datetime.timedelta(hours=time.hour, minutes=time.minute, seconds=time.second)
+=======
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2

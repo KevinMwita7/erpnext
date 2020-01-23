@@ -88,11 +88,16 @@ def get_cost_centers(filters):
 	if filters.get("budget_against") == "Cost Center":
 		cond = "order by lft"
 
+<<<<<<< HEAD
 	if filters.get("budget_against") in ["Cost Center", "Project"]:
 		return frappe.db.sql_list("""select name from `tab{tab}` where company=%s
 			{cond}""".format(tab=filters.get("budget_against"), cond=cond), filters.get("company"))
 	else:
 		return frappe.db.sql_list("""select name from `tab{tab}`""".format(tab=filters.get("budget_against"))) #nosec
+=======
+	return frappe.db.sql_list("""select name from `tab{tab}` where company=%s
+		{cond}""".format(tab=filters.get("budget_against"), cond=cond), filters.get("company"))
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 
 #Get dimension & target details
 def get_dimension_target_details(filters):
@@ -110,6 +115,10 @@ def get_dimension_target_details(filters):
 		tuple([filters.from_fiscal_year,filters.to_fiscal_year,filters.budget_against, filters.company] + filters.get('budget_against_filter')), 
 		as_dict=True)
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 
 #Get target distribution details of accounts of cost center
 def get_target_distribution_details(filters):

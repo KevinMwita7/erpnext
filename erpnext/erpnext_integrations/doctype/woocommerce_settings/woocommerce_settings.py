@@ -20,6 +20,7 @@ class WoocommerceSettings(Document):
 		if self.enable_sync:
 			custom_fields = {}
 			# create
+<<<<<<< HEAD
 			for doctype in ["Customer", "Sales Order", "Item", "Address"]:
 				df = dict(fieldname='woocommerce_id', label='Woocommerce ID', fieldtype='Data', read_only=1, print_hide=1)
 				create_custom_field(doctype, df)
@@ -33,6 +34,76 @@ class WoocommerceSettings(Document):
 				item_group.item_group_name = _("WooCommerce Products")
 				item_group.parent_item_group = get_root_of("Item Group")
 				item_group.insert()
+=======
+			create_custom_field_id_and_check_status = False
+			create_custom_field_email_check = False
+			names = ["Customer-woocommerce_id","Sales Order-woocommerce_id","Item-woocommerce_id","Address-woocommerce_id"]
+			names_check_box = ["Customer-woocommerce_check","Sales Order-woocommerce_check","Item-woocommerce_check","Address-woocommerce_check"]
+			email_names = ["Customer-woocommerce_email","Address-woocommerce_email"]
+
+			for i in zip(names,names_check_box):
+
+				if not frappe.get_value("Custom Field",{"name":i[0]}) or not frappe.get_value("Custom Field",{"name":i[1]}):
+					create_custom_field_id_and_check_status = True
+					break
+
+
+			if create_custom_field_id_and_check_status:
+				names = ["Customer","Sales Order","Item","Address"]
+				for name in names:
+					custom = frappe.new_doc("Custom Field")
+					custom.dt = name
+					custom.label = "woocommerce_id"
+					custom.read_only = 1
+					custom.save()
+
+					custom = frappe.new_doc("Custom Field")
+					custom.dt = name
+					custom.label = "woocommerce_check"
+					custom.fieldtype = "Check"
+					custom.read_only = 1
+					custom.save()
+
+			for i in email_names:
+
+				if not frappe.get_value("Custom Field",{"name":i}):
+					create_custom_field_email_check = True
+					break;
+
+			if create_custom_field_email_check:
+				names = ["Customer","Address"]
+				for name in names:
+					custom = frappe.new_doc("Custom Field")
+					custom.dt = name
+					custom.label = "woocommerce_email"
+					custom.read_only = 1
+					custom.save()
+
+			if not frappe.get_value("Item Group",{"name": _("WooCommerce Products")}):
+				item_group = frappe.new_doc("Item Group")
+				item_group.item_group_name = _("WooCommerce Products")
+				item_group.parent_item_group = get_root_of("Item Group")
+				item_group.save()
+
+
+		elif not self.enable_sync:
+			# delete
+			names = ["Customer-woocommerce_id","Sales Order-woocommerce_id","Item-woocommerce_id","Address-woocommerce_id"]
+			names_check_box = ["Customer-woocommerce_check","Sales Order-woocommerce_check","Item-woocommerce_check","Address-woocommerce_check"]
+			email_names = ["Customer-woocommerce_email","Address-woocommerce_email"]
+			for name in names:
+				frappe.delete_doc("Custom Field",name)
+
+			for name in names_check_box:
+				frappe.delete_doc("Custom Field",name)
+
+			for name in email_names:
+				frappe.delete_doc("Custom Field",name)
+
+			frappe.delete_doc("Item Group", _("WooCommerce Products"))
+
+		frappe.db.commit()
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 
 	def validate_settings(self):
 		if self.enable_sync:

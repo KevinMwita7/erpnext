@@ -265,6 +265,7 @@ def add_payments():
 	pe.insert()
 	pe.submit()
 
+<<<<<<< HEAD
 	mode_of_payment = frappe.get_doc({
 		"doctype": "Mode of Payment",
 		"name": "Cash"
@@ -277,6 +278,16 @@ def add_payments():
 		})
 		mode_of_payment.save()
 
+=======
+	company = frappe.db.get_single_value('Global Defaults', 'default_company')
+	frappe.get_doc({
+		"doctype": "Mode of Payment",
+		"name": "Cash"
+	}).append("accounts", {
+		"company": company,
+		"default_account": "_Test Bank - _TC"
+	}).save()
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 	si = create_sales_invoice(customer="Fayva", qty=1, rate=109080, do_not_submit=1)
 	si.is_pos = 1
 	si.append("payments", {

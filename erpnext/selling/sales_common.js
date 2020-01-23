@@ -316,7 +316,11 @@ erpnext.selling.SellingController = erpnext.TransactionController.extend({
 					child: item,
 					args: {
 						"batch_no": item.batch_no,
+<<<<<<< HEAD
 						"stock_qty": item.stock_qty || item.qty, //if stock_qty field is not available fetch qty (in case of Packed Items table)
+=======
+						"stock_qty": item.stock_qty || item.qty, //if stock_qty field is not available, fetch qty (in case of Packed Items table)
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 						"warehouse": item.warehouse,
 						"item_code": item.item_code,
 						"has_serial_no": has_serial_no
@@ -435,7 +439,11 @@ erpnext.selling.SellingController = erpnext.TransactionController.extend({
 	update_auto_repeat_reference: function(doc) {
 		if (doc.auto_repeat) {
 			frappe.call({
+<<<<<<< HEAD
 				method:"frappe.automation.doctype.auto_repeat.auto_repeat.update_reference",
+=======
+				method:"frappe.desk.doctype.auto_repeat.auto_repeat.update_reference",
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 				args:{
 					docname: doc.auto_repeat,
 					reference:doc.name

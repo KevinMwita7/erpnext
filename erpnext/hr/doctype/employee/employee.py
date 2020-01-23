@@ -89,6 +89,7 @@ class Employee(NestedSet):
 		})
 
 		if employee_user_permission_exists: return
+<<<<<<< HEAD
 
 		employee_user_permission_exists = frappe.db.exists('User Permission', {
 			'allow': 'Employee',
@@ -97,6 +98,8 @@ class Employee(NestedSet):
 		})
 
 		if employee_user_permission_exists: return
+=======
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 
 		add_user_permission("Employee", self.name, self.user_id)
 		set_user_permission_if_allowed("Company", self.company, self.user_id)
@@ -174,7 +177,11 @@ class Employee(NestedSet):
 		if self.status == 'Left':
 			reports_to = frappe.db.get_all('Employee',
 				filters={'reports_to': self.name, 'status': "Active"},
+<<<<<<< HEAD
 				fields=['name','employee_name']
+=======
+				fields = ['name','employee_name']
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 			)
 			if reports_to:
 				link_to_employees = [frappe.utils.get_link_to_form('Employee', employee.name, label=employee.employee_name) for employee in reports_to]

@@ -358,7 +358,11 @@ class Subscription(Document):
 		2. Change the `Subscription` status to 'Past Due Date'
 		3. Change the `Subscription` status to 'Cancelled'
 		"""
+<<<<<<< HEAD
 		if not self.is_current_invoice_paid() and (self.is_postpaid_to_invoice() or self.is_prepaid_to_invoice()):
+=======
+		if self.is_postpaid_to_invoice() or self.is_prepaid_to_invoice():
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 			self.generate_invoice()
 			if self.current_invoice_is_past_due():
 				self.status = 'Past Due Date'

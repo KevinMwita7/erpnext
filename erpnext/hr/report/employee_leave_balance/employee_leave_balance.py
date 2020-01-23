@@ -6,7 +6,11 @@ import frappe
 from frappe import _
 from frappe.utils import flt
 from erpnext.hr.doctype.leave_application.leave_application \
+<<<<<<< HEAD
 	import get_leave_balance_on, get_leaves_for_period
+=======
+	import get_leave_allocation_records, get_leave_balance_on, get_approved_leaves_for_period
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 
 from erpnext.hr.report.employee_leave_balance_summary.employee_leave_balance_summary \
 	import get_department_leave_approver_map
@@ -52,6 +56,9 @@ def get_data(filters, leave_types):
 	if filters.to_date <= filters.from_date:
 		frappe.throw(_("From date can not be greater than than To date"))
 
+	if filters.to_date <= filters.from_date:
+		frappe.throw(_("From date can not be greater than than To date"))
+
 	active_employees = frappe.get_all("Employee",
 		filters=conditions,
 		fields=["name", "employee_name", "department", "user_id", "leave_approver"])
@@ -73,7 +80,12 @@ def get_data(filters, leave_types):
 					filters.from_date, filters.to_date) * -1
 
 				# opening balance
+<<<<<<< HEAD
 				opening = get_leave_balance_on(employee.name, leave_type, filters.from_date)
+=======
+				opening = get_leave_balance_on(employee.name, leave_type, filters.from_date,
+					allocation_records_based_on_to_date.get(employee.name, frappe._dict()))
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 
 				# closing balance
 				closing = get_leave_balance_on(employee.name, leave_type, filters.to_date)

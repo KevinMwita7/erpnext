@@ -1,5 +1,6 @@
 braintree==3.57.1
 frappe
+<<<<<<< HEAD
 gocardless-pro==1.11.0
 googlemaps==3.1.1
 pandas==0.24.2
@@ -8,3 +9,14 @@ PyGithub==1.44.1
 python-stdnum==1.12
 Unidecode==1.1.1
 WooCommerce==2.1.1
+=======
+unidecode
+pygithub
+googlemaps
+python-stdnum
+braintree
+gocardless_pro
+woocommerce
+pandas
+plaid-python
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2

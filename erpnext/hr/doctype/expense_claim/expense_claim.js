@@ -222,8 +222,12 @@ frappe.ui.form.on("Expense Claim", {
 				frappe.set_route("query-report", "General Ledger");
 			}, __("View"));
 		}
+<<<<<<< HEAD
 
 		if (frm.doc.docstatus===1 && !cint(frm.doc.is_paid) && cint(frm.doc.grand_total) > 0
+=======
+		if (frm.doc.docstatus===1 && !cint(frm.doc.is_paid)
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 				&& (cint(frm.doc.total_amount_reimbursed) < cint(frm.doc.total_sanctioned_amount))
 				&& frappe.model.can_create("Payment Entry")) {
 			frm.add_custom_button(__('Payment'),
@@ -274,6 +278,33 @@ frappe.ui.form.on("Expense Claim", {
 		});
 	},
 
+<<<<<<< HEAD
+=======
+	set_query_for_cost_center: function(frm) {
+		frm.fields_dict["cost_center"].get_query = function() {
+			return {
+				filters: {
+					"company": frm.doc.company,
+					"is_group": 0
+				}
+			};
+		};
+	},
+
+	set_query_for_payable_account: function(frm) {
+		frm.fields_dict["payable_account"].get_query = function() {
+			return {
+				filters: {
+					"report_type": "Balance Sheet",
+					"account_type": "Payable",
+					"company": frm.doc.company,
+					"is_group": 0
+				}
+			};
+		};
+	},
+
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 	is_paid: function(frm) {
 		frm.trigger("toggle_fields");
 	},

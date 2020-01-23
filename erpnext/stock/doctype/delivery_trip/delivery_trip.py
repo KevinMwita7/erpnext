@@ -337,6 +337,44 @@ def sanitize_address(address):
 	return ', '.join(address[:3])
 
 
+<<<<<<< HEAD
+=======
+def get_directions(route, optimize):
+	"""
+	Retrieve map directions for a given route and departure time.
+	If optimize is `True`, Google Maps will return an optimized
+	order for the intermediate waypoints.
+
+	NOTE: Google's API does take an additional `departure_time` key,
+	but it only works for routes without any waypoints.
+
+	Args:
+		route (list of str): Route addresses (origin -> waypoint(s), if any -> destination)
+		optimize (bool): `True` if route needs to be optimized, else `False`
+
+	Returns:
+		(dict): Route legs and, if `optimize` is `True`, optimized waypoint order
+	"""
+
+	settings = frappe.get_single("Google Maps Settings")
+	maps_client = settings.get_client()
+
+	directions_data = {
+		"origin": route[0],
+		"destination": route[-1],
+		"waypoints": route[1: -1],
+		"optimize_waypoints": optimize
+	}
+
+	try:
+		directions = maps_client.directions(**directions_data)
+	except Exception as e:
+		frappe.throw(_(e))
+
+	return directions[0] if directions else False
+
+
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 @frappe.whitelist()
 def notify_customers(delivery_trip):
 	delivery_trip = frappe.get_doc("Delivery Trip", delivery_trip)

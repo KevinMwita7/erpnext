@@ -144,6 +144,23 @@ frappe.ui.form.on('Salary Structure', {
 						if(!values) return;
 							frm.events.open_salary_slip(frm, values.employee)
 
+<<<<<<< HEAD
+=======
+					frappe.call({
+						method: "erpnext.hr.doctype.salary_structure.salary_structure.make_salary_slip",
+						args: {
+							source_name: frm.doc.name,
+							employee: values.employee,
+							as_print: 1,
+							print_format: print_format,
+							for_preview: 1
+						},
+						callback: function(r) {
+							var new_window = window.open();
+							new_window.document.write(r.message);
+							// frappe.msgprint(r.message);
+						}
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 					});
 					d.show();
 				}

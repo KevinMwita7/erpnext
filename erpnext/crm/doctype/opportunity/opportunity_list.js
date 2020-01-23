@@ -18,6 +18,7 @@ frappe.listview_settings['Opportunity'] = {
 			listview.call_for_selected_items(method, {"status": "Closed"});
 		});
 
+<<<<<<< HEAD
 		if(listview.page.fields_dict.opportunity_from) {
 			listview.page.fields_dict.opportunity_from.get_query = function() {
 				return {
@@ -27,5 +28,14 @@ frappe.listview_settings['Opportunity'] = {
 				};
 			};
 		}
+=======
+		listview.page.fields_dict.opportunity_from.get_query = function() {
+			return {
+				"filters": {
+					"name": ["in", ["Customer", "Lead"]],
+				}
+			};
+		};
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 	}
 };

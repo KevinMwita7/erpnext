@@ -15,8 +15,13 @@ def upload_bank_statement():
 		with open(frappe.uploaded_file, "rb") as upfile:
 			fcontent = upfile.read()
 	else:
+<<<<<<< HEAD
 		fcontent = frappe.local.uploaded_file
 		fname = frappe.local.uploaded_filename
+=======
+		from frappe.utils.file_manager import get_uploaded_content
+		fname, fcontent = get_uploaded_content()
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 
 	if frappe.safe_encode(fname).lower().endswith("csv".encode('utf-8')):
 		from frappe.utils.csvutils import read_csv_content

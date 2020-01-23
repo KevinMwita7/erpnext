@@ -635,7 +635,11 @@ def get_held_invoices(party_type, party):
 	return held_invoices
 
 
+<<<<<<< HEAD
 def get_outstanding_invoices(party_type, party, account, condition=None, filters=None):
+=======
+def get_outstanding_invoices(party_type, party, account, condition=None):
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 	outstanding_invoices = []
 	precision = frappe.get_precision("Sales Invoice", "outstanding_amount") or 2
 
@@ -670,6 +674,10 @@ def get_outstanding_invoices(party_type, party, account, condition=None, filters
 		group by voucher_type, voucher_no
 		order by posting_date, name""".format(
 			dr_or_cr=dr_or_cr,
+<<<<<<< HEAD
+=======
+			invoice = invoice,
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 			condition=condition or ""
 		), {
 			"party_type": party_type,

@@ -1,6 +1,7 @@
 cur_frm.add_fetch("payment_gateway_account", "payment_account", "payment_account")
 cur_frm.add_fetch("payment_gateway_account", "payment_gateway", "payment_gateway")
 cur_frm.add_fetch("payment_gateway_account", "message", "message")
+<<<<<<< HEAD
 
 frappe.ui.form.on("Payment Request", {
 	setup: function(frm) {
@@ -11,6 +12,8 @@ frappe.ui.form.on("Payment Request", {
 		});
 	}
 })
+=======
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 
 frappe.ui.form.on("Payment Request", "onload", function(frm, dt, dn){
 	if (frm.doc.reference_doctype) {

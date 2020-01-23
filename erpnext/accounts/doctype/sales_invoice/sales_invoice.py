@@ -224,7 +224,11 @@ class SalesInvoice(SellingController):
 			for payment in self.payments:
 				total_amount_in_payments += payment.amount
 			invoice_total = self.rounded_total or self.grand_total
+<<<<<<< HEAD
 			if total_amount_in_payments < invoice_total:
+=======
+			if flt(total_amount_in_payments, self.precision("grand_total")) < invoice_total:
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 				frappe.throw(_("Total payments amount can't be greater than {}".format(-invoice_total)))
 
 	def validate_pos_paid_amount(self):
@@ -368,7 +372,7 @@ class SalesInvoice(SellingController):
 				timesheet.calculate_percentage_billed()
 				timesheet.flags.ignore_validate_update_after_submit = True
 				timesheet.set_status()
-				timesheet.save()
+				timesheet.save(ignore_permissions=True)
 
 	def update_time_sheet_detail(self, timesheet, args, sales_invoice):
 		for data in timesheet.time_logs:
@@ -429,15 +433,25 @@ class SalesInvoice(SellingController):
 				self.account_for_change_amount = pos.get('account_for_change_amount')
 
 			for fieldname in ('territory', 'naming_series', 'currency', 'letter_head', 'tc_name',
+<<<<<<< HEAD
 				'company', 'select_print_heading', 'cash_bank_account', 'write_off_account', 'taxes_and_charges',
+=======
+				'company', 'select_print_heading', 'cash_bank_account', 'write_off_account',
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 				'write_off_cost_center', 'apply_discount_on', 'cost_center'):
 					if (not for_validate) or (for_validate and not self.get(fieldname)):
 						self.set(fieldname, pos.get(fieldname))
 
 			customer_price_list = frappe.get_value("Customer", self.customer, 'default_price_list')
 
+<<<<<<< HEAD
 			if pos.get("company_address"):
 				self.company_address = pos.get("company_address")
+=======
+			for field in ['taxes_and_charges', 'company_address']:
+				if pos.get(field):
+					self.set(field, pos.get(field))
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 
 			if not customer_price_list:
 				self.set('selling_price_list', pos.get('selling_price_list'))
@@ -543,7 +557,13 @@ class SalesInvoice(SellingController):
 		for i in dic:
 			if frappe.db.get_single_value('Selling Settings', dic[i][0]) == 'Yes':
 				for d in self.get('items'):
+<<<<<<< HEAD
 					if (d.item_code and not d.get(i.lower().replace(' ','_')) and not self.get(dic[i][1])):
+=======
+					is_stock_item = frappe.get_cached_value('Item', d.item_code, 'is_stock_item')
+					if  (d.item_code and is_stock_item == 1\
+						and not d.get(i.lower().replace(' ','_')) and not self.get(dic[i][1])):
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 						msgprint(_("{0} is mandatory for Item {1}").format(i,d.item_code), raise_exception=1)
 
 
@@ -1214,6 +1234,7 @@ class SalesInvoice(SellingController):
 
 		self.set_missing_values(for_validate = True)
 
+<<<<<<< HEAD
 	def get_discounting_status(self):
 		status = None
 		if self.is_discounted:
@@ -1270,6 +1291,12 @@ def validate_inter_company_party(doctype, party, company, inter_company_referenc
 		return
 
 	if doctype in ["Sales Invoice", "Sales Order"]:
+=======
+def validate_inter_company_party(doctype, party, company, inter_company_invoice_reference):
+	if not party:
+		return
+	if doctype == "Sales Invoice":
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 		partytype, ref_partytype, internal = "Customer", "Supplier", "is_internal_customer"
 
 		if doctype == "Sales Invoice":

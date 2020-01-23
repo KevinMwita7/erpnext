@@ -16,6 +16,7 @@ class PlaidSettings(Document):
 
 @frappe.whitelist()
 def plaid_configuration():
+<<<<<<< HEAD
 	if frappe.db.get_single_value("Plaid Settings", "enabled"):
 		plaid_settings = frappe.get_single("Plaid Settings")
 		return {
@@ -23,6 +24,10 @@ def plaid_configuration():
 			"plaid_env": plaid_settings.plaid_env,
 			"client_name": frappe.local.site
 		}
+=======
+	if frappe.db.get_value("Plaid Settings", None, "enabled") == "1":
+		return {"plaid_public_key": frappe.conf.get("plaid_public_key") or None, "plaid_env": frappe.conf.get("plaid_env") or None, "client_name": frappe.local.site }
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 	else:
 		return "disabled"
 
@@ -53,11 +58,15 @@ def add_institution(token, response):
 
 @frappe.whitelist()
 def add_bank_accounts(response, bank, company):
+<<<<<<< HEAD
 	try:
 		response = json.loads(response)
 	except TypeError:
 		pass
 
+=======
+	response = json.loads(response) if not "accounts" in response else response
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 	bank = json.loads(bank)
 	result = []
 

@@ -39,6 +39,12 @@ class Quotation(SellingController):
 	def has_sales_order(self):
 		return frappe.db.get_value("Sales Order Item", {"prevdoc_docname": self.name, "docstatus": 1})
 
+<<<<<<< HEAD
+=======
+	def validate_order_type(self):
+		super(Quotation, self).validate_order_type()
+
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 	def update_lead(self):
 		if self.quotation_to == "Lead" and self.party_name:
 			frappe.get_doc("Lead", self.party_name).set_status(update=True)

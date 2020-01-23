@@ -199,11 +199,23 @@ frappe.ui.form.on('Production Plan', {
 					frm.set_value('mr_items', []);
 					$.each(r.message, function(i, d) {
 						var item = frm.add_child('mr_items');
+<<<<<<< HEAD
 						for (let key in d) {
 							if (d[key] && in_list(set_fields, key)) {
 								item[key] = d[key];
 							}
 						}
+=======
+						item.actual_qty = d.actual_qty;
+						item.item_code = d.item_code;
+						item.item_name = d.item_name;
+						item.min_order_qty = d.min_order_qty;
+						item.quantity = d.quantity;
+						item.sales_order = d.sales_order;
+						item.warehouse = d.warehouse;
+						item.description = d.description;
+						item.uom = d.uom;
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 					});
 				}
 				refresh_field('mr_items');

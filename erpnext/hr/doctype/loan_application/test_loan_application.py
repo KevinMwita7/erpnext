@@ -49,4 +49,8 @@ class TestLoanApplication(unittest.TestCase):
 
 		self.assertEqual(loan_application.total_payable_interest, 24657)
 		self.assertEqual(loan_application.total_payable_amount, 274657)
+<<<<<<< HEAD
 		self.assertEqual(loan_application.repayment_amount, 11445)
+=======
+		self.assertEqual(loan_application.repayment_amount, 11445)
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2

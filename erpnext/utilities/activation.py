@@ -8,6 +8,10 @@ from frappe import _
 from six import iteritems
 
 def get_level():
+<<<<<<< HEAD
+=======
+
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 	activation_level = 0
 	sales_data = []
 	min_count = 0

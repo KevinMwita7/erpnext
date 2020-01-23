@@ -272,8 +272,14 @@ erpnext.SerialNoBatchSelector = Class.extend({
 		var me = this;
 
 		return [
+<<<<<<< HEAD
 			{fieldtype:'Section Break', label: __('Batches')},
 			{fieldname: 'batches', fieldtype: 'Table', label: __('Batch Entries'),
+=======
+			{ fieldtype: 'Section Break', label: __('Batches') },
+			{
+				fieldname: 'batches', fieldtype: 'Table',
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 				fields: [
 					{
 						'fieldtype': 'Link',
@@ -389,14 +395,20 @@ erpnext.SerialNoBatchSelector = Class.extend({
 
 		let serial_no_filters = {
 			item_code: me.item_code,
+<<<<<<< HEAD
 			batch_no: this.doc.batch_no || null,
+=======
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 			delivery_document_no: ""
 		}
 
 		if (me.warehouse_details.name) {
 			serial_no_filters['warehouse'] = me.warehouse_details.name;
 		}
+<<<<<<< HEAD
 
+=======
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 		return [
 			{fieldtype: 'Section Break', label: __('Serial Numbers')},
 			{

@@ -125,6 +125,7 @@ def get_account_type_based_data(company, account_type, period_list, accumulated_
 	data["total"] = total
 	return data
 
+<<<<<<< HEAD
 def get_account_type_based_gl_data(company, start_date, end_date, account_type, filters={}):
 	cond = ""
 	filters = frappe._dict(filters)
@@ -135,6 +136,17 @@ def get_account_type_based_gl_data(company, start_date, end_date, account_type, 
 			company_fb = frappe.db.get_value("Company", company, 'default_finance_book')
 
 			cond = """ and finance_book in (%s, %s)
+=======
+def get_account_type_based_gl_data(company, start_date, end_date, account_type, filters):
+	cond = ""
+
+	if filters.finance_book:
+		cond = " and finance_book = '%s'" %(frappe.db.escape(filters.finance_book))
+		if filters.include_default_book_entries:
+			company_fb = frappe.db.get_value("Company", company, 'default_finance_book')
+
+			cond = """ and finance_book in ('%s', '%s')
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 				""" %(frappe.db.escape(filters.finance_book), frappe.db.escape(company_fb))
 
 	gl_sum = frappe.db.sql_list("""

@@ -231,6 +231,7 @@ frappe.ui.form.on('Material Request', {
 	make_purchase_order: function(frm) {
 		frappe.prompt(
 			{
+<<<<<<< HEAD
 				label: __('For Default Supplier (Optional)'),
 				fieldname:'default_supplier',
 				fieldtype: 'Link',
@@ -242,6 +243,13 @@ frappe.ui.form.on('Material Request', {
 						filters: {'doc': frm.doc.name}
 					}
 				}
+=======
+				label: __('For Default Supplier (optional)'),
+				fieldname:'default_supplier',
+				fieldtype: 'Link',
+				options: 'Supplier',
+				description: __('Selected Supplier must be the Default Supplier of one of the items below.'),
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 			},
 			(values) => {
 				frappe.model.open_mapped_doc({

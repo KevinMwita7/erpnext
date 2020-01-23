@@ -32,7 +32,11 @@ class JobCard(Document):
 				data = self.get_overlap_for(d)
 				if data:
 					frappe.throw(_("Row {0}: From Time and To Time of {1} is overlapping with {2}")
+<<<<<<< HEAD
 						.format(d.idx, self.name, data.name), OverlapError)
+=======
+						.format(d.idx, self.name, data.name))
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 
 				if d.from_time and d.to_time:
 					d.time_in_mins = time_diff_in_hours(d.to_time, d.from_time) * 60
@@ -41,6 +45,7 @@ class JobCard(Document):
 				if d.completed_qty:
 					self.total_completed_qty += d.completed_qty
 
+<<<<<<< HEAD
 	def get_overlap_for(self, args, check_next_available_slot=False):
 		production_capacity = 1
 	
@@ -59,6 +64,10 @@ class JobCard(Document):
 			extra_cond = " or (%(from_time)s <= jctl.from_time and %(to_time)s <= jctl.to_time)"
 
 		existing = frappe.db.sql("""select jc.name as name, jctl.to_time from
+=======
+	def get_overlap_for(self, args):
+		existing = frappe.db.sql("""select jc.name as name from
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 			`tabJob Card Time Log` jctl, `tabJob Card` jc where jctl.parent = jc.name and
 			(
 				(%(from_time)s > jctl.from_time and %(from_time)s < jctl.to_time) or

@@ -7,7 +7,10 @@ from frappe import _, scrub
 from frappe.utils import getdate, nowdate, flt, cint, formatdate, cstr, now, time_diff_in_seconds
 from collections import OrderedDict
 from erpnext.accounts.utils import get_currency_precision
+<<<<<<< HEAD
 from erpnext.accounts.doctype.accounting_dimension.accounting_dimension import get_accounting_dimensions
+=======
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 
 #  This report gives a summary of all Outstanding Invoices considering the following
 
@@ -171,7 +174,11 @@ class ReceivablePayableReport(object):
 			row.outstanding = flt(row.invoiced - row.paid - row.credit_note, self.currency_precision)
 			row.invoice_grand_total = row.invoiced
 
+<<<<<<< HEAD
 			if abs(row.outstanding) > 1.0/10 ** self.currency_precision:
+=======
+			if abs(row.outstanding) > 0.1/10 ** self.currency_precision:
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 				# non-zero oustanding, we must consider this row
 
 				if self.is_invoice(row) and self.filters.based_on_payment_terms:
@@ -285,7 +292,11 @@ class ReceivablePayableReport(object):
 
 	def set_party_details(self, row):
 		# customer / supplier name
+<<<<<<< HEAD
 		party_details = self.get_party_details(row.party) or {}
+=======
+		party_details = self.get_party_details(row.party)
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 		row.update(party_details)
 		if self.filters.get(scrub(self.filters.party_type)):
 			row.currency = row.account_currency
@@ -330,7 +341,11 @@ class ReceivablePayableReport(object):
 			self.append_payment_term(row, d, term)
 
 	def append_payment_term(self, row, d, term):
+<<<<<<< HEAD
 		if (self.filters.get("customer") or self.filters.get("supplier")) and d.currency == d.party_account_currency:
+=======
+		if self.filters.get("customer") and d.currency == d.party_account_currency:
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 			invoiced = d.payment_amount
 		else:
 			invoiced = flt(flt(d.payment_amount) * flt(d.conversion_rate), self.currency_precision)
@@ -552,8 +567,11 @@ class ReceivablePayableReport(object):
 
 		elif party_type_field=="supplier":
 			self.add_supplier_filters(conditions, values)
+<<<<<<< HEAD
 
 		self.add_accounting_dimensions_filters(conditions, values)
+=======
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 
 		return " and ".join(conditions), values
 
@@ -576,6 +594,7 @@ class ReceivablePayableReport(object):
 			filters={"account_type": account_type, "company": self.filters.company})]
 		conditions.append("account in (%s)" % ','.join(['%s'] *len(accounts)))
 		values += accounts
+<<<<<<< HEAD
 
 	def add_customer_filters(self, conditions, values):
 		if self.filters.get("customer_group"):
@@ -592,11 +611,30 @@ class ReceivablePayableReport(object):
 			conditions.append("party in (select name from tabCustomer where default_sales_partner=%s)")
 			values.append(self.filters.get("sales_partner"))
 
+=======
+
+	def add_customer_filters(self, conditions, values):
+		if self.filters.get("customer_group"):
+			conditions.append(self.get_hierarchical_filters('Customer Group', 'customer_group'))
+
+		if self.filters.get("territory"):
+			conditions.append(self.get_hierarchical_filters('Territory', 'territory'))
+
+		if self.filters.get("payment_terms_template"):
+			conditions.append("party in (select name from tabCustomer where payment_terms=%s)")
+			values.append(self.filters.get("payment_terms_template"))
+
+		if self.filters.get("sales_partner"):
+			conditions.append("party in (select name from tabCustomer where default_sales_partner=%s)")
+			values.append(self.filters.get("sales_partner"))
+
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 	def add_supplier_filters(self, conditions, values):
 		if self.filters.get("supplier_group"):
 			conditions.append("""party in (select name from tabSupplier
 				where supplier_group=%s)""")
 			values.append(self.filters.get("supplier_group"))
+<<<<<<< HEAD
 
 		if self.filters.get("payment_terms_template"):
 			conditions.append("party in (select name from tabSupplier where payment_terms=%s)")
@@ -670,6 +708,72 @@ class ReceivablePayableReport(object):
 			self.add_column(label=_('Payment Term'), fieldname='payment_term', fieldtype='Data')
 			self.add_column(label=_('Invoice Grand Total'), fieldname='invoice_grand_total')
 
+=======
+
+		if self.filters.get("payment_terms_template"):
+			conditions.append("party in (select name from tabSupplier where payment_terms=%s)")
+			values.append(self.filters.get("payment_terms_template"))
+
+	def get_hierarchical_filters(self, doctype, key):
+		lft, rgt = frappe.db.get_value(doctype, self.filters.get(key), ["lft", "rgt"])
+
+		return """party in (select name from tabCustomer
+			where exists(select name from `tab{doctype}` where lft >= {lft} and rgt <= {rgt}
+				and name=tabCustomer.{key}))""".format(
+					doctype=doctype, lft=lft, rgt=rgt, key=key)
+
+	def get_gle_balance(self, gle):
+		# get the balance of the GL (debit - credit) or reverse balance based on report type
+		return gle.get(self.dr_or_cr) - self.get_reverse_balance(gle)
+
+	def get_reverse_balance(self, gle):
+		# get "credit" balance if report type is "debit" and vice versa
+		return gle.get('debit' if self.dr_or_cr=='credit' else 'credit')
+
+	def is_invoice(self, gle):
+		if gle.voucher_type in ('Sales Invoice', 'Purchase Invoice'):
+			return True
+
+	def get_party_details(self, party):
+		if not party in self.party_details:
+			if self.party_type == 'Customer':
+				self.party_details[party] = frappe.db.get_value('Customer', party, ['customer_name',
+					'territory', 'customer_group', 'customer_primary_contact'], as_dict=True)
+			else:
+				self.party_details[party] = frappe.db.get_value('Supplier', party, ['supplier_name',
+					'supplier_group'], as_dict=True)
+
+		return self.party_details[party]
+
+
+	def get_columns(self):
+		self.columns = []
+		self.add_column('Posting Date', fieldtype='Date')
+		self.add_column(label=_(self.party_type), fieldname='party',
+			fieldtype='Link', options=self.party_type, width=180)
+
+		if self.party_type == 'Customer':
+			self.add_column(_("Customer Contact"), fieldname='customer_primary_contact',
+				fieldtype='Link', options='Contact')
+
+		if self.party_naming_by == "Naming Series":
+			self.add_column(_('{0} Name').format(self.party_type),
+				fieldname = scrub(self.party_type) + '_name', fieldtype='Data')
+
+		self.add_column(label=_('Voucher Type'), fieldname='voucher_type', fieldtype='Data')
+		self.add_column(label=_('Voucher No'), fieldname='voucher_no', fieldtype='Dynamic Link',
+			options='voucher_type', width=180)
+		self.add_column(label='Due Date', fieldtype='Date')
+
+		if self.party_type == "Supplier":
+			self.add_column(label=_('Bill No'), fieldname='bill_no', fieldtype='Data')
+			self.add_column(label=_('Bill Date'), fieldname='bill_date', fieldtype='Date')
+
+		if self.filters.based_on_payment_terms:
+			self.add_column(label=_('Payment Term'), fieldname='payment_term', fieldtype='Data')
+			self.add_column(label=_('Invoice Grand Total'), fieldname='invoice_grand_total')
+
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 		self.add_column(_('Invoiced Amount'), fieldname='invoiced')
 		self.add_column(_('Paid Amount'), fieldname='paid')
 		if self.party_type == "Customer":

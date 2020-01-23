@@ -51,7 +51,11 @@ class DeliveryNote(SellingController):
 			'source_field': 'qty',
 			'percent_join_field': 'against_sales_invoice',
 			'overflow_type': 'delivery',
+<<<<<<< HEAD
 			'no_allowance': 1
+=======
+			'no_tolerance': 1
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 		}]
 		if cint(self.is_return):
 			self.status_updater.append({
@@ -110,8 +114,12 @@ class DeliveryNote(SellingController):
 		self.set_status()
 		self.so_required()
 		self.validate_proj_cust()
+<<<<<<< HEAD
 		self.check_sales_order_on_hold_or_close("against_sales_order")
 		self.validate_for_items()
+=======
+		self.check_close_sales_order("against_sales_order")
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 		self.validate_warehouse()
 		self.validate_uom_is_integer("stock_uom", "stock_qty")
 		self.validate_uom_is_integer("uom", "qty")
@@ -165,11 +173,14 @@ class DeliveryNote(SellingController):
 			if not res:
 				frappe.throw(_("Customer {0} does not belong to project {1}").format(self.customer, self.project))
 
+<<<<<<< HEAD
 	def validate_for_items(self):
 		for d in self.get('items'):
 			#Customer Provided parts will have zero valuation rate
 			if frappe.db.get_value('Item', d.item_code, 'is_customer_provided_item'):
 				d.allow_zero_valuation_rate = 1
+=======
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 
 	def validate_warehouse(self):
 		super(DeliveryNote, self).validate_warehouse()

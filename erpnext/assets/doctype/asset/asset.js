@@ -390,6 +390,12 @@ frappe.ui.form.on('Asset', {
 		frm.set_value('location', item.asset_location);
 	},
 
+	gross_purchase_amount: function(frm) {
+		frm.doc.finance_books.forEach(d => {
+			frm.events.set_depreciation_rate(frm, d);
+		})
+	},
+
 	set_depreciation_rate: function(frm, row) {
 		if (row.total_number_of_depreciations && row.frequency_of_depreciation
 			&& row.expected_value_after_useful_life) {

@@ -62,7 +62,11 @@ def _make_naming_series_key(prefix):
 	:param prefix: Naming series prefix gotten from Stock Settings
 	:return: The derived key. If no prefix is given, an empty string is returned
 	"""
+<<<<<<< HEAD
 	if not text_type(prefix):
+=======
+	if not isinstance(prefix, string_types):
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 		return ''
 	else:
 		return prefix.upper() + '.#####'

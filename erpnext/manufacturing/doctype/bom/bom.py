@@ -175,6 +175,7 @@ class BOM(WebsiteGenerator):
 		if arg.get('scrap_items'):
 			rate = self.get_valuation_rate(arg)
 		elif arg:
+<<<<<<< HEAD
 			#Customer Provided parts will have zero rate
 			if not frappe.db.get_value('Item', arg["item_code"], 'is_customer_provided_item'):
 				if arg.get('bom_no') and self.set_rate_of_sub_assembly_item_based_on_bom:
@@ -215,6 +216,46 @@ class BOM(WebsiteGenerator):
 						else:
 							frappe.msgprint(_("{0} not found for item {1}")
 								.format(self.rm_cost_as_per, arg["item_code"]), alert=True)
+=======
+			if arg.get('bom_no') and self.set_rate_of_sub_assembly_item_based_on_bom:
+				rate = self.get_bom_unitcost(arg['bom_no']) * (arg.get("conversion_factor") or 1)
+			else:
+				if self.rm_cost_as_per == 'Valuation Rate':
+					rate = self.get_valuation_rate(arg) * (arg.get("conversion_factor") or 1)
+				elif self.rm_cost_as_per == 'Last Purchase Rate':
+					rate = (arg.get('last_purchase_rate') \
+						or frappe.db.get_value("Item", arg['item_code'], "last_purchase_rate")) \
+							* (arg.get("conversion_factor") or 1)
+				elif self.rm_cost_as_per == "Price List":
+					if not self.buying_price_list:
+						frappe.throw(_("Please select Price List"))
+					args = frappe._dict({
+						"doctype": "BOM",
+						"price_list": self.buying_price_list,
+						"qty": arg.get("qty") or 1,
+						"uom": arg.get("uom") or arg.get("stock_uom"),
+						"stock_uom": arg.get("stock_uom"),
+						"transaction_type": "buying",
+						"company": self.company,
+						"currency": self.currency,
+						"conversion_rate": 1, # Passed conversion rate as 1 purposefully, as conversion rate is applied at the end of the function
+						"conversion_factor": arg.get("conversion_factor") or 1,
+						"plc_conversion_rate": 1,
+						"ignore_party": True
+					})
+					item_doc = frappe.get_doc("Item", arg.get("item_code"))
+					out = frappe._dict()
+					get_price_list_rate(args, item_doc, out)
+					rate = out.price_list_rate
+
+				if not rate:
+					if self.rm_cost_as_per == "Price List":
+						frappe.msgprint(_("Price not found for item {0} in price list {1}")
+							.format(arg["item_code"], self.buying_price_list), alert=True)
+					else:
+						frappe.msgprint(_("{0} not found for item {1}")
+							.format(self.rm_cost_as_per, arg["item_code"]), alert=True)
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 
 		return flt(rate) / (self.conversion_rate or 1)
 
@@ -516,10 +557,14 @@ class BOM(WebsiteGenerator):
 		return erpnext.get_company_currency(self.company)
 
 	def add_to_cur_exploded_items(self, args):
-		if self.cur_exploded_items.get(args.item_code):
-			self.cur_exploded_items[args.item_code]["stock_qty"] += args.stock_qty
+		key = (args.item_code)
+		if args.operation:
+			key = (args.item_code, args.operation)
+
+		if key in self.cur_exploded_items:
+			self.cur_exploded_items[key]["stock_qty"] += args.stock_qty
 		else:
-			self.cur_exploded_items[args.item_code] = args
+			self.cur_exploded_items[key] = args
 
 	def get_child_exploded_items(self, bom_no, stock_qty):
 		""" Add all items from Flat BOM of child BOM"""
@@ -624,7 +669,7 @@ def get_bom_items_as_dict(bom, company, qty=1, fetch_exploded=1, fetch_scrap_ite
 				and bom.name = %(bom)s
 				and item.is_stock_item in (1, {is_stock_item})
 				{where_conditions}
-				group by item_code, stock_uom
+				group by item_code, stock_uom {groupby_columns}
 				order by idx"""
 
 	is_stock_item = 0 if include_non_stock_items else 1
@@ -633,6 +678,7 @@ def get_bom_items_as_dict(bom, company, qty=1, fetch_exploded=1, fetch_scrap_ite
 			where_conditions="",
 			is_stock_item=is_stock_item,
 			qty_field="stock_qty",
+<<<<<<< HEAD
 			select_columns = """, bom_item.source_warehouse, bom_item.operation,
 				bom_item.include_item_in_manufacturing, bom_item.description, bom_item.rate,
 				(Select idx from `tabBOM Item` where item_code = bom_item.item_code and parent = %(parent)s limit 1) as idx""")
@@ -642,20 +688,38 @@ def get_bom_items_as_dict(bom, company, qty=1, fetch_exploded=1, fetch_scrap_ite
 		query = query.format(table="BOM Scrap Item", where_conditions="",
 			select_columns=", bom_item.idx, item.description", is_stock_item=is_stock_item, qty_field="stock_qty")
 
+=======
+			select_columns = """, bom_item.source_warehouse, bom_item.operation, bom_item.include_item_in_manufacturing,
+				(Select idx from `tabBOM Item` where item_code = bom_item.item_code and parent = %(parent)s limit 1) as idx""",
+			groupby_columns = """, bom_item.operation""")
+
+		items = frappe.db.sql(query, { "parent": bom, "qty": qty, "bom": bom, "company": company }, as_dict=True)
+	elif fetch_scrap_items:
+		query = query.format(table="BOM Scrap Item", where_conditions="", select_columns=", bom_item.idx", is_stock_item=is_stock_item, qty_field="stock_qty", groupby_columns="")
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 		items = frappe.db.sql(query, { "qty": qty, "bom": bom, "company": company }, as_dict=True)
 	else:
 		query = query.format(table="BOM Item", where_conditions="", is_stock_item=is_stock_item,
 			qty_field="stock_qty" if fetch_qty_in_stock_uom else "qty",
+<<<<<<< HEAD
 			select_columns = """, bom_item.uom, bom_item.conversion_factor, bom_item.source_warehouse,
 				bom_item.idx, bom_item.operation, bom_item.include_item_in_manufacturing,
 				bom_item.description, bom_item.base_rate as rate """)
+=======
+			select_columns = ", bom_item.uom, bom_item.conversion_factor, bom_item.source_warehouse, bom_item.idx, bom_item.operation, bom_item.include_item_in_manufacturing",
+			groupby_columns = """, bom_item.operation""")
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 		items = frappe.db.sql(query, { "qty": qty, "bom": bom, "company": company }, as_dict=True)
 
 	for item in items:
-		if item.item_code in item_dict:
-			item_dict[item.item_code]["qty"] += flt(item.qty)
+		key = (item.item_code)
+		if item.operation:
+			key = (item.item_code, item.operation)
+
+		if key in item_dict:
+			item_dict[key]["qty"] += flt(item.qty)
 		else:
-			item_dict[item.item_code] = item
+			item_dict[key] = item
 
 	for item, item_details in item_dict.items():
 		for d in [["Account", "expense_account", "stock_adjustment_account"],

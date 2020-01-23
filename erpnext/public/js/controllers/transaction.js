@@ -1522,6 +1522,7 @@ erpnext.TransactionController = erpnext.taxes_and_totals.extend({
 				},
 				callback: function(r) {
 					if(!r.exc) {
+<<<<<<< HEAD
 						item.item_tax_rate = r.message;
 						me.add_taxes_from_item_tax_template(item.item_tax_rate);
 						me.calculate_taxes_and_totals();
@@ -1564,6 +1565,18 @@ erpnext.TransactionController = erpnext.taxes_and_totals.extend({
 							}
 						});
 						me.calculate_taxes_and_totals();
+=======
+						if(me.frm.doc.shipping_rule && me.frm.doc.taxes) {
+							for (let tax of r.message) {
+								me.frm.add_child("taxes", tax);
+							}
+
+							refresh_field("taxes");
+						} else {
+							me.frm.set_value("taxes", r.message);
+							me.calculate_taxes_and_totals();
+						}
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 					}
 				}
 			});

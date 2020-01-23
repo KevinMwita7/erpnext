@@ -280,6 +280,7 @@ def make_custom_fields(update=True):
 			'fieldtype': 'Link',
 			'insert_after': 'gst_transporter_id',
 			'options': 'Driver',
+<<<<<<< HEAD
 			'print_hide': 1
 		},
 		{
@@ -306,6 +307,34 @@ def make_custom_fields(update=True):
 			'print_hide': 1
 		},
 		{
+=======
+			'print_hide': 1
+		},
+		{
+			'fieldname': 'lr_no',
+			'label': 'Transport Receipt No',
+			'fieldtype': 'Data',
+			'insert_after': 'driver',
+			'print_hide': 1,
+			'translatable': 0
+		},
+		{
+			'fieldname': 'vehicle_no',
+			'label': 'Vehicle No',
+			'fieldtype': 'Data',
+			'insert_after': 'lr_no',
+			'print_hide': 1,
+			'translatable': 0
+		},
+		{
+			'fieldname': 'distance',
+			'label': 'Distance (in km)',
+			'fieldtype': 'Float',
+			'insert_after': 'vehicle_no',
+			'print_hide': 1
+		},
+		{
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 			'fieldname': 'transporter_col_break',
 			'fieldtype': 'Column Break',
 			'insert_after': 'distance'
@@ -364,7 +393,11 @@ def make_custom_fields(update=True):
 			'fieldtype': 'Data',
 			'depends_on': 'eval:(doc.docstatus === 1)',
 			'allow_on_submit': 1,
+<<<<<<< HEAD
 			'insert_after': 'tax_id',
+=======
+			'insert_after': 'project',
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 			'translatable': 0
 		}
 	]
@@ -381,7 +414,12 @@ def make_custom_fields(update=True):
 		'Purchase Invoice': purchase_invoice_gst_category + invoice_gst_fields + purchase_invoice_itc_fields + purchase_invoice_gst_fields,
 		'Purchase Order': purchase_invoice_gst_fields,
 		'Purchase Receipt': purchase_invoice_gst_fields,
+<<<<<<< HEAD
 		'Sales Invoice': sales_invoice_gst_category + invoice_gst_fields + sales_invoice_shipping_fields + sales_invoice_gst_fields + si_ewaybill_fields,
+=======
+		'Sales Invoice': (invoice_gst_fields + sales_invoice_gst_fields
+			+ sales_invoice_shipping_fields + si_ewaybill_fields),
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 		'Delivery Note': sales_invoice_gst_fields + ewaybill_fields + sales_invoice_shipping_fields,
 		'Sales Order': sales_invoice_gst_fields,
 		'Tax Category': inter_state_gst_field,
@@ -499,6 +537,10 @@ def make_custom_fields(update=True):
 			}
 		]
 	}
+<<<<<<< HEAD
+=======
+
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 	create_custom_fields(custom_fields, update=update)
 
 def make_fixtures(company=None):

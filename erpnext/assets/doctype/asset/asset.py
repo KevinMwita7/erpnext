@@ -6,7 +6,11 @@ from __future__ import unicode_literals
 import frappe, erpnext, math, json
 from frappe import _
 from six import string_types
+<<<<<<< HEAD
 from frappe.utils import flt, add_months, cint, nowdate, getdate, today, date_diff, month_diff, add_days
+=======
+from frappe.utils import flt, add_months, cint, nowdate, getdate, today, date_diff, add_days
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 from frappe.model.document import Document
 from erpnext.assets.doctype.asset_category.asset_category import get_asset_category_account
 from erpnext.assets.doctype.asset.depreciation \
@@ -197,6 +201,7 @@ class Asset(AccountsController):
 					schedule_date = add_months(d.depreciation_start_date,
 						n * cint(d.frequency_of_depreciation))
 
+<<<<<<< HEAD
 					# schedule date will be a year later from start date
 					# so monthly schedule date is calculated by removing 11 months from it
 					monthly_schedule_date = add_months(schedule_date, - d.frequency_of_depreciation + 1)
@@ -210,11 +215,18 @@ class Asset(AccountsController):
 					# so monthly schedule date is calculated by removing month difference between use date and start date
 					monthly_schedule_date = add_months(d.depreciation_start_date, - months + 1)
 
+=======
+				# For first row
+				if has_pro_rata and n==0:
+					depreciation_amount, days = get_pro_rata_amt(d, depreciation_amount,
+						self.available_for_use_date, d.depreciation_start_date)
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 				# For last row
 				elif has_pro_rata and n == cint(number_of_pending_depreciations) - 1:
 					to_date = add_months(self.available_for_use_date,
 						n * cint(d.frequency_of_depreciation))
 
+<<<<<<< HEAD
 					depreciation_amount, days, months = get_pro_rata_amt(d,
 						depreciation_amount, schedule_date, to_date)
 
@@ -222,6 +234,12 @@ class Asset(AccountsController):
 
 					schedule_date = add_days(schedule_date, days)
 					last_schedule_date = schedule_date
+=======
+					depreciation_amount, days = get_pro_rata_amt(d,
+						depreciation_amount, schedule_date, to_date)
+
+					schedule_date = add_days(schedule_date, days)
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 
 				if not depreciation_amount: continue
 				value_after_depreciation -= flt(depreciation_amount,
@@ -235,6 +253,7 @@ class Asset(AccountsController):
 					skip_row = True
 
 				if depreciation_amount > 0:
+<<<<<<< HEAD
 					# With monthly depreciation, each depreciation is divided by months remaining until next date
 					if self.allow_monthly_depreciation:
 						# month range is 1 to 12
@@ -279,6 +298,15 @@ class Asset(AccountsController):
 							"finance_book": d.finance_book,
 							"finance_book_id": d.idx
 						})
+=======
+					self.append("schedules", {
+						"schedule_date": schedule_date,
+						"depreciation_amount": depreciation_amount,
+						"depreciation_method": d.depreciation_method,
+						"finance_book": d.finance_book,
+						"finance_book_id": d.idx
+					})
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 
 	def check_is_pro_rata(self, row):
 		has_pro_rata = False
@@ -364,6 +392,7 @@ class Asset(AccountsController):
 		precision = self.precision("gross_purchase_amount")
 
 		if row.depreciation_method in ("Straight Line", "Manual"):
+<<<<<<< HEAD
 			depreciation_left = (cint(row.total_number_of_depreciations) - cint(self.number_of_depreciations_booked))
 
 			if not depreciation_left:
@@ -373,6 +402,11 @@ class Asset(AccountsController):
 
 			depreciation_amount = (flt(row.value_after_depreciation) -
 				flt(row.expected_value_after_useful_life)) / depreciation_left
+=======
+			depreciation_amount = (flt(row.value_after_depreciation) -
+				flt(row.expected_value_after_useful_life)) / (cint(row.total_number_of_depreciations) -
+				cint(self.number_of_depreciations_booked))
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 		else:
 			depreciation_amount = flt(depreciable_value * (flt(row.rate_of_depreciation) / 100), precision)
 
@@ -382,6 +416,7 @@ class Asset(AccountsController):
 		for row in self.get('finance_books'):
 			accumulated_depreciation_after_full_schedule = [d.accumulated_depreciation_amount
 				for d in self.get("schedules") if cint(d.finance_book_id) == row.idx]
+<<<<<<< HEAD
 
 			if accumulated_depreciation_after_full_schedule:
 				accumulated_depreciation_after_full_schedule = max(accumulated_depreciation_after_full_schedule)
@@ -391,6 +426,17 @@ class Asset(AccountsController):
 					self.precision('gross_purchase_amount'))
 
 				if (row.expected_value_after_useful_life and
+=======
+
+			if accumulated_depreciation_after_full_schedule:
+				accumulated_depreciation_after_full_schedule = max(accumulated_depreciation_after_full_schedule)
+
+				asset_value_after_full_schedule = flt(flt(self.gross_purchase_amount) -
+					flt(accumulated_depreciation_after_full_schedule),
+					self.precision('gross_purchase_amount'))
+
+				if (row.expected_value_after_useful_life and 
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 					row.expected_value_after_useful_life < asset_value_after_full_schedule):
 					frappe.throw(_("Depreciation Row {0}: Expected value after useful life must be greater than or equal to {1}")
 						.format(row.idx, asset_value_after_full_schedule))
@@ -658,6 +704,7 @@ def make_journal_entry(asset_name):
 
 	return je
 
+<<<<<<< HEAD
 @frappe.whitelist()
 def make_asset_movement(assets, purpose=None):
 	import json
@@ -692,9 +739,23 @@ def get_pro_rata_amt(row, depreciation_amount, from_date, to_date):
 	total_days = get_total_days(to_date, row.frequency_of_depreciation)
 
 	return (depreciation_amount * flt(days)) / flt(total_days), days, months
+=======
+def is_cwip_accounting_disabled():
+	return cint(frappe.db.get_single_value("Asset Settings", "disable_cwip_accounting"))
+
+def get_pro_rata_amt(row, depreciation_amount, from_date, to_date):
+	days = date_diff(to_date, from_date)
+	total_days = get_total_days(to_date, row.frequency_of_depreciation)
+
+	return (depreciation_amount * flt(days)) / flt(total_days), days
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 
 def get_total_days(date, frequency):
 	period_start_date = add_months(date,
 		cint(frequency) * -1)
 
+<<<<<<< HEAD
 	return date_diff(date, period_start_date)
+=======
+	return date_diff(date, period_start_date)
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2

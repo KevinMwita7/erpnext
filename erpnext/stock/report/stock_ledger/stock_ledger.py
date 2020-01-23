@@ -38,6 +38,7 @@ def execute(filters=None):
 
 			sle.update({
 				"qty_after_transaction": actual_qty,
+<<<<<<< HEAD
 				"stock_value": stock_value,
 				"in_qty": max(sle.actual_qty, 0),
 				"out_qty": min(sle.actual_qty, 0)
@@ -56,6 +57,11 @@ def execute(filters=None):
 					"finished_qty": finished_qty,
 				})
 
+=======
+				"stock_value": stock_value
+			})
+
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 		data.append(sle)
 
 		if include_uom:
@@ -99,6 +105,7 @@ def get_stock_ledger_entries(filters, items):
 	item_conditions_sql = ''
 	if items:
 		item_conditions_sql = 'and sle.item_code in ({})'\
+<<<<<<< HEAD
 			.format(', '.join([frappe.db.escape(i) for i in items]))
 
 	sl_entries = frappe.db.sql("""
@@ -132,6 +139,23 @@ def get_stock_ledger_entries(filters, items):
 
 	return sl_entries
 
+=======
+			.format(', '.join(['"' + frappe.db.escape(i) + '"' for i in items]))
+
+	return frappe.db.sql("""select concat_ws(" ", posting_date, posting_time) as date,
+			item_code, warehouse, actual_qty, qty_after_transaction, incoming_rate, valuation_rate,
+			stock_value, voucher_type, voucher_no, batch_no, serial_no, company, project, stock_value_difference
+		from `tabStock Ledger Entry` sle
+		where company = %(company)s and
+			posting_date between %(from_date)s and %(to_date)s
+			{sle_conditions}
+			{item_conditions_sql}
+			order by posting_date asc, posting_time asc, name asc"""\
+		.format(
+			sle_conditions=get_sle_conditions(filters),
+			item_conditions_sql = item_conditions_sql
+		), filters, as_dict=1)
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 
 def get_items(filters):
 	conditions = []
@@ -207,6 +231,7 @@ def get_opening_balance(filters, columns):
 		"posting_date": filters.from_date,
 		"posting_time": "00:00:00"
 	})
+<<<<<<< HEAD
 
 	row = {
 		"item_code": _("'Opening'"),
@@ -214,6 +239,12 @@ def get_opening_balance(filters, columns):
 		"valuation_rate": last_entry.get("valuation_rate", 0),
 		"stock_value": last_entry.get("stock_value", 0)
 	}
+=======
+	row = {}
+	row["item_code"] = _("'Opening'")
+	for dummy, v in ((9, 'qty_after_transaction'), (11, 'valuation_rate'), (12, 'stock_value')):
+			row[v] = last_entry.get(v, 0)
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 
 	return row
 

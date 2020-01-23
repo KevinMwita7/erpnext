@@ -4,11 +4,10 @@
 from __future__ import unicode_literals
 import frappe
 
-from frappe.utils import flt, cint, nowdate
+from frappe.utils import flt, cint, nowdate, getdate
 
 from frappe import throw, _
 import frappe.defaults
-from frappe.utils import getdate
 from erpnext.controllers.buying_controller import BuyingController
 from erpnext.accounts.utils import get_account_currency
 from frappe.desk.notifications import clear_doctype_notifications
@@ -32,6 +31,7 @@ class PurchaseReceipt(BuyingController):
 			'target_parent_dt': 'Purchase Order',
 			'target_parent_field': 'per_received',
 			'target_ref_field': 'qty',
+<<<<<<< HEAD
 			'source_dt': 'Purchase Receipt Item',
 			'source_field': 'received_qty',
 			'second_source_dt': 'Purchase Invoice Item',
@@ -52,6 +52,17 @@ class PurchaseReceipt(BuyingController):
 			'target_ref_field': 'qty',
 			'source_field': 'qty',
 			'percent_join_field': 'material_request'
+=======
+			'source_dt': 'Purchase Receipt Item',
+			'source_field': 'received_qty',
+			'second_source_dt': 'Purchase Invoice Item',
+			'second_source_field': 'received_qty',
+			'second_join_field': 'po_detail',
+			'percent_join_field': 'purchase_order',
+			'overflow_type': 'receipt',
+			'second_source_extra_cond': """ and exists(select name from `tabPurchase Invoice`
+				where name=`tabPurchase Invoice Item`.parent and update_stock = 1)"""
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 		}]
 		if cint(self.is_return):
 			self.status_updater.append({
@@ -152,7 +163,11 @@ class PurchaseReceipt(BuyingController):
 			self.company, self.base_grand_total)
 
 		self.update_prevdoc_status()
+<<<<<<< HEAD
 		if flt(self.per_billed) < 100:
+=======
+		if cint(self.per_billed) < 100:
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 			self.update_billing_status()
 		else:
 			self.status = "Completed"

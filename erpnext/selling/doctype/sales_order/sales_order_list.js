@@ -28,6 +28,7 @@ frappe.listview_settings['Sales Order'] = {
 				return [__("To Deliver"), "orange",
 					"per_delivered,<,100|per_billed,=,100|status,!=,Closed"];
 			}
+<<<<<<< HEAD
 		} else if ((flt(doc.per_delivered, 6) === 100) && flt(doc.grand_total) !== 0
 			&& flt(doc.per_billed, 6) < 100) {
 			// to bill
@@ -35,7 +36,28 @@ frappe.listview_settings['Sales Order'] = {
 				"per_delivered,=,100|per_billed,<,100|status,!=,Closed"];
 		} else if (doc.skip_delivery_note && flt(doc.per_billed, 6) < 100){
 			return [__("To Bill"), "orange", "per_billed,<,100|status,!=,Closed"];
+=======
+
+		} else if ((flt(doc.per_delivered, 6) == 100)
+			&& flt(doc.grand_total) !== 0 && flt(doc.per_billed, 6) < 100 && doc.status !== "Closed") {
+			// to bill
+
+			return [__("To Bill"), "orange", "per_delivered,=,100|per_billed,<,100|status,!=,Closed"];
+
+		} else if ((flt(doc.per_delivered, 6) === 100)
+			&& (flt(doc.grand_total) === 0 || flt(doc.per_billed, 6) == 100) && doc.status !== "Closed") {
+			return [__("Completed"), "green", "per_delivered,=,100|per_billed,=,100|status,!=,Closed"];
+
+		}else if (doc.order_type === "Maintenance" && flt(doc.per_delivered, 6) < 100 && doc.status !== "Closed"){
+
+			if(flt(doc.per_billed, 6) < 100 ){
+				return [__("To Deliver and Bill"), "orange", "per_delivered,=,100|per_billed,<,100|status,!=,Closed"];
+			}else if(flt(doc.per_billed, 6) == 100){
+				return [__("To Deliver"), "orange", "per_delivered,=,100|per_billed,=,100|status,!=,Closed"];
+			}
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 		}
+
 	},
 	onload: function(listview) {
 		var method = "erpnext.selling.doctype.sales_order.sales_order.close_or_unclose_sales_orders";

@@ -4,6 +4,7 @@
 from __future__ import unicode_literals
 import frappe
 from frappe.utils import flt
+from frappe.model.meta import get_field_precision
 from frappe import msgprint, _
 from frappe.model.meta import get_field_precision
 from erpnext.accounts.doctype.accounting_dimension.accounting_dimension import get_accounting_dimensions

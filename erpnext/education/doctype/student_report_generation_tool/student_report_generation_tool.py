@@ -89,4 +89,8 @@ def get_attendance_count(student, academic_year, academic_term=None):
 			attendance["Present"] = 0
 		return attendance
 	else:
+<<<<<<< HEAD
 		frappe.throw(_("Provide the academic year and set the starting and ending date."))
+=======
+		frappe.throw(_("Provide the academic year and set the starting and ending date."))
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2

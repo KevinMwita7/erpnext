@@ -35,12 +35,26 @@ frappe.ui.form.on("Purchase Receipt", {
 			}
 		});
 
+<<<<<<< HEAD
+=======
+		frm.set_query("expense_account", "items", function() {
+			return {
+				query: "erpnext.controllers.queries.get_expense_account",
+				filters: {'company': frm.doc.company}
+			}
+		});
+
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 		frm.set_query("taxes_and_charges", function() {
 			return {
 				filters: {'company': frm.doc.company }
 			}
 		});
+<<<<<<< HEAD
 		
+=======
+
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 	},
 	onload: function(frm) {
 		erpnext.queries.setup_queries(frm, "Warehouse", function() {
@@ -129,12 +143,19 @@ erpnext.stock.PurchaseReceiptController = erpnext.buying.BuyingController.extend
 					cur_frm.add_custom_button(__("Close"), this.close_purchase_receipt, __("Status"))
 				}
 
+<<<<<<< HEAD
 				cur_frm.add_custom_button(__('Purchase Return'), this.make_purchase_return, __('Create'));
 
 				cur_frm.add_custom_button(__('Make Stock Entry'), cur_frm.cscript['Make Stock Entry'], __('Create'));
 
 				if(flt(this.frm.doc.per_billed) < 100) {
 					cur_frm.add_custom_button(__('Purchase Invoice'), this.make_purchase_invoice, __('Create'));
+=======
+				cur_frm.add_custom_button(__('Purchase Return'), this.make_purchase_return, __("Make"));
+
+				if(flt(this.frm.doc.per_billed) < 100) {
+					cur_frm.add_custom_button(__('Purchase Invoice'), this.make_purchase_invoice, __("Make"));
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 				}
 				cur_frm.add_custom_button(__('Retention Stock Entry'), this.make_retention_stock_entry, __('Create'));
 

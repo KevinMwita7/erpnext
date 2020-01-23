@@ -68,6 +68,7 @@ class SalarySlip(TransactionBase):
 			self.update_salary_slip_in_additional_salary()
 			if (frappe.db.get_single_value("HR Settings", "email_salary_slip_to_employee")) and not frappe.flags.via_payroll_entry:
 				self.email_salary_slip()
+<<<<<<< HEAD
 
 	def on_cancel(self):
 		self.set_status()
@@ -93,6 +94,30 @@ class SalarySlip(TransactionBase):
 
 	def is_rounding_total_disabled(self):
 		return cint(frappe.db.get_single_value("HR Settings", "disable_rounded_total"))
+=======
+
+	def on_cancel(self):
+		self.set_status()
+		self.update_status()
+		self.update_salary_slip_in_additional_salary()
+
+	def on_trash(self):
+		from frappe.model.naming import revert_series_if_last
+		revert_series_if_last(self.series, self.name)
+
+	def get_status(self):
+		if self.docstatus == 0:
+			status = "Draft"
+		elif self.docstatus == 1:
+			status = "Submitted"
+		elif self.docstatus == 2:
+			status = "Cancelled"
+		return status
+
+	def validate_dates(self):
+		if date_diff(self.end_date, self.start_date) < 0:
+			frappe.throw(_("To date cannot be before From date"))
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 
 	def check_existing(self):
 		if not self.salary_slip_based_on_timesheet:
@@ -451,6 +476,7 @@ class SalarySlip(TransactionBase):
 					component_row.additional_amount = amount - component_row.get("default_amount", 0)
 				else:
 					component_row.additional_amount = amount
+<<<<<<< HEAD
 
 				if not overwrite and component_row.default_amount:
 					amount += component_row.default_amount
@@ -466,6 +492,23 @@ class SalarySlip(TransactionBase):
 				.format(tax_component))
 			return
 
+=======
+
+				if not overwrite and component_row.default_amount:
+					amount += component_row.default_amount
+			else:
+				component_row.default_amount = amount
+
+			component_row.amount = amount
+			component_row.deduct_full_tax_on_selected_payroll_date = struct_row.deduct_full_tax_on_selected_payroll_date
+
+	def calculate_variable_based_on_taxable_salary(self, tax_component, payroll_period):
+		if not payroll_period:
+			frappe.msgprint(_("Start and end dates not in a valid Payroll Period, cannot calculate {0}.")
+				.format(tax_component))
+			return
+
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 		# Deduct taxes forcefully for unsubmitted tax exemption proof and unclaimed benefits in the last period
 		if payroll_period.end_date <= getdate(self.end_date):
 			self.deduct_tax_for_unsubmitted_tax_exemption_proof = 1

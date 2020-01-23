@@ -308,6 +308,46 @@ def get_data():
 					"name": "Customers Without Any Sales Transactions",
 					"doctype": "Customer"
 				},
+<<<<<<< HEAD
+=======
+				{
+					"type": "report",
+					"is_query_report": True,
+					"name": "Sales Partners Commission",
+					"doctype": "Customer"
+				}
+			]
+		},
+		{
+			"label": _("SMS"),
+			"icon": "fa fa-wrench",
+			"items": [
+				{
+					"type": "doctype",
+					"name": "SMS Center",
+					"description":_("Send mass SMS to your contacts"),
+				},
+				{
+					"type": "doctype",
+					"name": "SMS Log",
+					"description":_("Logs for maintaining sms delivery status"),
+				},
+				{
+					"type": "doctype",
+					"name": "SMS Settings",
+					"description": _("Setup SMS gateway settings")
+				},
+			]
+		},
+		{
+			"label": _("Help"),
+			"items": [
+				{
+					"type": "help",
+					"label": _("Customer and Supplier"),
+					"youtube_id": "anoGi_RpQ20"
+				},
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 				{
 					"type": "report",
 					"is_query_report": True,

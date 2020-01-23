@@ -51,6 +51,7 @@ def _get_party_details(party=None, account=None, party_type="Customer", company=
 	set_other_values(party_details, party, party_type)
 	set_price_list(party_details, party, party_type, price_list, pos_profile)
 
+<<<<<<< HEAD
 	party_details["tax_category"] = get_address_tax_category(party.get("tax_category"),
 		party_address, shipping_address if party_type != "Supplier" else party_address)
 
@@ -58,6 +59,9 @@ def _get_party_details(party=None, account=None, party_type="Customer", company=
 		party_details["taxes_and_charges"] = set_taxes(party.name, party_type, posting_date, company,
 			customer_group=party_details.customer_group, supplier_group=party_details.supplier_group, tax_category=party_details.tax_category,
 			billing_address=party_address, shipping_address=shipping_address)
+=======
+	out["taxes_and_charges"] = set_taxes(party.name, party_type, posting_date, company, out.customer_group, out.supplier_group)
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 
 	if fetch_payment_terms_template:
 		party_details["payment_terms_template"] = get_pyt_term_template(party.name, party_type, company)
@@ -164,7 +168,7 @@ def set_price_list(party_details, party, party_type, given_price_list, pos=None)
 	# price list
 	price_list = get_permitted_documents('Price List')
 
-	if price_list:
+	if price_list and len(price_list) == 1:
 		price_list = price_list[0]
 	elif pos and party_type == 'Customer':
 		customer_price_list = frappe.get_value('Customer', party.name, 'default_price_list')

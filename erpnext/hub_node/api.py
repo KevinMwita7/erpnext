@@ -2,6 +2,7 @@ from __future__ import unicode_literals
 
 import frappe
 import json
+from frappe import _
 
 from frappe import _
 from frappe.frappeclient import FrappeClient

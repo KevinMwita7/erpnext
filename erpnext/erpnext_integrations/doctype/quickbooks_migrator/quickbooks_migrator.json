@@ -32,6 +32,16 @@
  ],
  "fields": [
   {
+<<<<<<< HEAD
+=======
+   "allow_bulk_edit": 0,
+   "allow_in_quick_entry": 0,
+   "allow_on_submit": 0,
+   "bold": 0,
+   "collapsible": 0,
+   "columns": 0,
+   "fetch_if_empty": 0,
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
    "fieldname": "status",
    "fieldtype": "Select",
    "hidden": 1,
@@ -41,11 +51,27 @@
   {
    "collapsible": 1,
    "collapsible_depends_on": "eval:doc.client_id && doc.client_secret && doc.redirect_url",
+<<<<<<< HEAD
+=======
+   "columns": 0,
+   "fetch_if_empty": 0,
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
    "fieldname": "application_settings",
    "fieldtype": "Section Break",
    "label": "Application Settings"
   },
   {
+<<<<<<< HEAD
+=======
+   "allow_bulk_edit": 0,
+   "allow_in_quick_entry": 0,
+   "allow_on_submit": 0,
+   "bold": 0,
+   "collapsible": 0,
+   "columns": 0,
+   "default": "",
+   "fetch_if_empty": 0,
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
    "fieldname": "client_id",
    "fieldtype": "Data",
    "in_list_view": 1,
@@ -53,6 +79,17 @@
    "reqd": 1
   },
   {
+<<<<<<< HEAD
+=======
+   "allow_bulk_edit": 0,
+   "allow_in_quick_entry": 0,
+   "allow_on_submit": 0,
+   "bold": 0,
+   "collapsible": 0,
+   "columns": 0,
+   "default": "",
+   "fetch_if_empty": 0,
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
    "fieldname": "redirect_url",
    "fieldtype": "Data",
    "in_list_view": 1,
@@ -61,6 +98,7 @@
   },
   {
    "default": "https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer",
+   "fetch_if_empty": 0,
    "fieldname": "token_endpoint",
    "fieldtype": "Data",
    "label": "Token Endpoint",
@@ -68,10 +106,31 @@
    "reqd": 1
   },
   {
+<<<<<<< HEAD
+=======
+   "allow_bulk_edit": 0,
+   "allow_in_quick_entry": 0,
+   "allow_on_submit": 0,
+   "bold": 0,
+   "collapsible": 0,
+   "columns": 0,
+   "fetch_if_empty": 0,
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
    "fieldname": "application_column_break",
    "fieldtype": "Column Break"
   },
   {
+<<<<<<< HEAD
+=======
+   "allow_bulk_edit": 0,
+   "allow_in_quick_entry": 0,
+   "allow_on_submit": 0,
+   "bold": 0,
+   "collapsible": 0,
+   "columns": 0,
+   "default": "",
+   "fetch_if_empty": 0,
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
    "fieldname": "client_secret",
    "fieldtype": "Data",
    "in_list_view": 1,
@@ -80,6 +139,7 @@
   },
   {
    "default": "com.intuit.quickbooks.accounting",
+   "fetch_if_empty": 0,
    "fieldname": "scope",
    "fieldtype": "Data",
    "in_list_view": 1,
@@ -89,6 +149,7 @@
   },
   {
    "default": "https://quickbooks.api.intuit.com/v3",
+   "fetch_if_empty": 0,
    "fieldname": "api_endpoint",
    "fieldtype": "Data",
    "label": "API Endpoint",
@@ -97,12 +158,18 @@
   },
   {
    "collapsible": 1,
+<<<<<<< HEAD
+=======
+   "columns": 0,
+   "fetch_if_empty": 0,
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
    "fieldname": "authorization_settings",
    "fieldtype": "Section Break",
    "label": "Authorization Settings"
   },
   {
    "default": "https://appcenter.intuit.com/connect/oauth2",
+   "fetch_if_empty": 0,
    "fieldname": "authorization_endpoint",
    "fieldtype": "Data",
    "label": "Authorization Endpoint",
@@ -110,22 +177,62 @@
    "reqd": 1
   },
   {
+<<<<<<< HEAD
+=======
+   "allow_bulk_edit": 0,
+   "allow_in_quick_entry": 0,
+   "allow_on_submit": 0,
+   "bold": 0,
+   "collapsible": 0,
+   "columns": 0,
+   "fetch_if_empty": 0,
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
    "fieldname": "refresh_token",
    "fieldtype": "Small Text",
    "hidden": 1,
    "label": "Refresh Token"
   },
   {
+<<<<<<< HEAD
+=======
+   "allow_bulk_edit": 0,
+   "allow_in_quick_entry": 0,
+   "allow_on_submit": 0,
+   "bold": 0,
+   "collapsible": 0,
+   "columns": 0,
+   "fetch_if_empty": 0,
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
    "fieldname": "code",
    "fieldtype": "Data",
    "hidden": 1,
    "label": "Code"
   },
   {
+<<<<<<< HEAD
+=======
+   "allow_bulk_edit": 0,
+   "allow_in_quick_entry": 0,
+   "allow_on_submit": 0,
+   "bold": 0,
+   "collapsible": 0,
+   "columns": 0,
+   "fetch_if_empty": 0,
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
    "fieldname": "authorization_column_break",
    "fieldtype": "Column Break"
   },
   {
+<<<<<<< HEAD
+=======
+   "allow_bulk_edit": 0,
+   "allow_in_quick_entry": 0,
+   "allow_on_submit": 0,
+   "bold": 0,
+   "collapsible": 0,
+   "columns": 0,
+   "fetch_if_empty": 0,
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
    "fieldname": "authorization_url",
    "fieldtype": "Data",
    "label": "Authorization URL",
@@ -133,30 +240,80 @@
    "reqd": 1
   },
   {
+<<<<<<< HEAD
+=======
+   "allow_bulk_edit": 0,
+   "allow_in_quick_entry": 0,
+   "allow_on_submit": 0,
+   "bold": 0,
+   "collapsible": 0,
+   "columns": 0,
+   "fetch_if_empty": 0,
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
    "fieldname": "access_token",
    "fieldtype": "Small Text",
    "hidden": 1,
    "label": "Access Token"
   },
   {
+<<<<<<< HEAD
+=======
+   "allow_bulk_edit": 0,
+   "allow_in_quick_entry": 0,
+   "allow_on_submit": 0,
+   "bold": 0,
+   "collapsible": 0,
+   "columns": 0,
+   "fetch_if_empty": 0,
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
    "fieldname": "quickbooks_company_id",
    "fieldtype": "Data",
    "hidden": 1,
    "label": "Quickbooks Company ID"
   },
   {
+<<<<<<< HEAD
+=======
+   "allow_bulk_edit": 0,
+   "allow_in_quick_entry": 0,
+   "allow_on_submit": 0,
+   "bold": 0,
+   "collapsible": 0,
+   "columns": 0,
+   "fetch_if_empty": 0,
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
    "fieldname": "company_settings",
    "fieldtype": "Section Break",
    "hidden": 1,
    "label": "Company Settings"
   },
   {
+<<<<<<< HEAD
+=======
+   "allow_bulk_edit": 0,
+   "allow_in_quick_entry": 0,
+   "allow_on_submit": 0,
+   "bold": 0,
+   "collapsible": 0,
+   "columns": 0,
+   "fetch_if_empty": 0,
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
    "fieldname": "company",
    "fieldtype": "Link",
    "label": "Company",
    "options": "Company"
   },
   {
+<<<<<<< HEAD
+=======
+   "allow_bulk_edit": 0,
+   "allow_in_quick_entry": 0,
+   "allow_on_submit": 0,
+   "bold": 0,
+   "collapsible": 0,
+   "columns": 0,
+   "fetch_if_empty": 0,
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
    "fieldname": "default_shipping_account",
    "fieldtype": "Link",
    "hidden": 1,
@@ -164,6 +321,16 @@
    "options": "Account"
   },
   {
+<<<<<<< HEAD
+=======
+   "allow_bulk_edit": 0,
+   "allow_in_quick_entry": 0,
+   "allow_on_submit": 0,
+   "bold": 0,
+   "collapsible": 0,
+   "columns": 0,
+   "fetch_if_empty": 0,
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
    "fieldname": "default_warehouse",
    "fieldtype": "Link",
    "hidden": 1,
@@ -171,10 +338,30 @@
    "options": "Warehouse"
   },
   {
+<<<<<<< HEAD
+=======
+   "allow_bulk_edit": 0,
+   "allow_in_quick_entry": 0,
+   "allow_on_submit": 0,
+   "bold": 0,
+   "collapsible": 0,
+   "columns": 0,
+   "fetch_if_empty": 0,
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
    "fieldname": "company_column_break",
    "fieldtype": "Column Break"
   },
   {
+<<<<<<< HEAD
+=======
+   "allow_bulk_edit": 0,
+   "allow_in_quick_entry": 0,
+   "allow_on_submit": 0,
+   "bold": 0,
+   "collapsible": 0,
+   "columns": 0,
+   "fetch_if_empty": 0,
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
    "fieldname": "default_cost_center",
    "fieldtype": "Link",
    "hidden": 1,
@@ -182,6 +369,16 @@
    "options": "Cost Center"
   },
   {
+<<<<<<< HEAD
+=======
+   "allow_bulk_edit": 0,
+   "allow_in_quick_entry": 0,
+   "allow_on_submit": 0,
+   "bold": 0,
+   "collapsible": 0,
+   "columns": 0,
+   "fetch_if_empty": 0,
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
    "fieldname": "undeposited_funds_account",
    "fieldtype": "Link",
    "hidden": 1,
@@ -190,7 +387,13 @@
   }
  ],
  "issingle": 1,
+<<<<<<< HEAD
  "modified": "2019-08-07 15:26:00.653433",
+=======
+ "istable": 0,
+ "max_attachments": 0,
+ "modified": "2019-08-07 05:53:00.920316",
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
  "modified_by": "Administrator",
  "module": "ERPNext Integrations",
  "name": "QuickBooks Migrator",
@@ -208,6 +411,12 @@
   }
  ],
  "quick_entry": 1,
+<<<<<<< HEAD
+=======
+ "read_only": 0,
+ "read_only_onload": 0,
+ "show_name_in_global_search": 0,
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
  "sort_field": "modified",
  "sort_order": "DESC"
 }

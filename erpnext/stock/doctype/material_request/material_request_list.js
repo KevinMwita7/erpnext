@@ -18,8 +18,11 @@ frappe.listview_settings['Material Request'] = {
 				return [__("Transfered"), "green", "per_ordered,=,100"];
 			} else if (doc.material_request_type == "Material Issue") {
 				return [__("Issued"), "green", "per_ordered,=,100"];
+<<<<<<< HEAD
 			} else if (doc.material_request_type == "Customer Provided") {
 				return [__("Received"), "green", "per_ordered,=,100"];
+=======
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 			} else if (doc.material_request_type == "Manufacture") {
 				return [__("Manufactured"), "green", "per_ordered,=,100"];
 			}

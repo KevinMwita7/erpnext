@@ -41,11 +41,19 @@ class TestOpportunity(unittest.TestCase):
 		self.assertTrue(opp_doc.party_name)
 		self.assertEqual(opp_doc.opportunity_from, "Lead")
 		self.assertEqual(frappe.db.get_value("Lead", opp_doc.party_name, "email_id"),
+<<<<<<< HEAD
 			new_lead_email_id)
 
 		# create new customer and create new contact against 'new.opportunity@example.com'
 		customer = make_customer(opp_doc.party_name).insert(ignore_permissions=True)
 		contact = frappe.get_doc({
+=======
+			'new.opportunity@example.com')
+
+		# create new customer and create new contact against 'new.opportunity@example.com'
+		customer = make_customer(opp_doc.party_name).insert(ignore_permissions=True)
+		frappe.get_doc({
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 			"doctype": "Contact",
 			"first_name": "_Test Opportunity Customer",
 			"links": [{

@@ -18,7 +18,11 @@ def execute(filters=None):
 
 	data = []
 	for ss in salary_slips:
+<<<<<<< HEAD
 		row = [ss.name, ss.employee, ss.employee_name, doj_map.get(ss.employee), ss.branch, ss.department, ss.designation,
+=======
+		row = [ss.name, ss.employee, ss.employee_name, ss.branch, ss.department, ss.designation,
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 			ss.company, ss.start_date, ss.end_date, ss.leave_without_pay, ss.payment_days]
 
 		if not ss.branch == None:columns[3] = columns[3].replace('-1','120')

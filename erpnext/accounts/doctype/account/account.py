@@ -109,6 +109,7 @@ class Account(NestedSet):
 			if not descendants: return
 
 			parent_acc_name_map = {}
+<<<<<<< HEAD
 			parent_acc_name, parent_acc_number = frappe.db.get_value('Account', self.parent_account, \
 				["account_name", "account_number"])
 			for d in frappe.db.get_values('Account',
@@ -118,6 +119,16 @@ class Account(NestedSet):
 				parent_acc_name_map[d["company"]] = d["name"]
 			if not parent_acc_name_map: return
 
+=======
+			parent_acc_name = frappe.db.get_value('Account', self.parent_account, "account_name")
+			for d in frappe.db.get_values('Account',
+				{"company": ["in", descendants], "account_name": parent_acc_name},
+				["company", "name"], as_dict=True):
+				parent_acc_name_map[d["company"]] = d["name"]
+
+			if not parent_acc_name_map: return
+
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 			self.create_account_for_child_company(parent_acc_name_map, descendants, parent_acc_name)
 
 	def validate_group_or_ledger(self):

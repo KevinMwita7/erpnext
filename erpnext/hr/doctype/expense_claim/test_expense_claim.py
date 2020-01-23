@@ -16,7 +16,9 @@ company_name = '_Test Company 4'
 class TestExpenseClaim(unittest.TestCase):
 	def test_total_expense_claim_for_project(self):
 		frappe.db.sql("""delete from `tabTask` where project = "_Test Project 1" """)
+		frappe.db.sql("""delete from `tabProject Task` where parent = "_Test Project 1" """)
 		frappe.db.sql("""delete from `tabProject` where name = "_Test Project 1" """)
+<<<<<<< HEAD
 		frappe.db.sql("update `tabExpense Claim` set project = '', task = ''")
 
 		frappe.get_doc({
@@ -35,6 +37,24 @@ class TestExpenseClaim(unittest.TestCase):
 		payable_account = get_payable_account(company_name)
 
 		make_expense_claim(payable_account, 300, 200, company_name, "Travel Expenses - _TC4", "_Test Project 1", task_name)
+=======
+		frappe.db.sql("delete from `tabExpense Claim` where project='_Test Project 1'")
+
+		frappe.get_doc({
+			"project_name": "_Test Project 1",
+			"doctype": "Project",
+		}).save()
+
+		task = frappe.get_doc({
+			"doctype": "Task",
+			"subject": "_Test Project Task 1",
+			"project": "_Test Project 1"
+		}).save()
+
+		task_name = frappe.db.get_value("Task", {"project": "_Test Project 1"})
+		payable_account = get_payable_account("Wind Power LLC")
+		make_expense_claim(payable_account, 300, 200, "Wind Power LLC","Travel Expenses - WP", "_Test Project 1", task_name)
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 
 		self.assertEqual(frappe.db.get_value("Task", task_name, "total_expense_claim"), 200)
 		self.assertEqual(frappe.db.get_value("Project", "_Test Project 1", "total_expense_claim"), 200)
@@ -109,6 +129,7 @@ class TestExpenseClaim(unittest.TestCase):
 		self.assertEquals(len(gl_entry), 0)
 
 def get_payable_account(company):
+<<<<<<< HEAD
 	return frappe.get_cached_value('Company', company, 'default_payable_account')
 
 def generate_taxes():
@@ -128,6 +149,13 @@ def make_expense_claim(payable_account, amount, sanctioned_amount, company, acco
 	employee = frappe.db.get_value("Employee", {"status": "Active"})
 	currency, cost_center = frappe.db.get_value('Company', company, ['default_currency', 'cost_center'])
 	expense_claim = {
+=======
+	return frappe.get_cached_value('Company',  company,  'default_payable_account')
+
+def make_expense_claim(payable_account,claim_amount, sanctioned_amount, company, account, project=None, task_name=None):
+	employee = frappe.db.get_value("Employee", {"status": "Active"})
+	expense_claim = frappe.get_doc({
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 		 "doctype": "Expense Claim",
 		 "employee": employee,
 		 "payable_account": payable_account,

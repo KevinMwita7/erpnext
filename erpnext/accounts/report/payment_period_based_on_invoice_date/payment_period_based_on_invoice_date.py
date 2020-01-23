@@ -9,7 +9,11 @@ from frappe.utils import getdate, flt
 
 
 def execute(filters=None):
+<<<<<<< HEAD
 	if not filters:
+=======
+	if not filters: 
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 		filters = {}
 
 	validate_filters(filters)
@@ -24,6 +28,7 @@ def execute(filters=None):
 
 		if d.reference_type == "Purchase Invoice":
 			payment_amount = flt(d.debit) or -1 * flt(d.credit)
+
 		else:
 			payment_amount = flt(d.credit) or -1 * flt(d.debit)
 
@@ -37,7 +42,11 @@ def execute(filters=None):
 
 		if d.against_voucher:
 			ReceivablePayableReport(filters).get_ageing_data(invoice.posting_date, d)
+<<<<<<< HEAD
 
+=======
+		
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 		row = [
 			d.voucher_type, d.voucher_no, d.party_type, d.party, d.posting_date, d.against_voucher,
 			invoice.posting_date, invoice.due_date, d.debit, d.credit, d.remarks, 

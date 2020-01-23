@@ -18,9 +18,6 @@ class TestPricingRule(unittest.TestCase):
 		delete_existing_pricing_rules()
 
 	def test_pricing_rule_for_discount(self):
-		from erpnext.stock.get_item_details import get_item_details
-		from frappe import MandatoryError
-
 		test_record = {
 			"doctype": "Pricing Rule",
 			"title": "_Test Pricing Rule",
@@ -99,9 +96,6 @@ class TestPricingRule(unittest.TestCase):
 		self.assertEquals(details.get("discount_percentage"), 15)
 
 	def test_pricing_rule_for_margin(self):
-		from erpnext.stock.get_item_details import get_item_details
-		from frappe import MandatoryError
-
 		test_record = {
 			"doctype": "Pricing Rule",
 			"title": "_Test Pricing Rule",
@@ -146,9 +140,6 @@ class TestPricingRule(unittest.TestCase):
 		self.assertEquals(details.get("margin_rate_or_amount"), 10)
 
 	def test_pricing_rule_for_variants(self):
-		from erpnext.stock.get_item_details import get_item_details
-		from frappe import MandatoryError
-
 		if not frappe.db.exists("Item", "Test Variant PRT"):
 			frappe.get_doc({
 				"doctype": "Item",

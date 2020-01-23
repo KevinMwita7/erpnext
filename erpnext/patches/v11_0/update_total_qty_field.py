@@ -40,7 +40,11 @@ def execute():
 			# This is probably never used anywhere else as of now, but should be
 			values = []
 			for d in batch_transactions:
+<<<<<<< HEAD
 				values.append("({0}, {1})".format(frappe.db.escape(d.parent), d.qty))
+=======
+				values.append("('{}', {})".format(frappe.db.escape(d.parent), d.qty))
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 			conditions = ",".join(values)
 			frappe.db.sql("""
 				INSERT INTO `tab{}` (name, total_qty) VALUES {}

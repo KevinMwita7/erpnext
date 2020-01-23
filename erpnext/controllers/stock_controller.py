@@ -92,9 +92,15 @@ class StockController(AccountsController):
 							"against": item_row.expense_account,
 							"cost_center": item_row.cost_center,
 							"remarks": self.get("remarks") or "Accounting Entry for Stock",
+<<<<<<< HEAD
 							"debit": flt(sle.stock_value_difference, precision),
 							"is_opening": item_row.get("is_opening") or self.get("is_opening") or "No",
 						}, warehouse_account[sle.warehouse]["account_currency"], item=item_row))
+=======
+							"debit": flt(sle.stock_value_difference, 2),
+							"is_opening": item_row.get("is_opening") or self.get("is_opening") or "No",
+						}, warehouse_account[sle.warehouse]["account_currency"]))
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 
 						# to target warehouse / expense account
 						gl_list.append(self.get_gl_dict({
@@ -102,10 +108,17 @@ class StockController(AccountsController):
 							"against": warehouse_account[sle.warehouse]["account"],
 							"cost_center": item_row.cost_center,
 							"remarks": self.get("remarks") or "Accounting Entry for Stock",
+<<<<<<< HEAD
 							"credit": flt(sle.stock_value_difference, precision),
 							"project": item_row.get("project") or self.get("project"),
 							"is_opening": item_row.get("is_opening") or self.get("is_opening") or "No"
 						}, item=item_row))
+=======
+							"credit": flt(sle.stock_value_difference, 2),
+							"project": item_row.get("project") or self.get("project"),
+							"is_opening": item_row.get("is_opening") or self.get("is_opening") or "No"
+						}))
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 					elif sle.warehouse not in warehouse_with_no_account:
 						warehouse_with_no_account.append(sle.warehouse)
 
@@ -277,7 +290,7 @@ class StockController(AccountsController):
 
 		return serialized_items
 
-	def get_incoming_rate_for_sales_return(self, item_code, against_document):
+	def get_incoming_rate_for_sales_return(self, item_code, warehouse, against_document):
 		incoming_rate = 0.0
 		if against_document and item_code:
 			incoming_rate = frappe.db.sql("""select abs(stock_value_difference / actual_qty)
@@ -286,6 +299,9 @@ class StockController(AccountsController):
 					and item_code = %s limit 1""",
 				(self.doctype, against_document, item_code))
 			incoming_rate = incoming_rate[0][0] if incoming_rate else 0.0
+		else:
+			incoming_rate = get_valuation_rate(item_code, warehouse,
+				self.doctype, against_document, company=self.company, currency=self.currency)
 
 		return incoming_rate
 

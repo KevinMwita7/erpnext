@@ -12,8 +12,12 @@ frappe.ui.form.on("Sales Order", {
 			'Material Request': 'Material Request',
 			'Purchase Order': 'Purchase Order',
 			'Project': 'Project',
+<<<<<<< HEAD
 			'Payment Entry': "Payment",
 			'Work Order': "Work Order"
+=======
+			'Payment Entry': "Payment"
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 		}
 		frm.add_fetch('customer', 'tax_id', 'tax_id');
 
@@ -160,13 +164,22 @@ erpnext.selling.SalesOrderController = erpnext.selling.SellingController.extend(
 						this.frm.add_custom_button(__('Invoice'), () => me.make_sales_invoice(), __('Create'));
 					}
 
+<<<<<<< HEAD
 					// material request
 					if(!doc.order_type || ["Sales", "Shopping Cart"].indexOf(doc.order_type)!==-1
 						&& flt(doc.per_delivered, 6) < 100) {
 						this.frm.add_custom_button(__('Material Request'), () => this.make_material_request(), __('Create'));
 						this.frm.add_custom_button(__('Request for Raw Materials'), () => this.make_raw_material_request(), __('Create'));
+=======
+				if (this.frm.has_perm("submit")) {
+					// close
+					if(flt(doc.per_delivered, 6) < 100 || flt(doc.per_billed, 6) < 100) {
+						this.frm.add_custom_button(__('Close'),
+							function() { me.close_sales_order() }, __("Status"))
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 					}
 
+<<<<<<< HEAD
 					// make purchase order
 						this.frm.add_custom_button(__('Purchase Order'), () => this.make_purchase_order(), __('Create'));
 
@@ -176,6 +189,20 @@ erpnext.selling.SalesOrderController = erpnext.selling.SellingController.extend(
 						this.frm.add_custom_button(__('Maintenance Visit'), () => this.make_maintenance_visit(), __('Create'));
 						this.frm.add_custom_button(__('Maintenance Schedule'), () => this.make_maintenance_schedule(), __('Create'));
 					}
+=======
+				// delivery note
+				if(flt(doc.per_delivered, 6) < 100 && allow_delivery) {
+					this.frm.add_custom_button(__('Delivery Note'),
+						function() { me.make_delivery_note_based_on_delivery_date(); }, __("Make"));
+
+					if(["Sales", "Shopping Cart"].indexOf(doc.order_type)!==-1){
+						this.frm.add_custom_button(__('Work Order'),
+							function() { me.make_work_order() }, __("Make"));
+
+						}
+					this.frm.page.set_inner_btn_group_as_primary(__("Make"));
+				}
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 
 					// project
 					if(flt(doc.per_delivered, 2) < 100 && ["Sales", "Shopping Cart"].indexOf(doc.order_type)!==-1 && allow_delivery) {

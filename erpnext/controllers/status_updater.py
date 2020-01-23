@@ -37,20 +37,42 @@ status_map = {
 	"Sales Order": [
 		["Draft", None],
 		["To Deliver and Bill", "eval:self.per_delivered < 100 and self.per_billed < 100 and self.docstatus == 1"],
+<<<<<<< HEAD
 		["To Bill", "eval:(self.per_delivered == 100 or self.skip_delivery_note) and self.per_billed < 100 and self.docstatus == 1"],
 		["To Deliver", "eval:self.per_delivered < 100 and self.per_billed == 100 and self.docstatus == 1 and not self.skip_delivery_note"],
 		["Completed", "eval:(self.per_delivered == 100 or self.skip_delivery_note) and self.per_billed == 100 and self.docstatus == 1"],
 		["Cancelled", "eval:self.docstatus==2"],
 		["Closed", "eval:self.status=='Closed'"],
 		["On Hold", "eval:self.status=='On Hold'"],
+=======
+		["To Bill", "eval:self.per_delivered == 100 and self.per_billed < 100 and self.docstatus == 1"],
+		["To Deliver", "eval:self.per_delivered < 100 and self.per_billed == 100 and self.docstatus == 1"],
+		["Completed", "eval:self.per_delivered == 100 and self.per_billed == 100 and self.docstatus == 1"],
+		["Cancelled", "eval:self.docstatus==2"],
+		["Closed", "eval:self.status=='Closed'"],
+	],
+	"Sales Invoice": [
+		["Draft", None],
+		["Submitted", "eval:self.docstatus==1"],
+		["Paid", "eval:self.outstanding_amount==0 and self.docstatus==1"],
+		["Return", "eval:self.is_return==1 and self.docstatus==1"],
+		["Credit Note Issued", "eval:self.outstanding_amount < 0 and self.docstatus==1"],
+		["Unpaid", "eval:self.outstanding_amount > 0 and getdate(self.due_date) >= getdate(nowdate()) and self.docstatus==1"],
+		["Overdue", "eval:self.outstanding_amount > 0 and getdate(self.due_date) < getdate(nowdate()) and self.docstatus==1"],
+		["Cancelled", "eval:self.docstatus==2"],
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 	],
 	"Purchase Invoice": [
 		["Draft", None],
 		["Submitted", "eval:self.docstatus==1"],
 		["Paid", "eval:self.outstanding_amount==0 and self.docstatus==1"],
 		["Return", "eval:self.is_return==1 and self.docstatus==1"],
+<<<<<<< HEAD
 		["Debit Note Issued",
 		 "eval:self.outstanding_amount <= 0 and self.docstatus==1 and self.is_return==0 and get_value('Purchase Invoice', {'is_return': 1, 'return_against': self.name, 'docstatus': 1})"],
+=======
+		["Debit Note Issued", "eval:self.outstanding_amount < 0 and self.docstatus==1"],
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 		["Unpaid", "eval:self.outstanding_amount > 0 and getdate(self.due_date) >= getdate(nowdate()) and self.docstatus==1"],
 		["Overdue", "eval:self.outstanding_amount > 0 and getdate(self.due_date) < getdate(nowdate()) and self.docstatus==1"],
 		["Cancelled", "eval:self.docstatus==2"],
@@ -89,8 +111,11 @@ status_map = {
 		["Ordered", "eval:self.status != 'Stopped' and self.per_ordered == 100 and self.docstatus == 1 and self.material_request_type == 'Purchase'"],
 		["Transferred", "eval:self.status != 'Stopped' and self.per_ordered == 100 and self.docstatus == 1 and self.material_request_type == 'Material Transfer'"],
 		["Issued", "eval:self.status != 'Stopped' and self.per_ordered == 100 and self.docstatus == 1 and self.material_request_type == 'Material Issue'"],
+<<<<<<< HEAD
 		["Received", "eval:self.status != 'Stopped' and self.per_received == 100 and self.docstatus == 1 and self.material_request_type == 'Purchase'"],
 		["Partially Received", "eval:self.status != 'Stopped' and self.per_received > 0 and self.per_received < 100 and self.docstatus == 1 and self.material_request_type == 'Purchase'"],
+=======
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 		["Manufactured", "eval:self.status != 'Stopped' and self.per_ordered == 100 and self.docstatus == 1 and self.material_request_type == 'Manufacture'"]
 	],
 	"Bank Transaction": [

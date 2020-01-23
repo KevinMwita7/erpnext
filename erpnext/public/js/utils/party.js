@@ -189,7 +189,11 @@ erpnext.utils.set_taxes_from_address = function(frm, triggered_from_field, billi
 erpnext.utils.set_taxes = function(frm, triggered_from_field) {
 	if(frappe.meta.get_docfield(frm.doc.doctype, "taxes")) {
 		if(!erpnext.utils.validate_mandatory(frm, "Lead/Customer/Supplier",
+<<<<<<< HEAD
 			frm.doc.customer || frm.doc.supplier || frm.doc.lead || frm.doc.party_name, triggered_from_field)) {
+=======
+			frm.doc.customer || frm.doc.supplier || frm.doc.lead || frm.doc.party_name , address_field)) {
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 			return;
 		}
 

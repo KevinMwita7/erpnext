@@ -25,7 +25,11 @@ def get_transaction_list(doctype, txt=None, filters=None, limit_start=0, limit_p
 
 	if not filters: filters = []
 
+<<<<<<< HEAD
 	if doctype in ['Supplier Quotation', 'Purchase Invoice']:
+=======
+	if doctype == 'Supplier Quotation':
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 		filters.append((doctype, 'docstatus', '<', 2))
 	else:
 		filters.append((doctype, 'docstatus', '=', 1))
@@ -175,4 +179,8 @@ def get_customer_field_name(doctype):
 	if doctype == 'Quotation':
 		return 'party_name'
 	else:
+<<<<<<< HEAD
 		return 'customer'
+=======
+		return 'customer'
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2

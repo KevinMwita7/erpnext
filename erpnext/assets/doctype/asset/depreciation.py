@@ -188,8 +188,12 @@ def get_gl_entries_on_asset_disposal(asset, selling_amount=0, finance_book=None)
 				idx = d.idx
 				break
 
+<<<<<<< HEAD
 	value_after_depreciation = (asset.finance_books[idx - 1].value_after_depreciation
 		if asset.calculate_depreciation else asset.value_after_depreciation)
+=======
+	value_after_depreciation = asset.finance_books[idx - 1].value_after_depreciation
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 	accumulated_depr_amount = flt(asset.gross_purchase_amount) - flt(value_after_depreciation)
 
 	gl_entries = [

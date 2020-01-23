@@ -56,6 +56,11 @@ def place_order():
 	cart_settings = frappe.db.get_value("Shopping Cart Settings", None,
 		["company", "allow_items_not_in_stock"], as_dict=1)
 	quotation.company = cart_settings.company
+<<<<<<< HEAD
+=======
+	if not quotation.get("customer_address"):
+		throw(_("{0} is required").format(_(quotation.meta.get_label("customer_address"))))
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 
 	quotation.flags.ignore_permissions = True
 	quotation.submit()
@@ -68,7 +73,11 @@ def place_order():
 	sales_order = frappe.get_doc(_make_sales_order(quotation.name, ignore_permissions=True))
 	sales_order.payment_schedule = []
 
+<<<<<<< HEAD
 	if not cint(cart_settings.allow_items_not_in_stock):
+=======
+	if not cart_settings.allow_items_not_in_stock:
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 		for item in sales_order.get("items"):
 			item.reserved_warehouse, is_stock_item = frappe.db.get_value("Item",
 				item.item_code, ["website_warehouse", "is_stock_item"])
@@ -358,10 +367,16 @@ def set_taxes(quotation, cart_settings):
 
 	customer_group = frappe.db.get_value("Customer", quotation.party_name, "customer_group")
 
+<<<<<<< HEAD
 	quotation.taxes_and_charges = set_taxes(quotation.party_name, "Customer",
 		quotation.transaction_date, quotation.company, customer_group=customer_group, supplier_group=None,
 		tax_category=quotation.tax_category, billing_address=quotation.customer_address,
 		shipping_address=quotation.shipping_address_name, use_for_shopping_cart=1)
+=======
+	quotation.taxes_and_charges = set_taxes(quotation.party_name, "Customer", \
+		quotation.transaction_date, quotation.company, customer_group, None, \
+		quotation.customer_address, quotation.shipping_address_name, 1)
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 #
 # 	# clear table
 	quotation.set("taxes", [])
@@ -504,7 +519,6 @@ def get_applicable_shipping_rules(party=None, quotation=None):
 	shipping_rules = get_shipping_rules(quotation)
 
 	if shipping_rules:
-		rule_label_map = frappe.db.get_values("Shipping Rule", shipping_rules, "label")
 		# we need this in sorted order as per the position of the rule in the settings page
 		return [[rule, rule] for rule in shipping_rules]
 

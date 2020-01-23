@@ -64,6 +64,12 @@ class AccountsController(TransactionBase):
 		if not self.get('is_return'):
 			self.validate_qty_is_not_zero()
 
+<<<<<<< HEAD
+=======
+		if not self.get('is_return'):
+			self.validate_qty_is_not_zero()
+
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 		if self.get("_action") and self._action != "update_after_submit":
 			self.set_missing_values(for_validate=True)
 
@@ -157,7 +163,11 @@ class AccountsController(TransactionBase):
 					# show message that the amount is not paid
 					frappe.throw(_("Note: Payment Entry will not be created since 'Cash or Bank Account' was not specified"))
 
+<<<<<<< HEAD
 				if cint(self.is_return) and self.grand_total > self.paid_amount:
+=======
+				if cint(self.is_return) and (self.grand_total > self.paid_amount):
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 					self.paid_amount = flt(flt(self.grand_total), self.precision("paid_amount"))
 
 				elif not flt(self.paid_amount) and flt(self.outstanding_amount) > 0:
@@ -1183,11 +1193,15 @@ def check_and_delete_children(parent, data):
 @frappe.whitelist()
 def update_child_qty_rate(parent_doctype, trans_items, parent_doctype_name, child_docname="items"):
 	data = json.loads(trans_items)
+<<<<<<< HEAD
 
 	sales_doctypes = ['Sales Order', 'Sales Invoice', 'Delivery Note', 'Quotation']
 	parent = frappe.get_doc(parent_doctype, parent_doctype_name)
 
 	check_and_delete_children(parent, data)
+=======
+	sales_doctypes = ['Sales Order', 'Sales Invoice', 'Delivery Note', 'Quotation']
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 
 	for d in data:
 		new_child_flag = False
@@ -1214,6 +1228,33 @@ def update_child_qty_rate(parent_doctype, trans_items, parent_doctype_name, chil
 						 .format(child_item.idx, child_item.item_code))
 		else:
 			child_item.rate = flt(d.get("rate"))
+<<<<<<< HEAD
+=======
+		if flt(child_item.price_list_rate):
+			if flt(child_item.rate) > flt(child_item.price_list_rate):
+				#  if rate is greater than price_list_rate, set margin
+				#  or set discount
+				child_item.discount_percentage = 0
+
+				if parent_doctype in sales_doctypes:
+					child_item.margin_type = "Amount"
+					child_item.margin_rate_or_amount = flt(child_item.rate - child_item.price_list_rate,
+						child_item.precision("margin_rate_or_amount"))
+					child_item.rate_with_margin = child_item.rate
+			else:
+				child_item.discount_percentage = flt((1 - flt(child_item.rate) / flt(child_item.price_list_rate)) * 100.0,
+					child_item.precision("discount_percentage"))
+				child_item.discount_amount = flt(
+					child_item.price_list_rate) - flt(child_item.rate)
+
+				if parent_doctype in sales_doctypes:
+					child_item.margin_type = ""
+					child_item.margin_rate_or_amount = 0
+					child_item.rate_with_margin = 0
+
+		child_item.flags.ignore_validate_update_after_submit = True
+		child_item.save()
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 
 		if flt(child_item.price_list_rate):
 			if flt(child_item.rate) > flt(child_item.price_list_rate):

@@ -1,4 +1,5 @@
 {
+<<<<<<< HEAD
     "css/erpnext.css": [
         "public/less/erpnext.less",
         "public/less/hub.less",
@@ -11,6 +12,19 @@
         "public/js/website_utils.js",
         "public/js/shopping_cart.js"
     ],
+=======
+	"css/erpnext.css": [
+		"public/less/erpnext.less",
+		"public/less/hub.less"
+	],
+	"css/marketplace.css": [
+		"public/less/hub.less"
+	],
+	"js/erpnext-web.min.js": [
+		"public/js/website_utils.js",
+		"public/js/shopping_cart.js"
+	],
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 	"css/erpnext-web.css": [
         "public/scss/website.scss"
 	],
@@ -47,6 +61,7 @@
 		"public/js/templates/item_quick_entry.html",
 		"public/js/utils/item_quick_entry.js",
 		"public/js/utils/customer_quick_entry.js",
+<<<<<<< HEAD
         "public/js/education/student_button.html",
         "public/js/education/assessment_result_tool.html",
         "public/js/hub/hub_factory.js",
@@ -58,4 +73,15 @@
         "stock/dashboard/item_dashboard_list.html",
         "stock/dashboard/item_dashboard.js"
     ]
+=======
+		"public/js/education/student_button.html",
+		"public/js/education/assessment_result_tool.html",
+		"public/js/hub/hub_factory.js"
+	],
+	"js/item-dashboard.min.js": [
+		"stock/dashboard/item_dashboard.html",
+		"stock/dashboard/item_dashboard_list.html",
+		"stock/dashboard/item_dashboard.js"
+	]
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 }

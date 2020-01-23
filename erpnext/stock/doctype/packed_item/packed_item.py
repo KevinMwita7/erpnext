@@ -35,7 +35,6 @@ def update_packing_list_item(doc, packing_item_code, qty, main_item_row, descrip
 	else:
 		old_packed_items_map = False
 	item = get_packing_item_details(packing_item_code, doc.company)
-
 	# check if exists
 	exists = 0
 	for d in doc.get("packed_items"):
@@ -53,10 +52,16 @@ def update_packing_list_item(doc, packing_item_code, qty, main_item_row, descrip
 	pi.parent_detail_docname = main_item_row.name
 	pi.uom = item.stock_uom
 	pi.qty = flt(qty)
+<<<<<<< HEAD
 	if description and not pi.description:
 		pi.description = description
 	if not pi.warehouse and not doc.amended_from:
 		pi.warehouse = (main_item_row.warehouse if ((doc.get('is_pos') or item.is_stock_item \
+=======
+	pi.description = description
+	if not pi.warehouse and not doc.amended_from:
+		pi.warehouse = (main_item_row.warehouse if ((doc.get('is_pos')
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 			or not item.default_warehouse) and main_item_row.warehouse) else item.default_warehouse)
 	if not pi.batch_no and not doc.amended_from:
 		pi.batch_no = cstr(main_item_row.get("batch_no"))
@@ -65,6 +70,11 @@ def update_packing_list_item(doc, packing_item_code, qty, main_item_row, descrip
 	bin = get_bin_qty(packing_item_code, pi.warehouse)
 	pi.actual_qty = flt(bin.get("actual_qty"))
 	pi.projected_qty = flt(bin.get("projected_qty"))
+	if old_packed_items_map and old_packed_items_map.get((packing_item_code, main_item_row.item_code)):
+		pi.batch_no = old_packed_items_map.get((packing_item_code, main_item_row.item_code))[0].batch_no
+		pi.serial_no = old_packed_items_map.get((packing_item_code, main_item_row.item_code))[0].serial_no
+		pi.warehouse = old_packed_items_map.get((packing_item_code, main_item_row.item_code))[0].warehouse
+
 	if old_packed_items_map and old_packed_items_map.get((packing_item_code, main_item_row.item_code)):
 		pi.batch_no = old_packed_items_map.get((packing_item_code, main_item_row.item_code))[0].batch_no
 		pi.serial_no = old_packed_items_map.get((packing_item_code, main_item_row.item_code))[0].serial_no
@@ -123,4 +133,8 @@ def get_old_packed_item_details(old_packed_items):
 	old_packed_items_map = {}
 	for items in old_packed_items:
 		old_packed_items_map.setdefault((items.item_code ,items.parent_item), []).append(items.as_dict())
+<<<<<<< HEAD
 	return old_packed_items_map
+=======
+	return old_packed_items_map
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2

@@ -99,7 +99,7 @@ class ProductionPlan(Document):
 			self.get_mr_items()
 
 	def get_so_items(self):
-		so_list = [d.sales_order for d in self.sales_orders if d.sales_order]
+		so_list = [d.sales_order for d in self.get("sales_orders", []) if d.sales_order]
 		if not so_list:
 			msgprint(_("Please enter Sales Orders in the above table"))
 			return []
@@ -134,7 +134,7 @@ class ProductionPlan(Document):
 		self.calculate_total_planned_qty()
 
 	def get_mr_items(self):
-		mr_list = [d.material_request for d in self.material_requests if d.material_request]
+		mr_list = [d.material_request for d in self.get("material_requests", []) if d.material_request]
 		if not mr_list:
 			msgprint(_("Please enter Material Requests in the above table"))
 			return []
@@ -540,7 +540,10 @@ def get_material_request_items(row, sales_order,
 			'actual_qty': bin_dict.get("actual_qty", 0),
 			'projected_qty': bin_dict.get("projected_qty", 0),
 			'min_order_qty': row['min_order_qty'],
+<<<<<<< HEAD
 			'material_request_type': row.get("default_material_request_type"),
+=======
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 			'sales_order': sales_order,
 			'description': row.get("description"),
 			'uom': row.get("purchase_uom") or row.get("stock_uom")

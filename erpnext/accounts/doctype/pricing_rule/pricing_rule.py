@@ -385,6 +385,147 @@ def remove_pricing_rules(item_list):
 
 	return out
 
+<<<<<<< HEAD
+=======
+def get_pricing_rules(args):
+	def _get_tree_conditions(parenttype, allow_blank=True):
+		field = frappe.scrub(parenttype)
+		condition = ""
+		if args.get(field):
+			if not frappe.flags.tree_conditions:
+				frappe.flags.tree_conditions = {}
+			key = (parenttype, args[field], )
+			if key in frappe.flags.tree_conditions:
+				return frappe.flags.tree_conditions[key]
+
+			try:
+				lft, rgt = frappe.db.get_value(parenttype, args[field], ["lft", "rgt"])
+			except TypeError:
+				frappe.throw(_("Invalid {0}").format(args[field]))
+
+			parent_groups = frappe.db.sql_list("""select name from `tab%s`
+				where lft<=%s and rgt>=%s""" % (parenttype, '%s', '%s'), (lft, rgt))
+
+			if parent_groups:
+				if allow_blank: parent_groups.append('')
+				condition = " ifnull("+field+", '') in ('" + \
+					"', '".join([frappe.db.escape(d) for d in parent_groups])+"')"
+			frappe.flags.tree_conditions[key] = condition
+
+		return condition
+
+
+	conditions = item_variant_condition = ""
+	values =  {"item_code": args.get("item_code"), "brand": args.get("brand")}
+
+	for field in ["company", "customer", "supplier", "supplier_group", "campaign", "sales_partner"]:
+		if args.get(field):
+			conditions += " and ifnull("+field+", '') in (%("+field+")s, '')"
+			values[field] = args.get(field)
+		else:
+			conditions += " and ifnull("+field+", '') = ''"
+
+	for parenttype in ["Customer Group", "Territory"]:
+		group_condition = _get_tree_conditions(parenttype)
+		if group_condition:
+			conditions += " and " + group_condition
+
+	if not args.price_list: args.price_list = None
+	conditions += " and ifnull(for_price_list, '') in (%(price_list)s, '')"
+	values["price_list"] = args.get("price_list")
+
+	if args.get("transaction_date"):
+		conditions += """ and %(transaction_date)s between ifnull(valid_from, '2000-01-01')
+			and ifnull(valid_upto, '2500-12-31')"""
+		values['transaction_date'] = args.get('transaction_date')
+
+	item_group_condition = _get_tree_conditions("Item Group", False)
+	if item_group_condition:
+		item_group_condition = " or " + item_group_condition
+
+	# load variant of if not defined
+	if "variant_of" not in args:
+		args.variant_of = frappe.get_cached_value("Item", args.item_code, "variant_of")
+
+	if args.variant_of:
+		item_variant_condition = ' or item_code=%(variant_of)s '
+		values['variant_of'] = args.variant_of
+
+	return frappe.db.sql("""select * from `tabPricing Rule`
+		where (item_code=%(item_code)s {item_variant_condition} {item_group_condition} or brand=%(brand)s)
+			and docstatus < 2 and disable = 0
+			and {transaction_type} = 1 {conditions}
+		order by priority desc, name desc""".format(
+			item_group_condition = item_group_condition,
+			item_variant_condition = item_variant_condition,
+			transaction_type = args.transaction_type,
+			conditions = conditions), values, as_dict=1)
+
+def filter_pricing_rules(args, pricing_rules):
+	# filter for qty
+	if pricing_rules:
+		stock_qty = flt(args.get('qty')) * args.get('conversion_factor', 1)
+
+		pricing_rules = list(filter(lambda x: (flt(stock_qty)>=flt(x.min_qty)
+			and (flt(stock_qty)<=x.max_qty if x.max_qty else True)), pricing_rules))
+
+		# add variant_of property in pricing rule
+		for p in pricing_rules:
+			if p.item_code and args.variant_of:
+				p.variant_of = args.variant_of
+			else:
+				p.variant_of = None
+
+	# find pricing rule with highest priority
+	if pricing_rules:
+		max_priority = max([cint(p.priority) for p in pricing_rules])
+		if max_priority:
+			pricing_rules = list(filter(lambda x: cint(x.priority)==max_priority, pricing_rules))
+
+	# apply internal priority
+	all_fields = ["item_code", "item_group", "brand", "customer", "customer_group", "territory",
+		"supplier", "supplier_group", "campaign", "sales_partner", "variant_of"]
+
+	if len(pricing_rules) > 1:
+		for field_set in [["item_code", "variant_of", "item_group", "brand"],
+			["customer", "customer_group", "territory"], ["supplier", "supplier_group"]]:
+				remaining_fields = list(set(all_fields) - set(field_set))
+				if if_all_rules_same(pricing_rules, remaining_fields):
+					pricing_rules = apply_internal_priority(pricing_rules, field_set, args)
+					break
+
+	if len(pricing_rules) > 1:
+		rate_or_discount = list(set([d.rate_or_discount for d in pricing_rules]))
+		if len(rate_or_discount) == 1 and rate_or_discount[0] == "Discount Percentage":
+			pricing_rules = list(filter(lambda x: x.for_price_list==args.price_list, pricing_rules)) \
+				or pricing_rules
+
+	if len(pricing_rules) > 1 and not args.for_shopping_cart:
+		frappe.throw(_("Multiple Price Rules exists with same criteria, please resolve conflict by assigning priority. Price Rules: {0}")
+			.format("\n".join([d.name for d in pricing_rules])), MultiplePricingRuleConflict)
+	elif pricing_rules:
+		return pricing_rules[0]
+
+def if_all_rules_same(pricing_rules, fields):
+	all_rules_same = True
+	val = [pricing_rules[0][k] for k in fields]
+	for p in pricing_rules[1:]:
+		if val != [p[k] for k in fields]:
+			all_rules_same = False
+			break
+
+	return all_rules_same
+
+def apply_internal_priority(pricing_rules, field_set, args):
+	filtered_rules = []
+	for field in field_set:
+		if args.get(field):
+			filtered_rules = list(filter(lambda x: x[field]==args[field], pricing_rules))
+			if filtered_rules: break
+
+	return filtered_rules or pricing_rules
+
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 def set_transaction_type(args):
 	if args.transaction_type:
 		return

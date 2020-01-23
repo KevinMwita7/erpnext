@@ -567,7 +567,11 @@ def get_outstanding_reference_documents(args):
 		args = json.loads(args)
 
 	if args.get('party_type') == 'Member':
+<<<<<<< HEAD
 		return
+=======
+			return
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 
 	# confirm that Supplier is not blocked
 	if args.get('party_type') == 'Supplier':
@@ -584,9 +588,15 @@ def get_outstanding_reference_documents(args):
 
 	# Get negative outstanding sales /purchase invoices
 	negative_outstanding_invoices = []
+<<<<<<< HEAD
 	if args.get("party_type") not in ["Student", "Employee"] and not args.get("voucher_no"):
 		negative_outstanding_invoices = get_negative_outstanding_invoices(args.get("party_type"), args.get("party"),
 			args.get("party_account"), args.get("company"), party_account_currency, company_currency)
+=======
+	if args.get("party_type") in ("Supplier", "Customer") and not args.get("voucher_no"):
+		negative_outstanding_invoices = get_negative_outstanding_invoices(args.get("party_type"),
+			args.get("party"), args.get("party_account"), party_account_currency, company_currency)
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 
 	# Get positive outstanding sales /purchase invoices/ Fees
 	condition = ""
@@ -628,7 +638,7 @@ def get_outstanding_reference_documents(args):
 
 	# Get all SO / PO which are not fully billed or aginst which full advance not paid
 	orders_to_be_billed = []
-	if (args.get("party_type") != "Student"):
+	if (args.get("party_type") in ("Supplier", "Customer")):
 		orders_to_be_billed =  get_orders_to_be_billed(args.get("posting_date"),args.get("party_type"),
 			args.get("party"), args.get("company"), party_account_currency, company_currency, filters=args)
 
@@ -647,7 +657,7 @@ def get_orders_to_be_billed(posting_date, party_type, party,
 		voucher_type = 'Sales Order'
 	elif party_type == "Supplier":
 		voucher_type = 'Purchase Order'
-	elif party_type == "Employee":
+	else:
 		voucher_type = None
 
 	# Add cost center condition
@@ -690,7 +700,11 @@ def get_orders_to_be_billed(posting_date, party_type, party,
 			"voucher_type": voucher_type,
 			"party_type": scrub(party_type),
 			"condition": condition
+<<<<<<< HEAD
 		}), (party, company), as_dict=True)
+=======
+		}), (party), as_dict=True)
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 
 	order_list = []
 	for d in orders:
@@ -773,7 +787,11 @@ def get_party_details(company, party_type, party, date, cost_center=None):
 def get_account_details(account, date, cost_center=None):
 	frappe.has_permission('Payment Entry', throw=True)
 
+<<<<<<< HEAD
 	# to check if the passed account is accessible under reference doctype Payment Entry
+=======
+	# to check if the passed account is accessible if the reference doctype is Payment Entry
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 	account_list = frappe.get_list('Account', {
 		'name': account
 	}, reference_doctype='Payment Entry', limit=1)

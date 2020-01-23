@@ -234,7 +234,11 @@ def get_data():
 					"is_query_report": True,
 					"name": "Address And Contacts",
 					"label": _("Supplier Addresses And Contacts"),
+<<<<<<< HEAD
 					"reference_doctype": "Address",
+=======
+					"doctype": "Address",
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 					"route_options": {
 						"party_type": "Supplier"
 					}

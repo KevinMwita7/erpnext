@@ -640,7 +640,10 @@ $.extend(erpnext.item, {
 			if(!args) return;
 			frappe.call({
 				method: "erpnext.controllers.item_variant.get_variant",
+<<<<<<< HEAD
 				btn: d.get_primary_btn(),
+=======
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 				args: {
 					"template": frm.doc.name,
 					"args": d.get_values()

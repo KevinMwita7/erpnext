@@ -130,7 +130,11 @@ erpnext.stock.DeliveryNoteController = erpnext.selling.SellingController.extend(
 							},
 							get_query_filters: {
 								docstatus: 1,
+<<<<<<< HEAD
 								status: ["not in", ["Closed", "On Hold"]],
+=======
+								status: ["!=", "Closed"],
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 								per_delivered: ["<", 99.99],
 								company: me.frm.doc.company,
 								project: me.frm.doc.project || undefined,
@@ -164,7 +168,11 @@ erpnext.stock.DeliveryNoteController = erpnext.selling.SellingController.extend(
 			}
 
 			if (!doc.__islocal && doc.docstatus==1) {
+<<<<<<< HEAD
 				this.frm.page.set_inner_btn_group_as_primary(__('Create'));
+=======
+				this.frm.page.set_inner_btn_group_as_primary(__("Make"));
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 			}
 		}
 
@@ -188,7 +196,11 @@ erpnext.stock.DeliveryNoteController = erpnext.selling.SellingController.extend(
 
 			if(!from_sales_invoice) {
 				this.frm.add_custom_button(__('Sales Invoice'), function() { me.make_sales_invoice() },
+<<<<<<< HEAD
 					__('Create'));
+=======
+					__("Make"));
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 			}
 		}
 

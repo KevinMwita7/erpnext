@@ -347,6 +347,7 @@ def get_basic_details(args, item, overwrite_warehouse=True):
 	for fieldname in ("item_name", "item_group", "barcodes", "brand", "stock_uom"):
 		out[fieldname] = item.get(fieldname)
 
+<<<<<<< HEAD
 	if args.get("manufacturer"):
 		part_no = get_item_manufacturer_part_no(args.get("item_code"), args.get("manufacturer"))
 		if part_no:
@@ -355,11 +356,14 @@ def get_basic_details(args, item, overwrite_warehouse=True):
 			out["manufacturer_part_no"] = None
 			out["manufacturer"] = None
 
+=======
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 	child_doctype = args.doctype + ' Item'
 	meta = frappe.get_meta(child_doctype)
 	if meta.get_field("barcode"):
 		update_barcode_value(out)
 
+<<<<<<< HEAD
 	return out
 
 def update_barcode_value(out):
@@ -449,6 +453,17 @@ def get_item_tax_map(company, item_tax_template, as_json=True):
 				item_tax_map[d.tax_type] = d.tax_rate
 
 	return json.dumps(item_tax_map) if as_json else item_tax_map
+=======
+	return out
+
+def update_barcode_value(out):
+	from erpnext.accounts.doctype.sales_invoice.pos import get_barcode_data
+	barcode_data = get_barcode_data([out])
+
+	# If item has one barcode then update the value of the barcode field
+	if barcode_data and len(barcode_data.get(out.item_code)) == 1:
+		out['barcode'] = barcode_data.get(out.item_code)[0]
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 
 @frappe.whitelist()
 def calculate_service_end_date(args, item=None):
@@ -497,7 +512,11 @@ def get_default_deferred_account(args, item, fieldname=None):
 	else:
 		return None
 
+<<<<<<< HEAD
 def get_default_cost_center(args, item, item_group, brand, company=None):
+=======
+def get_default_cost_center(args, item, item_group, company=None):
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 	cost_center = None
 	if args.get('project'):
 		cost_center = frappe.db.get_value("Project", args.get("project"), "cost_center", cache=True)
@@ -513,6 +532,11 @@ def get_default_cost_center(args, item, item_group, brand, company=None):
 	if (company and cost_center
 		and frappe.get_cached_value("Cost Center", cost_center, "company") != company):
 		return None
+<<<<<<< HEAD
+=======
+
+	return cost_center
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 
 	return cost_center
 
@@ -527,6 +551,10 @@ def get_price_list_rate(args, item_doc, out):
 	if meta.get_field("currency") or args.get('currency'):
 		pl_details = get_price_list_currency_and_exchange_rate(args)
 		args.update(pl_details)
+<<<<<<< HEAD
+=======
+		validate_price_list(args)
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 		if meta.get_field("currency"):
 			validate_conversion_rate(args, meta)
 
@@ -950,6 +978,30 @@ def apply_price_list_on_item(args):
 
 	return item_details
 
+<<<<<<< HEAD
+=======
+def get_price_list_currency(price_list):
+	if price_list:
+		result = frappe.db.get_value("Price List", {"name": price_list,
+			"enabled": 1}, ["name", "currency"], as_dict=True)
+
+		if not result:
+			throw(_("Price List {0} is disabled or does not exist").format(price_list))
+
+		return result.currency
+
+def get_price_list_uom_dependant(price_list):
+	if price_list:
+		result = frappe.db.get_value("Price List", {"name": price_list,
+			"enabled": 1}, ["name", "price_not_uom_dependent"], as_dict=True)
+
+		if not result:
+			throw(_("Price List {0} is disabled or does not exist").format(price_list))
+
+		return not result.price_not_uom_dependent
+
+
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 def get_price_list_currency_and_exchange_rate(args):
 	if not args.price_list:
 		return {}

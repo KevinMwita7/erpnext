@@ -14,7 +14,15 @@ frappe.listview_settings['Quotation'] = {
 
 	get_indicator: function(doc) {
 		if(doc.status==="Open") {
+<<<<<<< HEAD
 			return [__("Open"), "orange", "status,=,Open"];
+=======
+			if (doc.valid_till && doc.valid_till < frappe.datetime.nowdate()) {
+				return [__("Expired"), "darkgrey", "valid_till,<," + frappe.datetime.nowdate()];
+			} else {
+				return [__("Open"), "orange", "status,=,Open"];
+			}
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 		} else if(doc.status==="Ordered") {
 			return [__("Ordered"), "green", "status,=,Ordered"];
 		} else if(doc.status==="Lost") {

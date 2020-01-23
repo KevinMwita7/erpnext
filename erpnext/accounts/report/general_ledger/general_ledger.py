@@ -10,7 +10,10 @@ from frappe import _, _dict
 from erpnext.accounts.utils import get_account_currency
 from erpnext.accounts.report.financial_statements import get_cost_centers_with_children
 from six import iteritems
+<<<<<<< HEAD
 from erpnext.accounts.doctype.accounting_dimension.accounting_dimension import get_accounting_dimensions
+=======
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 from collections import OrderedDict
 
 def execute(filters=None):
@@ -303,7 +306,11 @@ def get_accountwise_gle(filters, gl_entries, gle_map):
 			update_value_in_dict(totals, 'total', gle)
 			if filters.get("group_by") != _('Group by Voucher (Consolidated)'):
 				gle_map[gle.get(group_by)].entries.append(gle)
+<<<<<<< HEAD
 			elif filters.get("group_by") == _('Group by Voucher (Consolidated)'):
+=======
+			else:
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 				key = (gle.get("voucher_type"), gle.get("voucher_no"),
 					gle.get("account"), gle.get("cost_center"))
 				if key not in consolidated_gle:

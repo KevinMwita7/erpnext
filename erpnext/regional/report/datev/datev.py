@@ -8,32 +8,46 @@ Provide a report and downloadable CSV according to the German DATEV format.
   all required columns. Used to import the data into the DATEV Software.
 """
 from __future__ import unicode_literals
+<<<<<<< HEAD
 import datetime
 import json
 import zlib
 import zipfile
 import six
 from six import BytesIO
+=======
+import json
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 from six import string_types
 import frappe
 from frappe import _
 import pandas as pd
+<<<<<<< HEAD
 from .datev_constants import DataCategory
 from .datev_constants import Transactions
 from .datev_constants import DebtorsCreditors
 from .datev_constants import AccountNames
 from .datev_constants import QUERY_REPORT_COLUMNS
+=======
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 
 
 def execute(filters=None):
 	"""Entry point for frappe."""
+<<<<<<< HEAD
 	validate(filters)
 	result = get_transactions(filters, as_dict=0)
 	columns = QUERY_REPORT_COLUMNS
+=======
+	validate_filters(filters)
+	result = get_gl_entries(filters, as_dict=0)
+	columns = get_columns()
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 
 	return columns, result
 
 
+<<<<<<< HEAD
 def validate(filters):
 	"""Make sure all mandatory filters and settings are present."""
 	if not filters.get('company'):
@@ -52,6 +66,79 @@ def validate(filters):
 
 
 def get_transactions(filters, as_dict=1):
+=======
+def validate_filters(filters):
+	"""Make sure all mandatory filters are present."""
+	if not filters.get('company'):
+		frappe.throw(_('{0} is mandatory').format(_('Company')))
+
+	if not filters.get('from_date'):
+		frappe.throw(_('{0} is mandatory').format(_('From Date')))
+
+	if not filters.get('to_date'):
+		frappe.throw(_('{0} is mandatory').format(_('To Date')))
+
+
+def get_columns():
+	"""Return the list of columns that will be shown in query report."""
+	columns = [
+		{
+			"label": "Umsatz (ohne Soll/Haben-Kz)",
+			"fieldname": "Umsatz (ohne Soll/Haben-Kz)",
+			"fieldtype": "Currency",
+		},
+		{
+			"label": "Soll/Haben-Kennzeichen",
+			"fieldname": "Soll/Haben-Kennzeichen",
+			"fieldtype": "Data",
+		},
+		{
+			"label": "Kontonummer",
+			"fieldname": "Kontonummer",
+			"fieldtype": "Data",
+		},
+		{
+			"label": "Gegenkonto (ohne BU-Schlüssel)",
+			"fieldname": "Gegenkonto (ohne BU-Schlüssel)",
+			"fieldtype": "Data",
+		},
+		{
+			"label": "Belegdatum",
+			"fieldname": "Belegdatum",
+			"fieldtype": "Date",
+		},
+		{
+			"label": "Buchungstext",
+			"fieldname": "Buchungstext",
+			"fieldtype": "Text",
+		},
+		{
+			"label": "Beleginfo - Art 1",
+			"fieldname": "Beleginfo - Art 1",
+			"fieldtype": "Data",
+		},
+		{
+			"label": "Beleginfo - Inhalt 1",
+			"fieldname": "Beleginfo - Inhalt 1",
+			"fieldtype": "Data",
+		},
+		{
+			"label": "Beleginfo - Art 2",
+			"fieldname": "Beleginfo - Art 2",
+			"fieldtype": "Data",
+		},
+		{
+			"label": "Beleginfo - Inhalt 2",
+			"fieldname": "Beleginfo - Inhalt 2",
+			"fieldtype": "Data",
+		}
+	]
+
+	return columns
+
+
+def get_gl_entries(filters, as_dict):
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 	"""
 	Get a list of accounting entries.
 
@@ -63,7 +150,11 @@ def get_transactions(filters, as_dict=1):
 	as_dict -- return as list of dicts [0,1]
 	"""
 	gl_entries = frappe.db.sql("""
+<<<<<<< HEAD
 		SELECT
+=======
+		select
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 
 			/* either debit or credit amount; always positive */
 			case gl.debit when 0 then gl.credit else gl.debit end as 'Umsatz (ohne Soll/Haben-Kz)',
@@ -84,7 +175,11 @@ def get_transactions(filters, as_dict=1):
 			gl.against_voucher_type as 'Beleginfo - Art 2',
 			gl.against_voucher as 'Beleginfo - Inhalt 2'
 
+<<<<<<< HEAD
 		FROM `tabGL Entry` gl
+=======
+		from `tabGL Entry` gl
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 
 			/* Statistisches Konto (Debitoren/Kreditoren) */
 			left join `tabParty Account` pa
@@ -107,14 +202,22 @@ def get_transactions(filters, as_dict=1):
 			left join `tabAccount` acc_against_pa 
 			on pa.account = acc_against_pa.name
 
+<<<<<<< HEAD
 		WHERE gl.company = %(company)s 
 		AND DATE(gl.posting_date) >= %(from_date)s
 		AND DATE(gl.posting_date) <= %(to_date)s
 		ORDER BY 'Belegdatum', gl.voucher_no""", filters, as_dict=as_dict, as_utf8=1)
+=======
+		where gl.company = %(company)s 
+		and DATE(gl.posting_date) >= %(from_date)s
+		and DATE(gl.posting_date) <= %(to_date)s
+		order by 'Belegdatum', gl.voucher_no""", filters, as_dict=as_dict)
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 
 	return gl_entries
 
 
+<<<<<<< HEAD
 def get_customers(filters):
 	"""
 	Get a list of Customers.
@@ -257,6 +360,178 @@ def get_datev_csv(data, filters, csv_class):
 	data = result.to_csv(
 		# Reason for str(';'): https://github.com/pandas-dev/pandas/issues/6035
 		sep=str(';'),
+=======
+def get_datev_csv(data):
+	"""
+	Fill in missing columns and return a CSV in DATEV Format.
+
+	Arguments:
+	data -- array of dictionaries
+	"""
+	columns = [
+		# All possible columns must tbe listed here, because DATEV requires them to
+		# be present in the CSV.
+		# ---
+		# Umsatz
+		"Umsatz (ohne Soll/Haben-Kz)",
+		"Soll/Haben-Kennzeichen",
+		"WKZ Umsatz",
+		"Kurs",
+		"Basis-Umsatz",
+		"WKZ Basis-Umsatz",
+		# Konto/Gegenkonto
+		"Kontonummer",
+		"Gegenkonto (ohne BU-Schlüssel)",
+		"BU-Schlüssel",
+		# Datum
+		"Belegdatum",
+		# Belegfelder
+		"Belegfeld 1",
+		"Belegfeld 2",
+		# Weitere Felder
+		"Skonto",
+		"Buchungstext",
+		# OPOS-Informationen
+		"Postensperre",
+		"Diverse Adressnummer",
+		"Geschäftspartnerbank",
+		"Sachverhalt",
+		"Zinssperre",
+		# Digitaler Beleg
+		"Beleglink",
+		# Beleginfo
+		"Beleginfo - Art 1",
+		"Beleginfo - Inhalt 1",
+		"Beleginfo - Art 2",
+		"Beleginfo - Inhalt 2",
+		"Beleginfo - Art 3",
+		"Beleginfo - Inhalt 3",
+		"Beleginfo - Art 4",
+		"Beleginfo - Inhalt 4",
+		"Beleginfo - Art 5",
+		"Beleginfo - Inhalt 5",
+		"Beleginfo - Art 6",
+		"Beleginfo - Inhalt 6",
+		"Beleginfo - Art 7",
+		"Beleginfo - Inhalt 7",
+		"Beleginfo - Art 8",
+		"Beleginfo - Inhalt 8",
+		# Kostenrechnung
+		"Kost 1 - Kostenstelle",
+		"Kost 2 - Kostenstelle",
+		"Kost-Menge",
+		# Steuerrechnung
+		"EU-Land u. UStID",
+		"EU-Steuersatz",
+		"Abw. Versteuerungsart",
+		# L+L Sachverhalt
+		"Sachverhalt L+L",
+		"Funktionsergänzung L+L",
+		# Funktion Steuerschlüssel 49
+		"BU 49 Hauptfunktionstyp",
+		"BU 49 Hauptfunktionsnummer",
+		"BU 49 Funktionsergänzung",
+		# Zusatzinformationen
+		"Zusatzinformation - Art 1",
+		"Zusatzinformation - Inhalt 1",
+		"Zusatzinformation - Art 2",
+		"Zusatzinformation - Inhalt 2",
+		"Zusatzinformation - Art 3",
+		"Zusatzinformation - Inhalt 3",
+		"Zusatzinformation - Art 4",
+		"Zusatzinformation - Inhalt 4",
+		"Zusatzinformation - Art 5",
+		"Zusatzinformation - Inhalt 5",
+		"Zusatzinformation - Art 6",
+		"Zusatzinformation - Inhalt 6",
+		"Zusatzinformation - Art 7",
+		"Zusatzinformation - Inhalt 7",
+		"Zusatzinformation - Art 8",
+		"Zusatzinformation - Inhalt 8",
+		"Zusatzinformation - Art 9",
+		"Zusatzinformation - Inhalt 9",
+		"Zusatzinformation - Art 10",
+		"Zusatzinformation - Inhalt 10",
+		"Zusatzinformation - Art 11",
+		"Zusatzinformation - Inhalt 11",
+		"Zusatzinformation - Art 12",
+		"Zusatzinformation - Inhalt 12",
+		"Zusatzinformation - Art 13",
+		"Zusatzinformation - Inhalt 13",
+		"Zusatzinformation - Art 14",
+		"Zusatzinformation - Inhalt 14",
+		"Zusatzinformation - Art 15",
+		"Zusatzinformation - Inhalt 15",
+		"Zusatzinformation - Art 16",
+		"Zusatzinformation - Inhalt 16",
+		"Zusatzinformation - Art 17",
+		"Zusatzinformation - Inhalt 17",
+		"Zusatzinformation - Art 18",
+		"Zusatzinformation - Inhalt 18",
+		"Zusatzinformation - Art 19",
+		"Zusatzinformation - Inhalt 19",
+		"Zusatzinformation - Art 20",
+		"Zusatzinformation - Inhalt 20",
+		# Mengenfelder LuF
+		"Stück",
+		"Gewicht",
+		# Forderungsart
+		"Zahlweise",
+		"Forderungsart",
+		"Veranlagungsjahr",
+		"Zugeordnete Fälligkeit",
+		# Weitere Felder
+		"Skontotyp",
+		# Anzahlungen
+		"Auftragsnummer",
+		"Buchungstyp",
+		"USt-Schlüssel (Anzahlungen)",
+		"EU-Land (Anzahlungen)",
+		"Sachverhalt L+L (Anzahlungen)",
+		"EU-Steuersatz (Anzahlungen)",
+		"Erlöskonto (Anzahlungen)",
+		# Stapelinformationen
+		"Herkunft-Kz",
+		# Technische Identifikation
+		"Buchungs GUID",
+		# Kostenrechnung
+		"Kost-Datum",
+		# OPOS-Informationen
+		"SEPA-Mandatsreferenz",
+		"Skontosperre",
+		# Gesellschafter und Sonderbilanzsachverhalt
+		"Gesellschaftername",
+		"Beteiligtennummer",
+		"Identifikationsnummer",
+		"Zeichnernummer",
+		# OPOS-Informationen
+		"Postensperre bis",
+		# Gesellschafter und Sonderbilanzsachverhalt
+		"Bezeichnung SoBil-Sachverhalt",
+		"Kennzeichen SoBil-Buchung",
+		# Stapelinformationen
+		"Festschreibung",
+		# Datum
+		"Leistungsdatum",
+		"Datum Zuord. Steuerperiode",
+		# OPOS-Informationen
+		"Fälligkeit",
+		# Konto/Gegenkonto
+		"Generalumkehr (GU)",
+		# Steuersatz für Steuerschlüssel
+		"Steuersatz",
+		"Land"
+	]
+
+	empty_df = pd.DataFrame(columns=columns)
+	data_df = pd.DataFrame.from_records(data)
+
+	result = empty_df.append(data_df)
+	result["Belegdatum"] = pd.to_datetime(result["Belegdatum"])
+
+	return result.to_csv(
+		sep=b';',
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 		# European decimal seperator
 		decimal=',',
 		# Windows "ANSI" encoding
@@ -264,6 +539,7 @@ def get_datev_csv(data, filters, csv_class):
 		# format date as DDMM
 		date_format='%d%m',
 		# Windows line terminator
+<<<<<<< HEAD
 		line_terminator='\r\n',
 		# Do not number rows
 		index=False,
@@ -337,6 +613,15 @@ def get_header(filters, csv_class):
 	]
 	return header
 
+=======
+		line_terminator=b'\r\n',
+		# Do not number rows
+		index=False,
+		# Use all columns defined above
+		columns=columns
+	)
+
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 
 @frappe.whitelist()
 def download_datev_csv(filters=None):
@@ -354,6 +639,7 @@ def download_datev_csv(filters=None):
 	if isinstance(filters, string_types):
 		filters = json.loads(filters)
 
+<<<<<<< HEAD
 	validate(filters)
 
 	# This is where my zip will be written
@@ -383,3 +669,17 @@ def download_datev_csv(filters=None):
 	frappe.response['filecontent'] = zip_buffer.getvalue()
 	frappe.response['filename'] = 'DATEV.zip'
 	frappe.response['type'] = 'binary'
+=======
+	validate_filters(filters)
+	data = get_gl_entries(filters, as_dict=1)
+
+	filename = 'DATEV_Buchungsstapel_{}-{}_bis_{}'.format(
+		filters.get('company'),
+		filters.get('from_date'),
+		filters.get('to_date')
+	)
+
+	frappe.response['result'] = get_datev_csv(data)
+	frappe.response['doctype'] = filename
+	frappe.response['type'] = 'csv'
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2

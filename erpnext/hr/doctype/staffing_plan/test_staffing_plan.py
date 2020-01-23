@@ -93,4 +93,8 @@ def make_company():
 	company.parent_company = "_Test Company"
 	company.default_currency = "INR"
 	company.country = "Pakistan"
+<<<<<<< HEAD
 	company.insert()
+=======
+	company.insert()
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2

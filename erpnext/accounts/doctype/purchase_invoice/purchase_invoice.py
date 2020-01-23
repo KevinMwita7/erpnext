@@ -502,6 +502,7 @@ class PurchaseInvoice(BuyingController):
 							"cost_center": item.cost_center,
 							"remarks": self.get("remarks") or _("Accounting Entry for Stock"),
 							"credit": flt(item.rm_supp_cost)
+<<<<<<< HEAD
 						}, warehouse_account[self.supplier_warehouse]["account_currency"], item=item))
 
 				elif not item.is_fixed_asset or (item.is_fixed_asset and not is_cwip_accounting_enabled(asset_category)):
@@ -514,6 +515,16 @@ class PurchaseInvoice(BuyingController):
 						amount = flt(item.base_net_amount + item.item_tax_amount, item.precision("base_net_amount"))
 
 					gl_entries.append(self.get_gl_dict({
+=======
+						}, warehouse_account[self.supplier_warehouse]["account_currency"]))
+				elif not item.is_fixed_asset or (item.is_fixed_asset and is_cwip_accounting_disabled()):
+
+					expense_account = (item.expense_account
+						if (not item.enable_deferred_expense or self.is_return) else item.deferred_expense_account)
+
+					gl_entries.append(
+						self.get_gl_dict({
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 							"account": expense_account,
 							"against": self.supplier,
 							"debit": amount,
@@ -857,6 +868,13 @@ class PurchaseInvoice(BuyingController):
 		self.update_prevdoc_status()
 
 		if not self.is_return:
+<<<<<<< HEAD
+=======
+			from erpnext.accounts.utils import unlink_ref_doc_from_payment_entries
+			if frappe.db.get_single_value('Accounts Settings', 'unlink_payment_on_cancellation_of_invoice'):
+				unlink_ref_doc_from_payment_entries(self)
+
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 			self.update_billing_status_for_zero_amount_refdoc("Purchase Receipt")
 			self.update_billing_status_for_zero_amount_refdoc("Purchase Order")
 

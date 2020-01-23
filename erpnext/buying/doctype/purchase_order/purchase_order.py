@@ -450,9 +450,21 @@ def get_mapped_purchase_invoice(source_name, target_doc=None, ignore_permissions
 			"doctype": "Payment Schedule",
 			"add_if_empty": True
 		}
+<<<<<<< HEAD
 
 	doc = get_mapped_doc("Purchase Order", source_name,	fields,
 		target_doc, postprocess, ignore_permissions=ignore_permissions)
+=======
+	}
+
+	if frappe.get_single("Accounts Settings").automatically_fetch_payment_terms == 1:
+		fields["Payment Schedule"] = {
+			"doctype": "Payment Schedule",
+			"add_if_empty": True
+		}
+
+	doc = get_mapped_doc("Purchase Order", source_name,	fields, target_doc, postprocess)
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 
 	return doc
 

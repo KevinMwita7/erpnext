@@ -38,4 +38,8 @@ frappe.query_reports["Inactive Sales Items"] = {
 			default: 30
 		},
 	]
+<<<<<<< HEAD
 };
+=======
+}
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2

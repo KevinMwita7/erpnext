@@ -14,8 +14,14 @@ from erpnext.stock.doctype.stock_reconciliation.test_stock_reconciliation import
 from erpnext.stock.doctype.item.test_item import set_item_variant_settings, make_item_variant, create_item
 from erpnext.stock.doctype.stock_entry.stock_entry_utils import make_stock_entry
 from erpnext.accounts.doctype.account.test_account import get_inventory_account
+<<<<<<< HEAD
 from erpnext.stock.doctype.stock_entry.stock_entry import move_sample_to_retention_warehouse, make_stock_in_entry
 from erpnext.stock.doctype.stock_reconciliation.stock_reconciliation import OpeningEntryAccountError
+=======
+from erpnext.stock.doctype.stock_entry.stock_entry import move_sample_to_retention_warehouse
+from erpnext.stock.doctype.stock_reconciliation.stock_reconciliation import OpeningEntryAccountError
+
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 from six import iteritems
 
 def get_sle(**args):
@@ -742,6 +748,7 @@ class TestStockEntry(unittest.TestCase):
 		for d in stock_entry.get('items'):
 			self.assertEqual(item_quantity.get(d.item_code), d.qty)
 
+<<<<<<< HEAD
 	def test_customer_provided_parts_se(self):
 		create_item('CUST-0987', is_customer_provided_item = 1, customer = '_Test Customer', is_purchase_item = 0)
 		se = make_stock_entry(item_code='CUST-0987', purporse = 'Material Receipt', qty=4, to_warehouse = "_Test Warehouse - _TC")
@@ -783,6 +790,17 @@ class TestStockEntry(unittest.TestCase):
 
 		mr.items[0].expense_account = "Temporary Opening - TCP1"
 
+=======
+	def test_gle_for_opening_stock_entry(self):
+		set_perpetual_inventory(1)
+
+		mr = make_stock_entry(item_code="_Test Item", target="_Test Warehouse - _TC",
+			qty=50, basic_rate=100, expense_account="Stock Adjustment - _TC", is_opening="Yes", do_not_save=True)
+
+		self.assertRaises(OpeningEntryAccountError, mr.save)
+
+		mr.items[0].expense_account = "Temporary Opening - _TC"
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 		mr.save()
 		mr.submit()
 
@@ -790,6 +808,7 @@ class TestStockEntry(unittest.TestCase):
 			filters={"voucher_type": "Stock Entry", "voucher_no": mr.name}, fieldname="is_opening")
 		self.assertEqual(is_opening, "Yes")
 
+<<<<<<< HEAD
 	def test_total_basic_amount_zero(self):
 		se = frappe.get_doc({"doctype":"Stock Entry",
 		"purpose":"Material Receipt",
@@ -834,6 +853,8 @@ class TestStockEntry(unittest.TestCase):
 			])
 		)
 
+=======
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 def make_serialized_item(item_code=None, serial_no=None, target_warehouse=None):
 	se = frappe.copy_doc(test_records[0])
 	se.get("items")[0].item_code = item_code or "_Test Serialized Item With Series"

@@ -13,8 +13,11 @@ source_link = "https://github.com/frappe/erpnext"
 app_logo_url = '/assets/erpnext/images/erp-icon.svg'
 
 
+<<<<<<< HEAD
 develop_version = '12.x.x-develop'
 
+=======
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 app_include_js = "assets/js/erpnext.min.js"
 app_include_css = "assets/css/erpnext.css"
 web_include_js = "assets/js/erpnext-web.min.js"
@@ -279,7 +282,10 @@ scheduler_events = {
 		'erpnext.hr.doctype.daily_work_summary_group.daily_work_summary_group.trigger_emails',
 		"erpnext.accounts.doctype.subscription.subscription.process_all",
 		"erpnext.erpnext_integrations.doctype.amazon_mws_settings.amazon_mws_settings.schedule_get_order_details",
+<<<<<<< HEAD
 		"erpnext.accounts.doctype.gl_entry.gl_entry.rename_gle_sle_docs",
+=======
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 		"erpnext.erpnext_integrations.doctype.plaid_settings.plaid_settings.automatic_synchronization",
 		"erpnext.projects.doctype.project.project.hourly_reminder",
 		"erpnext.projects.doctype.project.project.collect_project_status",
@@ -312,9 +318,13 @@ scheduler_events = {
 	],
 	"daily_long": [
 		"erpnext.setup.doctype.email_digest.email_digest.send",
+<<<<<<< HEAD
 		"erpnext.manufacturing.doctype.bom_update_tool.bom_update_tool.update_latest_price_in_all_boms",
 		"erpnext.hr.doctype.leave_ledger_entry.leave_ledger_entry.process_expired_allocation",
 		"erpnext.hr.utils.generate_leave_encashment"
+=======
+		"erpnext.manufacturing.doctype.bom_update_tool.bom_update_tool.update_latest_price_in_all_boms"
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 	],
 	"monthly_long": [
 		"erpnext.accounts.deferred_revenue.convert_deferred_revenue_to_income",

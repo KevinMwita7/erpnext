@@ -14,12 +14,20 @@ from erpnext.hr.doctype.employee.employee import get_holiday_list_for_employee
 class PayrollEntry(Document):
 	def onload(self):
 		if not self.docstatus==1 or self.salary_slips_submitted:
+<<<<<<< HEAD
     			return
+=======
+			return
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 
 		# check if salary slips were manually submitted
 		entries = frappe.db.count("Salary Slip", {'payroll_entry': self.name, 'docstatus': 1}, ['name'])
 		if cint(entries) == len(self.employees):
+<<<<<<< HEAD
     			self.set_onload("submitted_ss", True)
+=======
+			self.set_onload("submitted_ss", True)
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 
 	def on_submit(self):
 		self.create_salary_slips()

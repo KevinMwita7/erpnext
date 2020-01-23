@@ -56,7 +56,10 @@ def assign_tasks(asset_maintenance_name, assign_to_member, maintenance_task, nex
 def calculate_next_due_date(periodicity, start_date = None, end_date = None, last_completion_date = None, next_due_date = None):
 	if not start_date and not last_completion_date:
 		start_date = frappe.utils.now()
+<<<<<<< HEAD
 
+=======
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 	if last_completion_date and ((start_date and last_completion_date > start_date) or not start_date):
 		start_date = last_completion_date
 	if periodicity == 'Daily':

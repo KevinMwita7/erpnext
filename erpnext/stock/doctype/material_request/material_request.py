@@ -244,6 +244,7 @@ def update_item(obj, target, source_parent):
 	target.stock_qty = (target.qty * target.conversion_factor)
 	if getdate(target.schedule_date) < getdate(nowdate()):
 		target.schedule_date = None
+<<<<<<< HEAD
 
 def get_list_context(context=None):
 	from erpnext.controllers.website_list_for_contact import get_list_context
@@ -256,6 +257,8 @@ def get_list_context(context=None):
 	})
 
 	return list_context
+=======
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 
 @frappe.whitelist()
 def update_status(name, status):

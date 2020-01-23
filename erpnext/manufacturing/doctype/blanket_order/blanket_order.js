@@ -40,6 +40,7 @@ frappe.ui.form.on('Blanket Order', {
 
 	onload_post_render: function(frm) {
 		frm.get_field("items").grid.set_multiple_add("item_code", "qty");
+<<<<<<< HEAD
 	},
 
 	tc_name: function (frm) {
@@ -73,6 +74,8 @@ frappe.ui.form.on('Blanket Order', {
 
 	blanket_order_type: function (frm) {
 		frm.trigger('set_tc_name_filter');
+=======
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 	}
 });
 

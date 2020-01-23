@@ -565,6 +565,15 @@ def make_project(source_name, target_doc=None):
 				"base_grand_total" : "estimated_costing",
 			}
 		},
+<<<<<<< HEAD
+=======
+		"Sales Order Item": {
+			"doctype": "Project Task",
+			"field_map": {
+				"item_code": "title",
+			},
+		}
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 	}, target_doc, postprocess)
 
 	return doc
@@ -1014,6 +1023,7 @@ def make_raw_material_request(items, company, sales_order, project=None):
 	material_request.submit()
 	return material_request
 
+<<<<<<< HEAD
 @frappe.whitelist()
 def make_inter_company_purchase_order(source_name, target_doc=None):
 	from erpnext.accounts.doctype.sales_invoice.sales_invoice import make_inter_company_transaction
@@ -1064,3 +1074,16 @@ def update_produced_qty_in_so_item(sales_order, sales_order_item):
 	if not total_produced_qty and frappe.flags.in_patch: return
 
 	frappe.db.set_value('Sales Order Item', sales_order_item, 'produced_qty', total_produced_qty)
+=======
+def update_produced_qty_in_so_item(sales_order_item):
+	#for multiple work orders against same sales order item
+	linked_wo_with_so_item = frappe.db.get_all('Work Order', ['produced_qty'], {
+		'sales_order_item': sales_order_item,
+		'docstatus': 1
+	})
+	if len(linked_wo_with_so_item) > 0:
+		total_produced_qty = 0
+		for wo in linked_wo_with_so_item:
+			total_produced_qty += flt(wo.get('produced_qty'))
+		frappe.db.set_value('Sales Order Item', sales_order_item, 'produced_qty', total_produced_qty)
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2

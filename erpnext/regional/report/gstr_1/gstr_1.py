@@ -7,7 +7,10 @@ from frappe import _
 from frappe.utils import flt, formatdate, now_datetime, getdate
 from datetime import date
 from six import iteritems
+<<<<<<< HEAD
 from erpnext.regional.doctype.gstr_3b_report.gstr_3b_report import get_period
+=======
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 from erpnext.regional.india.utils import get_gst_accounts
 
 def execute(filters=None):
@@ -54,6 +57,10 @@ class Gstr1Report(object):
 		return self.columns, self.data
 
 	def get_data(self):
+<<<<<<< HEAD
+=======
+
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 		if self.filters.get("type_of_business") ==  "B2C Small":
 			self.get_b2cs_data()
 		else:
@@ -66,14 +73,22 @@ class Gstr1Report(object):
 						row.append("Y" if invoice_details.posting_date <= date(2017, 7, 1) else "N")
 						row.append("C" if invoice_details.return_against else "R")
 
+<<<<<<< HEAD
 					if taxable_value:
 						self.data.append(row)
+=======
+					self.data.append(row)
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 
 	def get_b2cs_data(self):
 		b2cs_output = {}
 
 		for inv, items_based_on_rate in self.items_based_on_tax_rate.items():
 			invoice_details = self.invoices.get(inv)
+<<<<<<< HEAD
+=======
+
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 			for rate, items in items_based_on_rate.items():
 				place_of_supply = invoice_details.get("place_of_supply")
 				ecommerce_gstin =  invoice_details.get("ecommerce_gstin")
@@ -154,23 +169,42 @@ class Gstr1Report(object):
 				if self.filters.get(opts[0]):
 					conditions += opts[1]
 
+<<<<<<< HEAD
 
 		if self.filters.get("type_of_business") ==  "B2B":
 			conditions += "and ifnull(gst_category, '') in ('Registered Regular', 'Deemed Export', 'SEZ') and is_return != 1"
+=======
+		customers = frappe.get_all("Customer", filters={"disabled": 0})
+
+		if self.filters.get("type_of_business") ==  "B2B" and customers:
+			conditions += """ and ifnull(invoice_type, '') != 'Export' and is_return != 1
+				and customer in ('{0}') and (customer_gstin IS NOT NULL AND customer_gstin NOT IN ('', 'NA'))""".\
+					format("', '".join([frappe.db.escape(c.name) for c in customers]))
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 
 		if self.filters.get("type_of_business") in ("B2C Large", "B2C Small"):
 			b2c_limit = frappe.db.get_single_value('GST Settings', 'b2c_limit')
 			if not b2c_limit:
 				frappe.throw(_("Please set B2C Limit in GST Settings."))
 
-		if self.filters.get("type_of_business") ==  "B2C Large":
+		if self.filters.get("type_of_business") ==  "B2C Large" and customers:
 			conditions += """ and SUBSTR(place_of_supply, 1, 2) != SUBSTR(company_gstin, 1, 2)
+<<<<<<< HEAD
 				and grand_total > {0} and is_return != 1 and gst_category ='Unregistered' """.format(flt(b2c_limit))
 
 		elif self.filters.get("type_of_business") ==  "B2C Small":
 			conditions += """ and (
 				SUBSTR(place_of_supply, 1, 2) = SUBSTR(company_gstin, 1, 2)
 					or grand_total <= {0}) and is_return != 1 and gst_category ='Unregistered' """.format(flt(b2c_limit))
+=======
+				and grand_total > {0} and is_return != 1 and customer in ('{1}') and (customer_gstin IS NULL OR customer_gstin IN ('', 'NA'))""".\
+					format(flt(b2c_limit), "', '".join([frappe.db.escape(c.name) for c in customers]))
+		elif self.filters.get("type_of_business") ==  "B2C Small" and customers:
+			conditions += """ and (
+				SUBSTR(place_of_supply, 1, 2) = SUBSTR(company_gstin, 1, 2)
+					or grand_total <= {0}) and is_return != 1 and customer in ('{1}') and (customer_gstin IS NULL OR customer_gstin IN ('', 'NA'))""".\
+						format(flt(b2c_limit), "', '".join([frappe.db.escape(c.name) for c in customers]))
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 
 		elif self.filters.get("type_of_business") ==  "CDNR":
 			conditions += """ and is_return = 1 """

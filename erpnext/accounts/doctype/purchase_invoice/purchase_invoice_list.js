@@ -6,8 +6,13 @@ frappe.listview_settings['Purchase Invoice'] = {
 	add_fields: ["supplier", "supplier_name", "base_grand_total", "outstanding_amount", "due_date", "company",
 		"currency", "is_return", "release_date", "on_hold"],
 	get_indicator: function(doc) {
+<<<<<<< HEAD
 		if( (flt(doc.outstanding_amount) <= 0) && doc.docstatus == 1 &&  doc.status == 'Debit Note Issued') {
 			return [__("Debit Note Issued"), "darkgrey", "outstanding_amount,<=,0"];
+=======
+		if(flt(doc.outstanding_amount) < 0 && doc.docstatus == 1) {
+			return [__("Debit Note Issued"), "darkgrey", "outstanding_amount,<,0"]
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 		} else if(flt(doc.outstanding_amount) > 0 && doc.docstatus==1) {
 			if(cint(doc.on_hold) && !doc.release_date) {
 				return [__("On Hold"), "darkgrey"];

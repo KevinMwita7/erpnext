@@ -8,9 +8,14 @@ from erpnext.accounts.party import set_taxes
 from erpnext.controllers.selling_controller import SellingController
 from frappe import _
 from frappe.contacts.address_and_contact import load_address_and_contact
+<<<<<<< HEAD
 from frappe.email.inbox import link_communication_to_document
 from frappe.model.mapper import get_mapped_doc
 from frappe.utils import cint, comma_and, cstr, getdate, has_gravatar, nowdate, validate_email_address
+=======
+from erpnext.accounts.party import set_taxes
+from frappe.email.inbox import link_communication_to_document
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 
 sender_field = "email_id"
 
@@ -120,6 +125,7 @@ class Lead(SellingController):
 				frappe.throw(_("A Lead requires either a person's name or an organization's name"))
 
 			self.lead_name = self.company_name
+<<<<<<< HEAD
 
 	def set_title(self):
 		if self.organization_lead:
@@ -210,6 +216,8 @@ class Lead(SellingController):
 		for field in fields:
 			self.set(field, None)
 
+=======
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 
 @frappe.whitelist()
 def make_customer(source_name, target_doc=None):
@@ -331,7 +339,10 @@ def get_lead_details(lead, posting_date=None, company=None):
 
 	return out
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 @frappe.whitelist()
 def make_lead_from_communication(communication, ignore_communication_links=False):
 	""" raise a issue from email """
@@ -357,6 +368,7 @@ def make_lead_from_communication(communication, ignore_communication_links=False
 
 	link_communication_to_document(doc, "Lead", lead_name, ignore_communication_links)
 	return lead_name
+<<<<<<< HEAD
 
 def get_lead_with_phone_number(number):
 	if not number: return
@@ -369,3 +381,5 @@ def get_lead_with_phone_number(number):
 	lead = leads[0].name if leads else None
 
 	return lead
+=======
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2

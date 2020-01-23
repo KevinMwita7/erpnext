@@ -104,6 +104,11 @@ class ExpenseClaim(AccountsController):
 		gl_entry = []
 		self.validate_account_details()
 
+<<<<<<< HEAD
+=======
+		payable_amount = flt(self.total_sanctioned_amount) - flt(self.total_advance_amount)
+
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 		# payable entry
 		if self.grand_total:
 			gl_entry.append(

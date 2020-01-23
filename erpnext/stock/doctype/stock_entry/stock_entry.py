@@ -190,7 +190,8 @@ class StockEntry(StockController):
 						item.set(f, item_details.get(f))
 
 			if not item.transfer_qty and item.qty:
-				item.transfer_qty = item.qty * item.conversion_factor
+				item.transfer_qty = ( flt(item.qty, item.precision("qty"))
+					* flt(item.conversion_factor, item.precision("conversion_factor")) )
 
 			if (self.purpose in ("Material Transfer", "Material Transfer for Manufacture")
 				and not item.serial_no
@@ -371,7 +372,11 @@ class StockEntry(StockController):
 				d.basic_rate = 0.0
 			elif d.t_warehouse and not d.basic_rate:
 				d.basic_rate = get_valuation_rate(d.item_code, d.t_warehouse,
+<<<<<<< HEAD
 					self.doctype, self.name, d.allow_zero_valuation_rate,
+=======
+					self.doctype, d.name, d.allow_zero_valuation_rate,
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 					currency=erpnext.get_company_currency(self.company), company=self.company)
 
 	def set_actual_qty(self):
@@ -744,7 +749,11 @@ class StockEntry(StockController):
 			'description'		  	: item.description,
 			'image'					: item.image,
 			'item_name' 		  	: item.item_name,
+<<<<<<< HEAD
 			'cost_center'			: get_default_cost_center(args, item, item_group_defaults, brand_defaults, self.company),
+=======
+			'cost_center'			: get_default_cost_center(args, item, item_group_defaults, self.company),
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 			'qty'					: args.get("qty"),
 			'transfer_qty'			: args.get('qty'),
 			'conversion_factor'		: 1,
@@ -865,7 +874,11 @@ class StockEntry(StockController):
 
 					self.add_to_stock_entry_detail(item_dict)
 
+<<<<<<< HEAD
 				if self.purpose != "Send to Subcontractor" and self.purpose in ["Manufacture", "Repack"]:
+=======
+				if self.purpose != "Subcontract" and self.purpose == "Manufacture":
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 					scrap_item_dict = self.get_bom_scrap_material(self.fg_completed_qty)
 					for item in itervalues(scrap_item_dict):
 						if self.pro_doc and self.pro_doc.scrap_warehouse:
@@ -1161,6 +1174,10 @@ class StockEntry(StockController):
 			se_child.uom = item_dict[d]["uom"] if item_dict[d].get("uom") else stock_uom
 			se_child.stock_uom = stock_uom
 			se_child.qty = flt(item_dict[d]["qty"], se_child.precision("qty"))
+<<<<<<< HEAD
+=======
+			se_child.expense_account = item_dict[d].get("expense_account")
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 			se_child.cost_center = item_dict[d].get("cost_center") or cost_center
 			se_child.allow_alternative_item = item_dict[d].get("allow_alternative_item", 0)
 			se_child.subcontracted_item = item_dict[d].get("main_item_code")
@@ -1195,7 +1212,11 @@ class StockEntry(StockController):
 						frappe.MappingMismatchError)
 
 	def validate_batch(self):
+<<<<<<< HEAD
 		if self.purpose in ["Material Transfer for Manufacture", "Manufacture", "Repack", "Send to Subcontractor"]:
+=======
+		if self.purpose in ["Material Transfer for Manufacture", "Manufacture", "Repack", "Subcontract"]:
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 			for item in self.get("items"):
 				if item.batch_no:
 					disabled = frappe.db.get_value("Batch", item.batch_no, "disabled")

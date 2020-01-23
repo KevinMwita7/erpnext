@@ -674,7 +674,11 @@ def create_delivery_note(**args):
 		"rate": args.rate or 100,
 		"conversion_factor": 1.0,
 		"allow_zero_valuation_rate": args.allow_zero_valuation_rate or 1,
+<<<<<<< HEAD
 		"expense_account": args.expense_account or "Cost of Goods Sold - _TC",
+=======
+		"expense_account": "Cost of Goods Sold - _TC",
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 		"cost_center": args.cost_center or "_Test Cost Center - _TC",
 		"serial_no": args.serial_no,
 		"target_warehouse": args.target_warehouse

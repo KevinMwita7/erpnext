@@ -161,7 +161,11 @@ def item_query(doctype, txt, searchfield, start, page_len, filters, as_dict=Fals
 
 	columns = ''
 	extra_searchfields = [field for field in searchfields
+<<<<<<< HEAD
 		if not field in ["name", "item_group", "description"]]
+=======
+		if field not in ["name", "item_group", "description"]]
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 
 	if extra_searchfields:
 		columns = ", " + ", ".join(extra_searchfields)
@@ -224,10 +228,17 @@ def bom(doctype, txt, searchfield, start, page_len, filters):
 			idx desc, name
 		limit %(start)s, %(page_len)s """.format(
 			fcond=get_filters_cond(doctype, filters, conditions).replace('%', '%%'),
+<<<<<<< HEAD
 			mcond=get_match_cond(doctype).replace('%', '%%'),
 			key=searchfield),
 		{
 			'txt': '%' + txt + '%',
+=======
+			mcond=get_match_cond(doctype),
+			key=frappe.db.escape(searchfield)),
+		{
+			'txt': "%"+frappe.db.escape(txt)+"%",
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 			'_txt': txt.replace("%", ""),
 			'start': start or 0,
 			'page_len': page_len or 20

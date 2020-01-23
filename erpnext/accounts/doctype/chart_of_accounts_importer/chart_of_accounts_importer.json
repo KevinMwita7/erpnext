@@ -54,6 +54,7 @@
    "bold": 0, 
    "collapsible": 0, 
    "columns": 0, 
+<<<<<<< HEAD:erpnext/accounts/doctype/chart_of_accounts_importer/chart_of_accounts_importer.json
    "fieldname": "import_file_section",
    "fieldtype": "Section Break",
    "hidden": 0, 
@@ -153,6 +154,11 @@
    "columns": 0, 
    "fieldname": "chart_tree",
    "fieldtype": "HTML",
+=======
+   "fetch_if_empty": 0, 
+   "fieldname": "disable_cwip_accounting", 
+   "fieldtype": "Check", 
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2:erpnext/assets/doctype/asset_settings/asset_settings.json
    "hidden": 0, 
    "ignore_user_permissions": 0, 
    "ignore_xss_filter": 0, 
@@ -187,7 +193,11 @@
  "issingle": 1, 
  "istable": 0, 
  "max_attachments": 0, 
+<<<<<<< HEAD:erpnext/accounts/doctype/chart_of_accounts_importer/chart_of_accounts_importer.json
  "modified": "2019-02-04 23:10:30.136807",
+=======
+ "modified": "2019-05-26 18:31:19.930563", 
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2:erpnext/assets/doctype/asset_settings/asset_settings.json
  "modified_by": "Administrator", 
  "module": "Accounts", 
  "name": "Chart of Accounts Importer", 

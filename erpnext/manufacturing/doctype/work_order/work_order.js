@@ -562,7 +562,11 @@ erpnext.work_order = {
 
 	calculate_total_cost: function(frm) {
 		let variable_cost = flt(frm.doc.actual_operating_cost) || flt(frm.doc.planned_operating_cost);
+<<<<<<< HEAD
 		frm.set_value("total_operating_cost", (flt(frm.doc.additional_operating_cost) + variable_cost));
+=======
+		frm.set_value("total_operating_cost", (flt(frm.doc.additional_operating_cost) + variable_cost))
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 	},
 
 	set_default_warehouse: function(frm) {

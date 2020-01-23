@@ -19,8 +19,13 @@ from erpnext.stock.doctype.serial_no.serial_no import get_serial_nos
 class TestStockReconciliation(unittest.TestCase):
 	@classmethod
 	def setUpClass(self):
+<<<<<<< HEAD
 		create_batch_or_serial_no_items()
 		frappe.db.set_value("Stock Settings", None, "allow_negative_stock", 1)
+=======
+		frappe.db.set_value("Stock Settings", None, "allow_negative_stock", 1)
+		insert_existing_sle()
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 
 	def test_reco_for_fifo(self):
 		self._test_reco_sle_gle("FIFO")
@@ -100,6 +105,7 @@ class TestStockReconciliation(unittest.TestCase):
 		self.assertEqual(["_Test Stock Reco Item", "_Test Warehouse Ledger 1 - _TC", 100],
 			[items[0]["item_code"], items[0]["warehouse"], items[0]["qty"]])
 
+<<<<<<< HEAD
 	def test_stock_reco_for_serialized_item(self):
 		set_perpetual_inventory()
 
@@ -236,6 +242,19 @@ def create_batch_or_serial_no_items():
 		batch_item_doc.create_new_batch = 1
 		serial_item_doc.batch_number_series = "BASR.#####"
 		batch_item_doc.save(ignore_permissions=True)
+=======
+def insert_existing_sle():
+	from erpnext.stock.doctype.stock_entry.test_stock_entry import make_stock_entry
+
+	make_stock_entry(posting_date="2012-12-15", posting_time="02:00", item_code="_Test Item",
+		target="_Test Warehouse - _TC", qty=10, basic_rate=700)
+
+	make_stock_entry(posting_date="2012-12-25", posting_time="03:00", item_code="_Test Item",
+		source="_Test Warehouse - _TC", qty=15)
+
+	make_stock_entry(posting_date="2013-01-05", posting_time="07:00", item_code="_Test Item",
+		target="_Test Warehouse - _TC", qty=15, basic_rate=1200)
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 
 def create_stock_reconciliation(**args):
 	args = frappe._dict(args)

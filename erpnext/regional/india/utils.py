@@ -16,6 +16,7 @@ def validate_gstin_for_india(doc, method):
 	if not hasattr(doc, 'gstin') or not doc.gstin:
 		return
 
+<<<<<<< HEAD
 	gst_category = []
 
 	if len(doc.links):
@@ -26,12 +27,18 @@ def validate_gstin_for_india(doc, method):
 			gst_category = frappe.db.get_value(link_doctype, {'name': link_name}, ['gst_category'])
 
 	doc.gstin = doc.gstin.upper().strip()
+=======
+	set_gst_state_and_state_number(doc)
+
+	doc.gstin = doc.gstin.upper().strip() if doc.gstin else ""
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 	if not doc.gstin or doc.gstin == 'NA':
 		return
 
 	if len(doc.gstin) != 15:
 		frappe.throw(_("Invalid GSTIN! A GSTIN must have 15 characters."))
 
+<<<<<<< HEAD
 	if gst_category and gst_category == 'UIN Holders':
 		p = re.compile("^[0-9]{4}[A-Z]{3}[0-9]{5}[0-9A-Z]{3}")
 		if not p.match(doc.gstin):
@@ -55,6 +62,17 @@ def update_gst_category(doc, method):
 				frappe.db.sql("""
 					UPDATE `tab{0}` SET gst_category = %s WHERE name = %s AND gst_category = 'Unregistered'
 				""".format(link.link_doctype), ("Registered Regular", link.link_name)) #nosec
+=======
+	p = re.compile("^[0-9]{2}[A-Z]{4}[0-9A-Z]{1}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}[1-9A-Z]{1}[0-9A-Z]{1}$")
+	if not p.match(doc.gstin):
+		frappe.throw(_("Invalid GSTIN! The input you've entered doesn't match the format of GSTIN."))
+
+	validate_gstin_check_digit(doc.gstin)
+
+	if doc.gst_state_number != doc.gstin[:2]:
+		frappe.throw(_("Invalid GSTIN! First 2 digits of GSTIN should match with State number {0}.")
+			.format(doc.gst_state_number))
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 
 def set_gst_state_and_state_number(doc):
 	if not doc.gst_state:
@@ -69,6 +87,10 @@ def set_gst_state_and_state_number(doc):
 
 	doc.gst_state_number = state_numbers[doc.gst_state]
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 def validate_gstin_check_digit(gstin, label='GSTIN'):
 	''' Function to validate the check digit of the GSTIN.'''
 	factor = 1
@@ -356,6 +378,10 @@ def calculate_hra_exemption_for_period(doc):
 		exemptions["total_eligible_hra_exemption"] = eligible_hra
 		return exemptions
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 def get_ewb_data(dt, dn):
 	if dt != 'Sales Invoice':
 		frappe.throw(_('e-Way Bill JSON can only be generated from Sales Invoice'))
@@ -376,12 +402,21 @@ def get_ewb_data(dt, dn):
 		data.userGstin = data.fromGstin = doc.company_gstin
 		data.supplyType = 'O'
 
+<<<<<<< HEAD
 		if doc.gst_category in ['Registered Regular', 'SEZ']:
 			data.subSupplyType = 1
 		elif doc.gst_category in ['Overseas', 'Deemed Export']:
 			data.subSupplyType = 3
 		else:
 			frappe.throw(_('Unsupported GST Category for e-Way Bill JSON generation'))
+=======
+		if doc.invoice_type in ['Regular', 'SEZ']:
+			data.subSupplyType = 1
+		elif doc.invoice_type in ['Export', 'Deemed Export']:
+			data.subSupplyType = 3
+		else:
+			frappe.throw(_('Unsupported Invoice Type for e-Way Bill JSON generation'))
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 
 		data.docType = 'INV'
 		data.docDate = frappe.utils.formatdate(doc.posting_date, 'dd/mm/yyyy')
@@ -629,7 +664,11 @@ def get_gst_accounts(company, account_wise=False):
 		filters={"parent": "GST Settings", "company": company},
 		fields=["cgst_account", "sgst_account", "igst_account", "cess_account"])
 
+<<<<<<< HEAD
 	if not gst_settings_accounts and not frappe.flags.in_test:
+=======
+	if not gst_settings_accounts:
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 		frappe.throw(_("Please set GST Accounts in GST Settings"))
 
 	for d in gst_settings_accounts:
@@ -640,4 +679,8 @@ def get_gst_accounts(company, account_wise=False):
 				gst_accounts[val] = acc
 
 
+<<<<<<< HEAD
 	return gst_accounts
+=======
+	return gst_accounts
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2

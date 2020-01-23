@@ -15,3 +15,7 @@ __pycache__
 .idea/
 .vscode/
 node_modules/
+<<<<<<< HEAD
+=======
+.idea/
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2

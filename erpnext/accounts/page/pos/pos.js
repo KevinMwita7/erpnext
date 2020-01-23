@@ -1763,6 +1763,18 @@ erpnext.pos.PointOfSale = erpnext.taxes_and_totals.extend({
 		this.si_docs = this.get_submitted_invoice() || [];
 		this.email_queue_list = this.get_email_queue() || {};
 		this.customers_list = this.get_customers_details() || {};
+<<<<<<< HEAD
+=======
+
+		if(this.customer_doc) {
+			this.freeze = this.customer_doc.display
+		}
+
+		freeze_screen = this.freeze_screen || false;
+
+		if ((this.si_docs.length || this.email_queue_list || this.customers_list) && !this.freeze) {
+			this.freeze = true;
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 
 		if (this.si_docs.length || this.email_queue_list || this.customers_list) {
 			frappe.call({

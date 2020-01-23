@@ -118,6 +118,7 @@ class TestPurchaseOrder(unittest.TestCase):
 		self.assertEqual(po.get("items")[0].amount, 1400)
 		self.assertEqual(get_ordered_qty(), existing_ordered_qty + 3)
 
+<<<<<<< HEAD
 	
 	def test_add_new_item_in_update_child_qty_rate(self):
 		po = create_purchase_order(do_not_save=1)
@@ -185,6 +186,8 @@ class TestPurchaseOrder(unittest.TestCase):
 		self.assertEquals(len(po.get('items')), 1)
 		self.assertEqual(po.status, 'To Receive and Bill')
 
+=======
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 	def test_update_qty(self):
 		po = create_purchase_order()
 
@@ -646,6 +649,7 @@ class TestPurchaseOrder(unittest.TestCase):
 
 		update_backflush_based_on("BOM")
 
+<<<<<<< HEAD
 	def test_advance_payment_entry_unlink_against_purchase_order(self):
 		from erpnext.accounts.doctype.payment_entry.test_payment_entry import get_payment_entry
 		frappe.db.set_value("Accounts Settings", "Accounts Settings",
@@ -711,6 +715,8 @@ class TestPurchaseOrder(unittest.TestCase):
 
 
 
+=======
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 def make_pr_against_po(po, received_qty=0):
 	pr = make_purchase_receipt(po)
 	pr.get("items")[0].qty = received_qty or 5

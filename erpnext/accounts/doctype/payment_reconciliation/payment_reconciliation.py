@@ -21,12 +21,16 @@ class PaymentReconciliation(Document):
 		payment_entries = self.get_payment_entries()
 		journal_entries = self.get_jv_entries()
 
+<<<<<<< HEAD
 		if self.party_type in ["Customer", "Supplier"]:
 			dr_or_cr_notes = self.get_dr_or_cr_notes()
 		else:
 			dr_or_cr_notes = []
 
 		self.add_payment_entries(payment_entries + journal_entries + dr_or_cr_notes)
+=======
+		self.add_payment_entries(payment_entries + journal_entries)
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 
 	def get_payment_entries(self):
 		order_doctype = "Sales Order" if self.party_type=="Customer" else "Purchase Order"
@@ -153,16 +157,34 @@ class PaymentReconciliation(Document):
 		for e in self.get('payments'):
 			reconciled_entry = []
 			if e.invoice_number and e.allocated_amount:
+<<<<<<< HEAD
 				if e.reference_type in ['Sales Invoice', 'Purchase Invoice']:
 					reconciled_entry = dr_or_cr_notes
 				else:
 					reconciled_entry = lst
 
 				reconciled_entry.append(self.get_payment_details(e, dr_or_cr))
+=======
+				lst.append(frappe._dict({
+					'voucher_type': e.reference_type,
+					'voucher_no' : e.reference_name,
+					'voucher_detail_no' : e.reference_row,
+					'against_voucher_type' : e.invoice_type,
+					'against_voucher'  : e.invoice_number,
+					'account' : self.receivable_payable_account,
+					'party_type': self.party_type,
+					'party': self.party,
+					'is_advance' : e.is_advance,
+					'dr_or_cr' : dr_or_cr,
+					'unadjusted_amount' : flt(e.amount),
+					'allocated_amount' : flt(e.allocated_amount)
+				}))
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 
 		if lst:
 			reconcile_against_document(lst)
 
+<<<<<<< HEAD
 		if dr_or_cr_notes:
 			reconcile_dr_cr_note(dr_or_cr_notes)
 
@@ -204,6 +226,10 @@ class PaymentReconciliation(Document):
 		update_reference_in_payment_entry(row, doc, do_not_save=True)
 
 		return doc.difference_amount
+=======
+			msgprint(_("Successfully Reconciled"))
+			self.get_unreconciled_entries()
+>>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 
 	def check_mandatory_to_fetch(self):
 		for fieldname in ["company", "party_type", "party", "receivable_payable_account"]:
