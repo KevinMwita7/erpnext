@@ -63,10 +63,7 @@ install:
   - tar -xf /tmp/wkhtmltox.tar.xz -C /tmp
   - sudo mv /tmp/wkhtmltox/bin/wkhtmltopdf /usr/local/bin/wkhtmltopdf
   - sudo chmod o+x /usr/local/bin/wkhtmltopdf
-<<<<<<< HEAD
   - sudo apt-get install libcups2-dev
-=======
->>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 
   - cd ~/frappe-bench
 
