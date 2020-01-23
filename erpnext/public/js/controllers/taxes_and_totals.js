@@ -73,13 +73,15 @@ erpnext.taxes_and_totals = erpnext.payments.extend({
 			if(this.frm.doc.currency == company_currency) {
 				this.frm.set_value("conversion_rate", 1);
 			} else {
-				const err_message = __('{0} is mandatory. Maybe Currency Exchange record is not created for {1} to {2}', [
-					conversion_rate_label,
-					this.frm.doc.currency,
-					company_currency
-				]);
-				frappe.throw(err_message);
+				frappe.throw(repl('%(conversion_rate_label)s' +
+					__(' is mandatory. Maybe Currency Exchange record is not created for ') +
+				'%(from_currency)s' + __(" to ") + '%(to_currency)s', {
+					"conversion_rate_label": conversion_rate_label,
+					"from_currency": this.frm.doc.currency,
+					"to_currency": company_currency
+				}));
 			}
+
 		}
 	},
 
@@ -512,7 +514,7 @@ erpnext.taxes_and_totals = erpnext.payments.extend({
 					net_total += item.net_amount;
 
 					// discount amount rounding loss adjustment if no taxes
-					if ((!(me.frm.doc.taxes || []).length || (me.frm.doc.apply_discount_on == "Net Total"))
+					if ((!(me.frm.doc.taxes || []).length || total_for_discount_amount==me.frm.doc.net_total || (me.frm.doc.apply_discount_on == "Net Total"))
 							&& i == (me.frm.doc.items || []).length - 1) {
 						var discount_amount_loss = flt(me.frm.doc.net_total - net_total
 							- me.frm.doc.discount_amount, precision("net_total"));

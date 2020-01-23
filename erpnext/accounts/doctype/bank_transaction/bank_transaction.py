@@ -45,12 +45,12 @@ class BankTransaction(StatusUpdater):
 	def clear_linked_payment_entries(self):
 		for payment_entry in self.payment_entries:
 			allocated_amount = get_total_allocated_amount(payment_entry)
-			paid_amount = get_paid_amount(payment_entry, self.currency)
+			paid_amount = get_paid_amount(payment_entry)
 
 			if paid_amount and allocated_amount:
 				if  flt(allocated_amount[0]["allocated_amount"]) > flt(paid_amount):
 					frappe.throw(_("The total allocated amount ({0}) is greated than the paid amount ({1}).".format(flt(allocated_amount[0]["allocated_amount"]), flt(paid_amount))))
-				else:
+				elif flt(allocated_amount[0]["allocated_amount"]) == flt(paid_amount):
 					if payment_entry.payment_document in ["Payment Entry", "Journal Entry", "Purchase Invoice", "Expense Claim"]:
 						self.clear_simple_entry(payment_entry)
 
@@ -80,17 +80,9 @@ def get_total_allocated_amount(payment_entry):
 		AND
 			bt.docstatus = 1""", (payment_entry.payment_document, payment_entry.payment_entry), as_dict=True)
 
-def get_paid_amount(payment_entry, currency):
+def get_paid_amount(payment_entry):
 	if payment_entry.payment_document in ["Payment Entry", "Sales Invoice", "Purchase Invoice"]:
-
-		paid_amount_field = "paid_amount"
-		if payment_entry.payment_document == 'Payment Entry':
-			doc = frappe.get_doc("Payment Entry", payment_entry.payment_entry)
-			paid_amount_field = ("base_paid_amount"
-				if doc.paid_to_account_currency == currency else "paid_amount")
-
-		return frappe.db.get_value(payment_entry.payment_document,
-			payment_entry.payment_entry, paid_amount_field)
+		return frappe.db.get_value(payment_entry.payment_document, payment_entry.payment_entry, "paid_amount")
 
 	elif payment_entry.payment_document == "Journal Entry":
 		return frappe.db.get_value(payment_entry.payment_document, payment_entry.payment_entry, "total_credit")
@@ -99,11 +91,7 @@ def get_paid_amount(payment_entry, currency):
 		return frappe.db.get_value(payment_entry.payment_document, payment_entry.payment_entry, "total_amount_reimbursed")
 
 	else:
-<<<<<<< HEAD
-		frappe.throw("Please reconcile {0}: {1} manually".format(payment_entry.payment_document, payment_entry.payment_entry))
-=======
 		frappe.throw(_("Please reconcile {0}: {1} manually".format(payment_entry.payment_document, payment_entry.payment_entry)))
->>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 
 @frappe.whitelist()
 def unclear_reference_payment(doctype, docname):

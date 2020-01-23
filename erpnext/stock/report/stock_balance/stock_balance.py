@@ -17,17 +17,14 @@ def execute(filters=None):
 
 	include_uom = filters.get("include_uom")
 	columns = get_columns()
-	# Get item names from the database
 	items = get_items(filters)
-	# Gets the stock ledger entries of the items from the db
 	sle = get_stock_ledger_entries(filters, items)
 
 	# if no stock ledger entry found return
 	if not sle:
 		return columns, []
-	
+
 	iwb_map = get_item_warehouse_map(filters, sle)
-    # TODO: Add price to item_map
 	item_map = get_item_details(items, sle, filters)
 	item_reorder_detail_map = get_item_reorder_details(item_map.keys())
 
@@ -43,16 +40,17 @@ def execute(filters=None):
 				item_reorder_qty = item_reorder_detail_map[item + warehouse]["warehouse_reorder_qty"]
 
 			report_data = [item, item_map[item]["item_name"],
-				qty_dict.price,
-				warehouse,
+				item_map[item]["item_group"],
+				item_map[item]["brand"],
+				item_map[item]["description"], warehouse,
 				item_map[item]["stock_uom"], qty_dict.opening_qty,
 				qty_dict.opening_val, qty_dict.in_qty,
 				qty_dict.in_val, qty_dict.out_qty,
 				qty_dict.out_val, qty_dict.bal_qty,
 				qty_dict.bal_val, qty_dict.val_rate,
-				
 				item_reorder_level,
 				item_reorder_qty,
+				company
 			]
 
 			if filters.get('show_variant_attributes', 0) == 1:
@@ -74,26 +72,25 @@ def get_columns():
 	"""return columns"""
 
 	columns = [
-		{"label": _("Product"), "fieldname": "item_code", "fieldtype": "Link", "options": "Item", "width": 100},
-		{"label": _("Product Name"), "fieldname": "item_name", "width": 150},
-		{"label": _("Price"), "fieldname": "price", "fieldtype": "Currency", "width": 90, "convertible": "rate"},
-		#{"label": _("Item Group"), "fieldname": "item_group", "fieldtype": "Link", "options": "Item Group", "width": 100},
-		#{"label": _("Brand"), "fieldname": "brand", "fieldtype": "Link", "options": "Brand", "width": 90},
-		#{"label": _("Description"), "fieldname": "description", "width": 140},
+		{"label": _("Item"), "fieldname": "item_code", "fieldtype": "Link", "options": "Item", "width": 100},
+		{"label": _("Item Name"), "fieldname": "item_name", "width": 150},
+		{"label": _("Item Group"), "fieldname": "item_group", "fieldtype": "Link", "options": "Item Group", "width": 100},
+		{"label": _("Brand"), "fieldname": "brand", "fieldtype": "Link", "options": "Brand", "width": 90},
+		{"label": _("Description"), "fieldname": "description", "width": 140},
 		{"label": _("Warehouse"), "fieldname": "warehouse", "fieldtype": "Link", "options": "Warehouse", "width": 100},
 		{"label": _("Stock UOM"), "fieldname": "stock_uom", "fieldtype": "Link", "options": "UOM", "width": 90},
-		{"label": _("Opening Stock"), "fieldname": "opening_qty", "fieldtype": "Float", "width": 100, "convertible": "qty"},
+		{"label": _("Opening Qty"), "fieldname": "opening_qty", "fieldtype": "Float", "width": 100, "convertible": "qty"},
 		{"label": _("Opening Value"), "fieldname": "opening_val", "fieldtype": "Float", "width": 110},
 		{"label": _("In Qty"), "fieldname": "in_qty", "fieldtype": "Float", "width": 80, "convertible": "qty"},
 		{"label": _("In Value"), "fieldname": "in_val", "fieldtype": "Float", "width": 80},
 		{"label": _("Out Qty"), "fieldname": "out_qty", "fieldtype": "Float", "width": 80, "convertible": "qty"},
 		{"label": _("Out Value"), "fieldname": "out_val", "fieldtype": "Float", "width": 80},
-		{"label": _("Closing Stock"), "fieldname": "bal_qty", "fieldtype": "Float", "width": 100, "convertible": "qty"},
-		{"label": _("Value"), "fieldname": "bal_val", "fieldtype": "Currency", "width": 100},
+		{"label": _("Balance Qty"), "fieldname": "bal_qty", "fieldtype": "Float", "width": 100, "convertible": "qty"},
+		{"label": _("Balance Value"), "fieldname": "bal_val", "fieldtype": "Currency", "width": 100},
 		{"label": _("Valuation Rate"), "fieldname": "val_rate", "fieldtype": "Currency", "width": 90, "convertible": "rate"},
 		{"label": _("Reorder Level"), "fieldname": "reorder_level", "fieldtype": "Float", "width": 80, "convertible": "qty"},
-		{"label": _("Reorder Qty"), "fieldname": "reorder_qty", "fieldtype": "Float", "width": 80, "convertible": "qty"}
-		#{"label": _("Company"), "fieldname": "company", "fieldtype": "Link", "options": "Company", "width": 100}
+		{"label": _("Reorder Qty"), "fieldname": "reorder_qty", "fieldtype": "Float", "width": 80, "convertible": "qty"},
+		{"label": _("Company"), "fieldname": "company", "fieldtype": "Link", "options": "Company", "width": 100}
 	]
 
 	return columns
@@ -104,7 +101,7 @@ def get_conditions(filters):
 		frappe.throw(_("'From Date' is required"))
 
 	if filters.get("to_date"):
-		conditions += " and sle.posting_date <= %s" % frappe.db.escape(filters.get("to_date"))
+		conditions += " and sle.posting_date <= '%s'" % frappe.db.escape(filters.get("to_date"))
 	else:
 		frappe.throw(_("'To Date' is required"))
 
@@ -122,19 +119,18 @@ def get_stock_ledger_entries(filters, items):
 	item_conditions_sql = ''
 	if items:
 		item_conditions_sql = ' and sle.item_code in ({})'\
-			.format(', '.join([frappe.db.escape(i, percent=False) for i in items]))
+			.format(', '.join(['"' + frappe.db.escape(i, percent=False) + '"' for i in items]))
 
 	conditions = get_conditions(filters)
 
 	return frappe.db.sql("""
 		select
-			sle.item_code,b.price_list_rate,warehouse, sle.posting_date, sle.actual_qty, sle.valuation_rate,
+			sle.item_code, warehouse, sle.posting_date, sle.actual_qty, sle.valuation_rate,
 			sle.company, sle.voucher_type, sle.qty_after_transaction, sle.stock_value_difference
 		from
 			`tabStock Ledger Entry` sle force index (posting_sort_index)
-			INNER JOIN `tabItem Price` b ON b.item_code = sle.item_code
 		where sle.docstatus < 2 %s %s
-		order by sle.posting_date, sle.posting_time, sle.creation""" %
+		order by sle.posting_date, sle.posting_time, sle.name""" %
 		(item_conditions_sql, conditions), as_dict=1)
 
 def get_item_warehouse_map(filters, sle):
@@ -150,7 +146,7 @@ def get_item_warehouse_map(filters, sle):
 				"in_qty": 0.0, "in_val": 0.0,
 				"out_qty": 0.0, "out_val": 0.0,
 				"bal_qty": 0.0, "bal_val": 0.0,
-				"val_rate": 0.0, "price": d.price_list_rate
+				"val_rate": 0.0
 			})
 
 		qty_dict = iwb_map[(d.company, d.item_code, d.warehouse)]
@@ -220,21 +216,28 @@ def get_item_details(items, sle, filters):
 	if not items:
 		items = list(set([d.item_code for d in sle]))
 
-	if items:
-		cf_field = cf_join = ""
-		if filters.get("include_uom"):
-			cf_field = ", ucd.`conversion_factor`"
-			cf_join = "LEFT JOIN `tabUOM Conversion Detail` ucd ON ucd.`parent`=item.`name` AND ucd.`uom`=%(include_uom)s,"
+	if not items:
+		return item_details
 
-		for item in frappe.db.sql("""
-			SELECT item.`name`, item.`item_name`, item.`stock_uom` {cf_field}\
-			FROM `tabItem` item \
-			
-			{cf_join}\
-			WHERE item.`name` IN ({names}) AND IFNULL(item.`disabled`, 0) = 0
-			""".format(cf_field=cf_field, cf_join=cf_join, names=', '.join([frappe.db.escape(i, percent=False) for i in items])),
-			{"include_uom": filters.get("include_uom")}, as_dict=1):
-				item_details.setdefault(item.name, item)
+	cf_field = cf_join = ""
+	if filters.get("include_uom"):
+		cf_field = ", ucd.conversion_factor"
+		cf_join = "left join `tabUOM Conversion Detail` ucd on ucd.parent=item.name and ucd.uom='%s'" \
+			% frappe.db.escape(filters.get("include_uom"))
+
+	item_codes = ', '.join(['"' + frappe.db.escape(i, percent=False) + '"' for i in items])
+	res = frappe.db.sql("""
+		select
+			item.name, item.item_name, item.description, item.item_group, item.brand, item.stock_uom {cf_field}
+		from
+			`tabItem` item
+			{cf_join}
+		where
+			item.name in ({item_codes}) and ifnull(item.disabled, 0) = 0
+	""".format(cf_field=cf_field, cf_join=cf_join, item_codes=item_codes), as_dict=1)
+
+	for item in res:
+		item_details.setdefault(item.name, item)
 
 	if filters.get('show_variant_attributes', 0) == 1:
 		variant_values = get_variant_values_for(list(item_details))
@@ -250,7 +253,7 @@ def get_item_reorder_details(items):
 			select parent, warehouse, warehouse_reorder_qty, warehouse_reorder_level
 			from `tabItem Reorder`
 			where parent in ({0})
-		""".format(', '.join([frappe.db.escape(i, percent=False) for i in items])), as_dict=1)
+		""".format(', '.join(['"' + frappe.db.escape(i, percent=False) + '"' for i in items])), as_dict=1)
 
 	return dict((d.parent + d.warehouse, d) for d in item_reorder_details)
 

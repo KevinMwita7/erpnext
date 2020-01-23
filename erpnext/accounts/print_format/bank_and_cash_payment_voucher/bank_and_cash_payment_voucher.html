@@ -49,11 +49,7 @@
             {% endfor %}
             <tr>
                     <td class="right" colspan="3" ><strong>Total (debit) </strong></td>
-<<<<<<< HEAD
-                    <td class="left" >{{ frappe.format((gl | sum(attribute="debit")), {fieldtype: "Currency"}) }}</td>
-=======
                     <td class="left" >{{ gl | sum(attribute='debit') }}</td>
->>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
             </tr>
             <tr>
                     <td class="top-bottom" colspan="5"><strong>Credit</strong></td>
@@ -73,11 +69,7 @@
             {% endfor %}
             <tr>
                     <td class="right" colspan="3"><strong>Total (credit) </strong></td>
-<<<<<<< HEAD
-                    <td class="left" >{{ frappe.format((gl | sum(attribute="credit")), {fieldtype: "Currency"}) }}</td>
-=======
                     <td class="left" >{{ gl | sum(attribute='credit') }}</td>
->>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
             </tr>
         </table>
     <div>

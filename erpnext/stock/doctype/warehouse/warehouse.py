@@ -3,7 +3,7 @@
 
 from __future__ import unicode_literals
 import frappe, erpnext
-from frappe.utils import cint
+from frappe.utils import cint, nowdate
 from frappe import throw, _
 from frappe.utils.nestedset import NestedSet
 from erpnext.stock import get_warehouse_account
@@ -157,6 +157,8 @@ def get_children(doctype, parent=None, company=None, is_root=False):
 	# return warehouses
 	for wh in warehouses:
 		wh["balance"] = get_stock_value_from_bin(warehouse=wh.value)
+		if company:
+			wh["company_currency"] = frappe.db.get_value('Company', company, 'default_currency')
 	return warehouses
 
 @frappe.whitelist()

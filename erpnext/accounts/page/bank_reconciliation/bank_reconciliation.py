@@ -18,13 +18,6 @@ def reconcile(bank_transaction, payment_doctype, payment_name):
 	account = frappe.db.get_value("Bank Account", transaction.bank_account, "account")
 	gl_entry = frappe.get_doc("GL Entry", dict(account=account, voucher_type=payment_doctype, voucher_no=payment_name))
 
-<<<<<<< HEAD
-	if payment_doctype == "Payment Entry" and payment_entry.unallocated_amount > transaction.unallocated_amount:
-		frappe.throw(_("The unallocated amount of Payment Entry {0} \
-			is greater than the Bank Transaction's unallocated amount").format(payment_name))
-		
-=======
->>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 	if transaction.unallocated_amount == 0:
 		frappe.throw(_("This bank transaction is already fully reconciled"))
 
@@ -130,6 +123,8 @@ def check_matching_amount(bank_account, company, transaction):
 			'bank_account': bank_account,
 			'txt': '%%%s%%' % amount
 		}, as_dict=True)
+
+		frappe.errprint(journal_entries)
 
 	if transaction.credit > 0:
 		sales_invoices = frappe.db.sql("""
@@ -380,8 +375,4 @@ def sales_invoices_query(doctype, txt, searchfield, start, page_len, filters):
 			'start': start,
 			'page_len': page_len
 		}
-<<<<<<< HEAD
 	)
-=======
-	)
->>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2

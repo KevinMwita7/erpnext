@@ -18,16 +18,20 @@ frappe.ui.form.on("Purchase Receipt", {
 					"purchase_receipt": frm.doc.name
 				}
 			}
-		})
+		});
+
+		frm.set_query("expense_account", "items", function() {
+			return {
+				query: "erpnext.controllers.queries.get_expense_account",
+				filters: {'company': frm.doc.company}
+			}
+		});
+
 	},
 	onload: function(frm) {
 		erpnext.queries.setup_queries(frm, "Warehouse", function() {
 			return erpnext.queries.warehouse(frm.doc);
 		});
-	},
-
-	onload_post_render: function(frm) {
-		frm.get_field("items").grid.set_multiple_add("item_code", "qty");
 	},
 
 	refresh: function(frm) {
@@ -101,20 +105,20 @@ erpnext.stock.PurchaseReceiptController = erpnext.buying.BuyingController.extend
 					cur_frm.add_custom_button(__("Close"), this.close_purchase_receipt, __("Status"))
 				}
 
-				cur_frm.add_custom_button(__('Return'), this.make_purchase_return, __('Create'));
+				cur_frm.add_custom_button(__('Return'), this.make_purchase_return, __("Make"));
 
 				if(flt(this.frm.doc.per_billed) < 100) {
-					cur_frm.add_custom_button(__('Invoice'), this.make_purchase_invoice, __('Create'));
+					cur_frm.add_custom_button(__('Invoice'), this.make_purchase_invoice, __("Make"));
 				}
-				cur_frm.add_custom_button(__('Retention Stock Entry'), this.make_retention_stock_entry, __('Create'));
+				cur_frm.add_custom_button(__('Retention Stock Entry'), this.make_retention_stock_entry, __("Make"));
 
 				if(!this.frm.doc.auto_repeat) {
 					cur_frm.add_custom_button(__('Subscription'), function() {
 						erpnext.utils.make_subscription(me.frm.doc.doctype, me.frm.doc.name)
-					}, __('Create'))
+					}, __("Make"))
 				}
 
-				cur_frm.page.set_inner_btn_group_as_primary(__('Create'));
+				cur_frm.page.set_inner_btn_group_as_primary(__("Make"));
 			}
 		}
 

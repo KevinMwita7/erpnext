@@ -2,8 +2,9 @@
 # License: GNU General Public License v3. See license.txt
 
 from __future__ import unicode_literals
-import frappe
+import frappe, erpnext
 from frappe import _
+from frappe.model.meta import get_field_precision
 from frappe.utils import flt, get_datetime, format_datetime
 
 class StockOverReturnError(frappe.ValidationError): pass
@@ -74,7 +75,7 @@ def validate_returned_items(doc):
 
 	items_returned = False
 	for d in doc.get("items"):
-		if flt(d.qty) < 0 or d.get('received_qty') < 0:
+		if d.item_code and (flt(d.qty) < 0 or d.get('received_qty') < 0):
 			if d.item_code not in valid_items:
 				frappe.throw(_("Row # {0}: Returned Item {1} does not exists in {2} {3}")
 					.format(d.idx, d.item_code, doc.doctype, doc.return_against))
@@ -106,6 +107,9 @@ def validate_returned_items(doc):
 
 			items_returned = True
 
+		elif d.item_name:
+			items_returned = True
+
 	if not items_returned:
 		frappe.throw(_("Atleast one item should be entered with negative quantity in return document"))
 
@@ -115,6 +119,10 @@ def validate_quantity(doc, args, ref, valid_items, already_returned_items):
 		fields.extend(['received_qty', 'rejected_qty'])
 
 	already_returned_data = already_returned_items.get(args.item_code) or {}
+
+	company_currency = erpnext.get_company_currency(doc.company)
+	stock_qty_precision = get_field_precision(frappe.get_meta(doc.doctype + " Item")
+			.get_field("stock_qty"), company_currency)
 
 	for column in fields:
 		returned_qty = flt(already_returned_data.get(column, 0)) if len(already_returned_data) > 0 else 0
@@ -126,7 +134,7 @@ def validate_quantity(doc, args, ref, valid_items, already_returned_items):
 			reference_qty = ref.get(column) * ref.get("conversion_factor", 1.0)
 			current_stock_qty = args.get(column) * args.get("conversion_factor", 1.0)
 
-		max_returnable_qty = flt(reference_qty) - returned_qty
+		max_returnable_qty = flt(reference_qty, stock_qty_precision) - returned_qty
 		label = column.replace('_', ' ').title()
 
 		if reference_qty:
@@ -135,7 +143,7 @@ def validate_quantity(doc, args, ref, valid_items, already_returned_items):
 			elif returned_qty >= reference_qty and args.get(column):
 				frappe.throw(_("Item {0} has already been returned")
 					.format(args.item_code), StockOverReturnError)
-			elif abs(current_stock_qty) > max_returnable_qty:
+			elif abs(flt(current_stock_qty, stock_qty_precision)) > max_returnable_qty:
 				frappe.throw(_("Row # {0}: Cannot return more than {1} for Item {2}")
 					.format(args.idx, max_returnable_qty, args.item_code), StockOverReturnError)
 
@@ -200,11 +208,14 @@ def get_already_returned_items(doc):
 
 def make_return_doc(doctype, source_name, target_doc=None):
 	from frappe.model.mapper import get_mapped_doc
+	company = frappe.db.get_value("Delivery Note", source_name, "company")
+	default_warehouse_for_sales_return = frappe.db.get_value("Company", company, "default_warehouse_for_sales_return")
 	def set_missing_values(source, target):
 		doc = frappe.get_doc(target)
 		doc.is_return = 1
 		doc.return_against = source.name
 		doc.ignore_pricing_rule = 1
+		doc.set_warehouse = ""
 		if doctype == "Sales Invoice":
 			doc.is_pos = source.is_pos
 
@@ -239,12 +250,15 @@ def make_return_doc(doctype, source_name, target_doc=None):
 				doc.paid_amount = -1 * source.paid_amount
 				doc.base_paid_amount = -1 * source.base_paid_amount
 
+		if doc.get("is_return") and hasattr(doc, "packed_items"):
+			for d in doc.get("packed_items"):
+				d.qty = d.qty * -1
+
 		doc.discount_amount = -1 * source.discount_amount
 		doc.run_method("calculate_taxes_and_totals")
 
 	def update_item(source_doc, target_doc, source_parent):
 		target_doc.qty = -1* source_doc.qty
-		default_return_warehouse = frappe.db.get_single_value("Stock Settings", "default_return_warehouse")
 		if doctype == "Purchase Receipt":
 			target_doc.received_qty = -1* source_doc.received_qty
 			target_doc.rejected_qty = -1* source_doc.rejected_qty
@@ -269,13 +283,16 @@ def make_return_doc(doctype, source_name, target_doc=None):
 			target_doc.so_detail = source_doc.so_detail
 			target_doc.si_detail = source_doc.si_detail
 			target_doc.expense_account = source_doc.expense_account
-			target_doc.warehouse = default_return_warehouse if default_return_warehouse else source_doc.warehouse
+			if default_warehouse_for_sales_return:
+				target_doc.warehouse = default_warehouse_for_sales_return
 		elif doctype == "Sales Invoice":
 			target_doc.sales_order = source_doc.sales_order
 			target_doc.delivery_note = source_doc.delivery_note
 			target_doc.so_detail = source_doc.so_detail
 			target_doc.dn_detail = source_doc.dn_detail
 			target_doc.expense_account = source_doc.expense_account
+			if default_warehouse_for_sales_return:
+				target_doc.warehouse = default_warehouse_for_sales_return
 
 	def update_terms(source_doc, target_doc, source_parent):
 		target_doc.payment_amount = -source_doc.payment_amount

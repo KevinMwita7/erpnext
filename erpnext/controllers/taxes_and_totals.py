@@ -15,6 +15,9 @@ class calculate_taxes_and_totals(object):
 		self.calculate()
 
 	def calculate(self):
+		if not len(self.doc.get("items")):
+			return
+
 		self.discount_amount_applied = False
 		self._calculate()
 
@@ -272,8 +275,6 @@ class calculate_taxes_and_totals(object):
 		elif tax.charge_type == "On Previous Row Total":
 			current_tax_amount = (tax_rate / 100.0) * \
 				self.doc.get("taxes")[cint(tax.row_id) - 1].grand_total_for_current_item
-		elif tax.charge_type == "On Item Quantity":
-			current_tax_amount = tax_rate * item.stock_qty
 
 		self.set_item_wise_tax(item, tax, tax_rate, current_tax_amount)
 
@@ -328,7 +329,7 @@ class calculate_taxes_and_totals(object):
 
 			self.doc.round_floats_in(self.doc, ["taxes_and_charges_added", "taxes_and_charges_deducted"])
 
-			self.doc.base_grand_total = flt(self.doc.grand_total * self.doc.conversion_rate) \
+			self.doc.base_grand_total = flt(self.doc.grand_total * self.doc.conversion_rate, self.doc.precision("base_grand_total")) \
 				if (self.doc.taxes_and_charges_added or self.doc.taxes_and_charges_deducted) \
 				else self.doc.base_net_total
 
@@ -392,7 +393,7 @@ class calculate_taxes_and_totals(object):
 					net_total += item.net_amount
 
 					# discount amount rounding loss adjustment if no taxes
-					if (not taxes or self.doc.apply_discount_on == "Net Total") \
+					if (self.doc.apply_discount_on == "Net Total" or not taxes or total_for_discount_amount==self.doc.net_total) \
 						and i == len(self.doc.get("items")) - 1:
 							discount_amount_loss = flt(self.doc.net_total - net_total - self.doc.discount_amount,
 								self.doc.precision("net_total"))
@@ -610,7 +611,7 @@ def get_itemised_tax_breakup_data(doc):
 
 	return itemised_tax, itemised_taxable_amount
 
-def get_itemised_tax(taxes):
+def get_itemised_tax(taxes, with_tax_account=False):
 	itemised_tax = {}
 	for tax in taxes:
 		if getattr(tax, "category", None) and tax.category=="Valuation":
@@ -634,6 +635,9 @@ def get_itemised_tax(taxes):
 					tax_rate = tax_rate,
 					tax_amount = tax_amount
 				))
+
+				if with_tax_account:
+					itemised_tax[item_code][tax.description].tax_account = tax.account_head
 
 	return itemised_tax
 

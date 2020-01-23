@@ -33,8 +33,8 @@ def make_sample_data(domains, make_dependent = False):
 def make_opportunity(items, customer):
 	b = frappe.get_doc({
 		"doctype": "Opportunity",
-		"enquiry_from": "Customer",
-		"customer": customer,
+		"opportunity_from": "Customer",
+		"party_name": customer,
 		"opportunity_type": _("Sales"),
 		"with_items": 1
 	})

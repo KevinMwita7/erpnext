@@ -27,11 +27,15 @@ def get_data():
 					"type": "doctype",
 					"name": "Payment Entry",
 					"description": _("Bank/Cash transactions against party or for internal transfer")
+				},
+				{
+					"type": "doctype",
+					"name": "Payment Term",
+					"description": _("Payment Terms based on conditions")
 				}
 			]
 
 		},
-		
 		{
 			"label": _("Company and Accounts"),
 			"items": [
@@ -77,6 +81,14 @@ def get_data():
 				{
 					"type": "doctype",
 					"name": "Item",
+				},
+				{
+					"type": "doctype",
+					"name": "Bank",
+				},
+				{
+					"type": "doctype",
+					"name": "Bank Account",
 				}
 			]
 		},
@@ -135,6 +147,12 @@ def get_data():
 					"label": _("Update Bank Transaction Dates"),
 					"name": "Bank Reconciliation",
 					"description": _("Update bank payment dates with journals.")
+				},
+				{
+					"type": "page",
+					"label": _("Reconcile payments and bank transactions"),
+					"name": "bank-reconciliation",
+					"description": _("Link bank transactions with payments.")
 				},
 				{
 					"type": "doctype",
@@ -243,7 +261,7 @@ def get_data():
 				{
 					"type": "doctype",
 					"name": "Opening Invoice Creation Tool",
-					"description": _("Create Opening Sales and Purchase Invoices")
+					"description": _("Make Opening Sales and Purchase Invoices")
 				},
 			]
 		},
@@ -270,6 +288,11 @@ def get_data():
 					"type": "doctype",
 					"name": "Currency Exchange",
 					"description": _("Currency exchange rate master.")
+				},
+				{
+					"type": "doctype",
+					"name": "Exchange Rate Revaluation",
+					"description": _("Exchange Rate Revaluation master.")
 				},
 				{
 					"type": "doctype",
@@ -352,6 +375,36 @@ def get_data():
 					"is_query_report": True,
 					"doctype": "Sales Invoice"
 				},
+				{
+					"type": "report",
+					"name": "Item-wise Sales Register",
+					"is_query_report": True,
+					"doctype": "Sales Invoice"
+				},
+				{
+					"type": "report",
+					"name": "Item-wise Purchase Register",
+					"is_query_report": True,
+					"doctype": "Purchase Invoice"
+				},
+				{
+					"type": "report",
+					"name": "Profitability Analysis",
+					"doctype": "GL Entry",
+					"is_query_report": True,
+				},
+				{
+					"type": "report",
+					"name": "Customer Ledger Summary",
+					"doctype": "Sales Invoice",
+					"is_query_report": True,
+				},
+				{
+					"type": "report",
+					"name": "Supplier Ledger Summary",
+					"doctype": "Sales Invoice",
+					"is_query_report": True,
+				}
 			]
 		},
 		{
@@ -366,12 +419,6 @@ def get_data():
 				},
 				{
 					"type": "report",
-					"name": "Profitability Analysis",
-					"doctype": "GL Entry",
-					"is_query_report": True,
-				},
-				{
-					"type": "report",
 					"name": "Payment Period Based On Invoice Date",
 					"is_query_report": True,
 					"doctype": "Journal Entry"
@@ -381,18 +428,6 @@ def get_data():
 					"name": "Sales Partners Commission",
 					"is_query_report": True,
 					"doctype": "Sales Invoice"
-				},
-				{
-					"type": "report",
-					"name": "Item-wise Sales Register",
-					"is_query_report": True,
-					"doctype": "Sales Invoice"
-				},
-				{
-					"type": "report",
-					"name": "Item-wise Purchase Register",
-					"is_query_report": True,
-					"doctype": "Purchase Invoice"
 				},
 				{
 					"type": "report",
@@ -423,6 +458,12 @@ def get_data():
 					"is_query_report": True,
 					"name": "Address And Contacts",
 					"doctype": "Address"
+				},
+				{
+					"type": "report",
+					"is_query_report": False,
+					"name": "Workload",
+					"doctype": "Sales Order"
 				}
 			]
 		},

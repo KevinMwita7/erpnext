@@ -3,33 +3,6 @@
 # For license information, please see license.txt
 
 from __future__ import unicode_literals
-<<<<<<< HEAD
-from frappe import _
-from frappe.utils.password import get_decrypted_password
-from plaid import Client
-from plaid.errors import APIError, ItemError
-
-import frappe
-import requests
-
-class PlaidConnector():
-	def __init__(self, access_token=None):
-
-		plaid_settings = frappe.get_single("Plaid Settings")
-
-		self.config = {
-			"plaid_client_id": plaid_settings.plaid_client_id,
-			"plaid_secret": get_decrypted_password("Plaid Settings", "Plaid Settings", 'plaid_secret'),
-			"plaid_public_key": plaid_settings.plaid_public_key,
-			"plaid_env": plaid_settings.plaid_env
-		}
-
-		self.client = Client(client_id=self.config.get("plaid_client_id"),
-			secret=self.config.get("plaid_secret"),
-			public_key=self.config.get("plaid_public_key"),
-			environment=self.config.get("plaid_env")
-			)
-=======
 import frappe
 from frappe import _
 import requests
@@ -54,7 +27,6 @@ class PlaidConnector():
 			public_key=self.config["plaid_public_key"],
 			environment=self.config["plaid_env"]
 		)
->>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 
 		self.access_token = access_token
 
@@ -106,8 +78,4 @@ class PlaidConnector():
 				transactions.extend(response['transactions'])
 			return transactions
 		except Exception:
-<<<<<<< HEAD
 			frappe.log_error(frappe.get_traceback(), _("Plaid transactions sync error"))
-=======
-			frappe.log_error(frappe.get_traceback(), _("Plaid transactions sync error"))
->>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2

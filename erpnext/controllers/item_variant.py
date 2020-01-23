@@ -119,7 +119,7 @@ def get_attribute_values(item):
 	return frappe.flags.attribute_values, frappe.flags.numeric_values
 
 def find_variant(template, args, variant_item_code=None):
-	conditions = ["""(iv_attribute.attribute={0} and iv_attribute.attribute_value={1})"""\
+	conditions = ["""(iv_attribute.attribute="{0}" and iv_attribute.attribute_value="{1}")"""\
 		.format(frappe.db.escape(key), frappe.db.escape(cstr(value))) for key, value in args.items()]
 
 	conditions = " or ".join(conditions)
@@ -260,8 +260,6 @@ def generate_keyed_value_combinations(args):
 	return results
 
 def copy_attributes_to_variant(item, variant):
-	from frappe.model import no_value_fields
-
 	# copy non no-copy fields
 
 	exclude_fields = ["naming_series", "item_code", "item_name", "show_in_website",
@@ -289,14 +287,14 @@ def copy_attributes_to_variant(item, variant):
 					variant.set(field.fieldname, item.get(field.fieldname))
 
 	variant.variant_of = item.name
-	if 'description' in allow_fields:
-		variant.has_variants = 0
+
+	if 'description' not in allow_fields:
 		if not variant.description:
-			variant.description = ""
+				variant.description = ""
 
 		if item.variant_based_on=='Item Attribute':
 			if variant.attributes:
-				attributes_description = ""
+				attributes_description = item.description + " "
 				for d in variant.attributes:
 					attributes_description += "<div>" + d.attribute + ": " + cstr(d.attribute_value) + "</div>"
 

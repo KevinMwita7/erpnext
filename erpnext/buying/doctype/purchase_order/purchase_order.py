@@ -183,7 +183,7 @@ class PurchaseOrder(BuyingController):
 	def check_modified_date(self):
 		mod_db = frappe.db.sql("select modified from `tabPurchase Order` where name = %s",
 			self.name)
-		date_diff = frappe.db.sql("select '%s' - '%s' " % (mod_db[0][0], cstr(self.modified)))
+		date_diff = frappe.db.sql("select TIMEDIFF('%s', '%s')" % ( mod_db[0][0],cstr(self.modified)))
 
 		if date_diff and date_diff[0][0]:
 			msgprint(_("{0} {1} has been modified. Please refresh.").format(self.doctype, self.name),
@@ -296,10 +296,7 @@ class PurchaseOrder(BuyingController):
 		for item in self.items:
 			received_qty += item.received_qty
 			total_qty += item.qty
-		if total_qty:
-			self.db_set("per_received", flt(received_qty/total_qty) * 100, update_modified=False)
-		else:
-			self.db_set("per_received", 0, update_modified=False)
+		self.db_set("per_received", flt(received_qty/total_qty) * 100, update_modified=False)
 
 def item_last_purchase_rate(name, conversion_rate, item_code, conversion_factor= 1.0):
 	"""get last purchase rate for an item"""
@@ -382,7 +379,9 @@ def make_purchase_invoice(source_name, target_doc=None):
 	def postprocess(source, target):
 		set_missing_values(source, target)
 		#Get the advance paid Journal Entries in Purchase Invoice Advance
-		target.set_advances()
+
+		if target.get("allocate_advances_automatically"):
+			target.set_advances()
 
 	def update_item(obj, target, source_parent):
 		target.amount = flt(obj.amount) - flt(obj.billed_amt)
@@ -391,11 +390,12 @@ def make_purchase_invoice(source_name, target_doc=None):
 
 		item = get_item_defaults(target.item_code, source_parent.company)
 		item_group = get_item_group_defaults(target.item_code, source_parent.company)
-		target.cost_center = frappe.db.get_value("Project", obj.project, "cost_center") \
-			or item.get("buying_cost_center") \
-			or item_group.get("buying_cost_center")
+		target.cost_center = (obj.cost_center
+			or frappe.db.get_value("Project", obj.project, "cost_center")
+			or item.get("buying_cost_center")
+			or item_group.get("buying_cost_center"))
 
-	doc = get_mapped_doc("Purchase Order", source_name,	{
+	fields = {
 		"Purchase Order": {
 			"doctype": "Purchase Invoice",
 			"field_map": {
@@ -419,7 +419,15 @@ def make_purchase_invoice(source_name, target_doc=None):
 			"doctype": "Purchase Taxes and Charges",
 			"add_if_empty": True
 		}
-	}, target_doc, postprocess)
+	}
+
+	if frappe.get_single("Accounts Settings").automatically_fetch_payment_terms == 1:
+		fields["Payment Schedule"] = {
+			"doctype": "Payment Schedule",
+			"add_if_empty": True
+		}
+
+	doc = get_mapped_doc("Purchase Order", source_name,	fields, target_doc, postprocess)
 
 	return doc
 
@@ -459,7 +467,7 @@ def make_rm_stock_entry(purchase_order, rm_items):
 					items_dict = {
 						rm_item_code: {
 							"item_name": rm_item_data["item_name"],
-							"description": item_wh[rm_item_code].get('description'),
+							"description": item_wh.get(rm_item_code, {}).get('description', ""),
 							'qty': rm_item_data["qty"],
 							'from_warehouse': rm_item_data["warehouse"],
 							'stock_uom': rm_item_data["stock_uom"],

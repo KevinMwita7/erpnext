@@ -274,8 +274,7 @@ def get_companies(filters):
 	return all_companies, companies
 
 def get_subsidiary_companies(company):
-	lft, rgt = frappe.get_cached_value('Company',
-		company,  ["lft", "rgt"])
+	lft, rgt = frappe.db.get_value('Company', company,  ["lft", "rgt"])
 
 	return frappe.db.sql_list("""select name from `tabCompany`
 		where lft >= {0} and rgt <= {1} order by lft, rgt""".format(lft, rgt))
@@ -355,7 +354,9 @@ def set_gl_entries_by_account(from_date, to_date, root_lft, root_rgt, filters, g
 				"to_date": to_date,
 				"lft": root_lft,
 				"rgt": root_rgt,
-				"company": d.name
+				"company": d.name,
+				"finance_book": filters.get("finance_book"),
+				"company_fb": frappe.db.get_value("Company", d.name, 'default_finance_book')
 			},
 			as_dict=True)
 
@@ -385,14 +386,11 @@ def get_additional_conditions(from_date, ignore_closing_entries, filters):
 	if from_date:
 		additional_conditions.append("gl.posting_date >= %(from_date)s")
 
-	company_finance_book = erpnext.get_default_finance_book(filters.get("company"))
-
-	if not filters.get('finance_book') or (filters.get('finance_book') == company_finance_book):
-		additional_conditions.append("ifnull(finance_book, '') in (%s, '')" %
-			frappe.db.escape(company_finance_book))
-	elif filters.get("finance_book"):
-		additional_conditions.append("ifnull(finance_book, '') = %s " %
-			frappe.db.escape(filters.get("finance_book")))
+	if filters.get("finance_book"):
+		if filters.get("include_default_book_entries"):
+			additional_conditions.append("finance_book in (%(finance_book)s, %(company_fb)s)")
+		else:
+			additional_conditions.append("finance_book in (%(finance_book)s)")
 
 	return " and {}".format(" and ".join(additional_conditions)) if additional_conditions else ""
 

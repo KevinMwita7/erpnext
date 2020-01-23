@@ -25,7 +25,7 @@ class PaymentReconciliation(Document):
 	def get_payment_entries(self):
 		order_doctype = "Sales Order" if self.party_type=="Customer" else "Purchase Order"
 		payment_entries = get_advance_payment_entries(self.party_type, self.party,
-			self.receivable_payable_account, order_doctype, against_all_orders=True)
+			self.receivable_payable_account, order_doctype, against_all_orders=True, limit=self.limit)
 
 		return payment_entries
 
@@ -35,6 +35,8 @@ class PaymentReconciliation(Document):
 
 		bank_account_condition = "t2.against_account like %(bank_cash_account)s" \
 				if self.bank_cash_account else "1=1"
+
+		limit_cond = "limit %s" % self.limit if self.limit else ""
 
 		journal_entries = frappe.db.sql("""
 			select
@@ -55,10 +57,11 @@ class PaymentReconciliation(Document):
 					THEN 1=1
 					ELSE {bank_account_condition}
 				END)
-			order by t1.posting_date
+			order by t1.posting_date {limit_cond}
 			""".format(**{
 				"dr_or_cr": dr_or_cr,
 				"bank_account_condition": bank_account_condition,
+				"limit_cond": limit_cond
 			}), {
 				"party_type": self.party_type,
 				"party": self.party,
@@ -81,6 +84,9 @@ class PaymentReconciliation(Document):
 
 		non_reconciled_invoices = get_outstanding_invoices(self.party_type, self.party,
 			self.receivable_payable_account, condition=condition)
+
+		if self.limit:
+			non_reconciled_invoices = non_reconciled_invoices[:self.limit]
 
 		self.add_invoice_entries(non_reconciled_invoices)
 
@@ -171,8 +177,8 @@ class PaymentReconciliation(Document):
 			frappe.throw(_("Please select Allocated Amount, Invoice Type and Invoice Number in atleast one row"))
 
 	def check_condition(self):
-		cond = " and posting_date >= {0}".format(frappe.db.escape(self.from_date)) if self.from_date else ""
-		cond += " and posting_date <= {0}".format(frappe.db.escape(self.to_date)) if self.to_date else ""
+		cond = " and posting_date >= '{0}'".format(frappe.db.escape(self.from_date)) if self.from_date else ""
+		cond += " and posting_date <= '{0}'".format(frappe.db.escape(self.to_date)) if self.to_date else ""
 		dr_or_cr = ("debit_in_account_currency" if erpnext.get_party_account_type(self.party_type) == 'Receivable'
 			else "credit_in_account_currency")
 

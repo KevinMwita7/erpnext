@@ -70,7 +70,7 @@ class MaterialRequest(BuyingController):
 		from erpnext.controllers.status_updater import validate_status
 		validate_status(self.status,
 			["Draft", "Submitted", "Stopped", "Cancelled", "Pending",
-			"Partially Ordered", "Ordered", "Issued", "Transferred", "Received"])
+			"Partially Ordered", "Ordered", "Issued", "Transferred"])
 
 		validate_for_items(self)
 
@@ -81,9 +81,9 @@ class MaterialRequest(BuyingController):
 
 	def set_title(self):
 		'''Set title as comma separated list of items'''
-		items = ', '.join([d.item_name for d in self.items][:4])
-
-		self.title = _('{0} for {1}'.format(self.material_request_type, items))[:100]
+		if not self.title:
+			items = ', '.join([d.item_name for d in self.items][:3])
+			self.title = _('{0} Request for {1}').format(self.material_request_type, items)[:100]
 
 	def on_submit(self):
 		# frappe.db.set(self, 'status', 'Submitted')
@@ -154,7 +154,7 @@ class MaterialRequest(BuyingController):
 
 		for d in self.get("items"):
 			if d.name in mr_items:
-				if self.material_request_type in ("Material Issue", "Material Transfer", "Customer Provided"):
+				if self.material_request_type in ("Material Issue", "Material Transfer"):
 					d.ordered_qty =  flt(frappe.db.sql("""select sum(transfer_qty)
 						from `tabStock Entry Detail` where material_request = %s
 						and material_request_item = %s and docstatus = 1""",
@@ -231,6 +231,8 @@ def update_completed_and_requested_qty(stock_entry, method):
 				mr_obj.update_requested_qty(mr_item_rows)
 
 def set_missing_values(source, target_doc):
+	if target_doc.doctype == "Purchase Order" and getdate(target_doc.schedule_date) <  getdate(nowdate()):
+		target_doc.schedule_date = None
 	target_doc.run_method("set_missing_values")
 	target_doc.run_method("calculate_taxes_and_totals")
 
@@ -238,18 +240,8 @@ def update_item(obj, target, source_parent):
 	target.conversion_factor = obj.conversion_factor
 	target.qty = flt(flt(obj.stock_qty) - flt(obj.ordered_qty))/ target.conversion_factor
 	target.stock_qty = (target.qty * target.conversion_factor)
-
-def get_list_context(context=None):
-	from erpnext.controllers.website_list_for_contact import get_list_context
-	list_context = get_list_context(context)
-	list_context.update({
-		'show_sidebar': True,
-		'show_search': True,
-		'no_breadcrumbs': True,
-		'title': _('Material Request'),
-	})
-
-	return list_context
+	if getdate(target.schedule_date) < getdate(nowdate()):
+		target.schedule_date = None
 
 @frappe.whitelist()
 def update_status(name, status):
@@ -334,7 +326,8 @@ def make_purchase_order_based_on_supplier(source_name, target_doc=None):
 
 	def postprocess(source, target_doc):
 		target_doc.supplier = source_name
-		target_doc.schedule_date = add_days(nowdate(), 1)
+		if getdate(target_doc.schedule_date) < getdate(nowdate()):
+			target_doc.schedule_date = None
 		target_doc.set("items", [d for d in target_doc.get("items")
 			if d.get("item_code") in supplier_items and d.get("qty") > 0])
 
@@ -412,7 +405,7 @@ def make_stock_entry(source_name, target_doc=None):
 		target.transfer_qty = qty * obj.conversion_factor
 		target.conversion_factor = obj.conversion_factor
 
-		if source_parent.material_request_type == "Material Transfer" or source_parent.material_request_type == "Customer Provided":
+		if source_parent.material_request_type == "Material Transfer":
 			target.t_warehouse = obj.warehouse
 		else:
 			target.s_warehouse = obj.warehouse
@@ -421,9 +414,6 @@ def make_stock_entry(source_name, target_doc=None):
 		target.purpose = source.material_request_type
 		if source.job_card:
 			target.purpose = 'Material Transfer for Manufacture'
-
-		if source.material_request_type == "Customer Provided":
-			target.purpose = "Material Receipt"
 
 		target.run_method("calculate_rate_and_amount")
 		target.set_job_card_data()

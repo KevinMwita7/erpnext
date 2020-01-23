@@ -22,12 +22,8 @@ def execute(filters=None):
 	for sle in sl_entries:
 		item_detail = item_details[sle.item_code]
 
-		data.append([sle.date, sle.item_code, item_detail.item_name, item_detail.item_group,
-			item_detail.brand, item_detail.description, sle.warehouse,
-			item_detail.stock_uom, sle.actual_qty, sle.qty_after_transaction,
-			(sle.incoming_rate if sle.actual_qty > 0 else 0.0),
-			sle.valuation_rate, sle.stock_value, sle.voucher_type, sle.voucher_no,
-			sle.batch_no, sle.serial_no, sle.project, sle.company])
+		sle.update(item_detail)
+		data.append(sle)
 
 		if include_uom:
 			conversion_factors.append(item_detail.conversion_factor)
@@ -67,7 +63,7 @@ def get_stock_ledger_entries(filters, items):
 	item_conditions_sql = ''
 	if items:
 		item_conditions_sql = 'and sle.item_code in ({})'\
-			.format(', '.join([frappe.db.escape(i) for i in items]))
+			.format(', '.join(['"' + frappe.db.escape(i) + '"' for i in items]))
 
 	return frappe.db.sql("""select concat_ws(" ", posting_date, posting_time) as date,
 			item_code, warehouse, actual_qty, qty_after_transaction, incoming_rate, valuation_rate,
@@ -77,7 +73,7 @@ def get_stock_ledger_entries(filters, items):
 			posting_date between %(from_date)s and %(to_date)s
 			{sle_conditions}
 			{item_conditions_sql}
-			order by posting_date asc, posting_time asc, creation asc"""\
+			order by posting_date asc, posting_time asc, name asc"""\
 		.format(
 			sle_conditions=get_sle_conditions(filters),
 			item_conditions_sql = item_conditions_sql
@@ -109,17 +105,23 @@ def get_item_details(items, sl_entries, include_uom):
 
 	cf_field = cf_join = ""
 	if include_uom:
-		cf_field = ", ucd.`conversion_factor`"
-		cf_join = "LEFT JOIN `tabUOM Conversion Detail` ucd ON ucd.`parent`=item.`name` and ucd.`uom`=%(include_uom)s"
+		cf_field = ", ucd.conversion_factor"
+		cf_join = "left join `tabUOM Conversion Detail` ucd on ucd.parent=item.name and ucd.uom='%s'" \
+			% frappe.db.escape(include_uom)
 
-	for item in frappe.db.sql("""
-		SELECT item.`name`, item.`item_name`, item.`description`, item.`item_group`, item.`brand`, item.`stock_uom` {cf_field}
-		FROM `tabItem` item
-		{cf_join}
-		where item.`name` in ({names})
-		""".format(cf_field=cf_field, cf_join=cf_join, names=', '.join([frappe.db.escape(i, percent=False) for i in items])),
-		{"include_uom": include_uom}, as_dict=1):
-			item_details.setdefault(item.name, item)
+	item_codes = ', '.join(['"' + frappe.db.escape(i, percent=False) + '"' for i in items])
+	res = frappe.db.sql("""
+		select
+			item.name, item.item_name, item.description, item.item_group, item.brand, item.stock_uom {cf_field}
+		from
+			`tabItem` item
+			{cf_join}
+		where
+			item.name in ({item_codes})
+	""".format(cf_field=cf_field, cf_join=cf_join, item_codes=item_codes), as_dict=1)
+
+	for item in res:
+		item_details.setdefault(item.name, item)
 
 	return item_details
 
@@ -149,10 +151,10 @@ def get_opening_balance(filters, columns):
 		"posting_date": filters.from_date,
 		"posting_time": "00:00:00"
 	})
-	row = [""]*len(columns)
-	row[1] = _("'Opening'")
-	for i, v in ((9, 'qty_after_transaction'), (11, 'valuation_rate'), (12, 'stock_value')):
-			row[i] = last_entry.get(v, 0)
+	row = {}
+	row["item_code"] = _("'Opening'")
+	for dummy, v in ((9, 'qty_after_transaction'), (11, 'valuation_rate'), (12, 'stock_value')):
+			row[v] = last_entry.get(v, 0)
 
 	return row
 

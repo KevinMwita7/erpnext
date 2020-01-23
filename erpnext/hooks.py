@@ -12,11 +12,6 @@ app_license = "GNU General Public License (v3)"
 source_link = "https://github.com/frappe/erpnext"
 
 develop_version = '12.x.x-develop'
-staging_version = '11.0.3-beta.34'
-
-error_report_email = "support@erpnext.com"
-
-docs_app = "foundation"
 
 app_include_js = "assets/js/erpnext.min.js"
 app_include_css = "assets/css/erpnext.css"
@@ -47,7 +42,7 @@ update_and_get_user_progress = "erpnext.utilities.user_progress_utils.update_def
 on_session_creation = "erpnext.shopping_cart.utils.set_cart_count"
 on_logout = "erpnext.shopping_cart.utils.clear_cart_count"
 
-treeviews = ['Account', 'Cost Center', 'Warehouse', 'Item Group', 'Customer Group', 'Sales Person', 'Territory', 'Assessment Group']
+treeviews = ['Account', 'Cost Center', 'Warehouse', 'Item Group', 'Customer Group', 'Sales Person', 'Territory', 'Assessment Group', 'Department']
 
 # website
 update_website_context = "erpnext.shopping_cart.utils.update_website_context"
@@ -133,13 +128,6 @@ website_route_rules = [
 	{"from_route": "/admissions", "to_route": "Student Admission"},
 	{"from_route": "/boms", "to_route": "BOM"},
 	{"from_route": "/timesheets", "to_route": "Timesheet"},
-	{"from_route": "/material-requests", "to_route": "Material Request"},
-	{"from_route": "/material-requests/<path:name>", "to_route": "material_request_info",
-		"defaults": {
-			"doctype": "Material Request",
-			"parents": [{"label": _("Material Request"), "route": "material-requests"}]
-		}
-	},
 ]
 
 standard_portal_menu_items = [
@@ -162,7 +150,6 @@ standard_portal_menu_items = [
 	{"title": _("Newsletter"), "route": "/newsletters", "reference_doctype": "Newsletter"},
 	{"title": _("Admission"), "route": "/admissions", "reference_doctype": "Student Admission"},
 	{"title": _("Certification"), "route": "/certification", "reference_doctype": "Certification Application"},
-	{"title": _("Material Request"), "route": "/material-requests", "reference_doctype": "Material Request", "role": "Customer"},
 ]
 
 default_roles = [
@@ -176,7 +163,6 @@ has_website_permission = {
 	"Quotation": "erpnext.controllers.website_list_for_contact.has_website_permission",
 	"Sales Invoice": "erpnext.controllers.website_list_for_contact.has_website_permission",
 	"Supplier Quotation": "erpnext.controllers.website_list_for_contact.has_website_permission",
-	"Material Request": "erpnext.controllers.website_list_for_contact.has_website_permission",
 	"Delivery Note": "erpnext.controllers.website_list_for_contact.has_website_permission",
 	"Issue": "erpnext.support.doctype.issue.issue.has_website_permission",
 	"Timesheet": "erpnext.controllers.website_list_for_contact.has_website_permission",
@@ -191,7 +177,8 @@ dump_report_map = "erpnext.startup.report_data_map.data_map"
 before_tests = "erpnext.setup.utils.before_tests"
 
 standard_queries = {
-	"Customer": "erpnext.selling.doctype.customer.customer.get_customer_list"
+	"Customer": "erpnext.selling.doctype.customer.customer.get_customer_list",
+	"Healthcare Practitioner": "erpnext.healthcare.doctype.healthcare_practitioner.healthcare_practitioner.get_practitioner_list"
 }
 
 doc_events = {
@@ -213,7 +200,8 @@ doc_events = {
 		"validate": "erpnext.portal.doctype.products_settings.products_settings.home_page_is_products"
 	},
 	"Sales Invoice": {
-		"on_submit": "erpnext.regional.france.utils.create_transaction_log",
+		"on_submit": ["erpnext.regional.france.utils.create_transaction_log", "erpnext.regional.italy.utils.sales_invoice_on_submit"],
+		"on_cancel": "erpnext.regional.italy.utils.sales_invoice_on_cancel",
 		"on_trash": "erpnext.regional.check_deletion_permission"
 	},
 	"Payment Entry": {
@@ -221,7 +209,7 @@ doc_events = {
 		"on_trash": "erpnext.regional.check_deletion_permission"
 	},
 	'Address': {
-		'validate': 'erpnext.regional.india.utils.validate_gstin_for_india'
+		'validate': ['erpnext.regional.india.utils.validate_gstin_for_india', 'erpnext.regional.italy.utils.set_state_code']
 	},
 	('Sales Invoice', 'Purchase Invoice', 'Delivery Note'): {
 		'validate': 'erpnext.regional.india.utils.set_place_of_supply'
@@ -232,12 +220,16 @@ doc_events = {
 }
 
 scheduler_events = {
+	"all": [
+		"erpnext.projects.doctype.project.project.project_status_update_reminder"
+	],
 	"hourly": [
 		'erpnext.hr.doctype.daily_work_summary_group.daily_work_summary_group.trigger_emails',
 		"erpnext.accounts.doctype.subscription.subscription.process_all",
 		"erpnext.erpnext_integrations.doctype.amazon_mws_settings.amazon_mws_settings.schedule_get_order_details",
-		"erpnext.accounts.doctype.gl_entry.gl_entry.rename_gle_sle_docs",
-
+		"erpnext.erpnext_integrations.doctype.plaid_settings.plaid_settings.automatic_synchronization",
+		"erpnext.projects.doctype.project.project.hourly_reminder",
+		"erpnext.projects.doctype.project.project.collect_project_status"
 	],
 	"daily": [
 		"erpnext.stock.reorder_item.reorder_item",
@@ -257,12 +249,12 @@ scheduler_events = {
 		"erpnext.assets.doctype.asset.asset.make_post_gl_entry",
 		"erpnext.crm.doctype.contract.contract.update_status_for_contracts",
 		"erpnext.projects.doctype.project.project.update_project_sales_billing",
-		"erpnext.quality_management.doctype.quality_review.quality_review.review"
+		"erpnext.projects.doctype.project.project.send_project_status_email_to_users"
 	],
 	"daily_long": [
 		"erpnext.manufacturing.doctype.bom_update_tool.bom_update_tool.update_latest_price_in_all_boms"
 	],
-	"monthly": [
+	"monthly_long": [
 		"erpnext.accounts.deferred_revenue.convert_deferred_revenue_to_income",
 		"erpnext.accounts.deferred_revenue.convert_deferred_expense_to_expense",
 		"erpnext.hr.utils.allocate_earned_leaves"
@@ -309,5 +301,9 @@ regional_overrides = {
 	},
 	'Saudi Arabia': {
 		'erpnext.controllers.taxes_and_totals.update_itemised_tax_data': 'erpnext.regional.united_arab_emirates.utils.update_itemised_tax_data'
+	},
+	'Italy': {
+		'erpnext.controllers.taxes_and_totals.update_itemised_tax_data': 'erpnext.regional.italy.utils.update_itemised_tax_data',
+		'erpnext.controllers.accounts_controller.validate_regional': 'erpnext.regional.italy.utils.sales_invoice_validate',
 	}
 }

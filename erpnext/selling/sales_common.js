@@ -215,6 +215,9 @@ erpnext.selling.SellingController = erpnext.TransactionController.extend({
 					},
 					callback:function(r){
 						if (in_list(['Delivery Note', 'Sales Invoice'], doc.doctype)) {
+
+							if (doc.doctype === 'Sales Invoice' && (!doc.update_stock)) return;
+
 							me.set_batch_number(cdt, cdn);
 							me.batch_no(doc, cdt, cdn);
 						}
@@ -358,13 +361,18 @@ erpnext.selling.SellingController = erpnext.TransactionController.extend({
 	    this._super(doc, cdt, cdn, dont_fetch_price_list_rate);
 		if(frappe.meta.get_docfield(cdt, "stock_qty", cdn) &&
 			in_list(['Delivery Note', 'Sales Invoice'], doc.doctype)) {
-			this.set_batch_number(cdt, cdn);
-		}
+				if (doc.doctype === 'Sales Invoice' && (!doc.update_stock)) return;
+				this.set_batch_number(cdt, cdn);
+			}
 	},
 
 	qty: function(doc, cdt, cdn) {
 		this._super(doc, cdt, cdn);
-		this.set_batch_number(cdt, cdn);
+
+		if(in_list(['Delivery Note', 'Sales Invoice'], doc.doctype)) {
+			if (doc.doctype === 'Sales Invoice' && (!doc.update_stock)) return;
+			this.set_batch_number(cdt, cdn);
+		}
 	},
 
 	/* Determine appropriate batch number and set it in the form.
@@ -430,44 +438,5 @@ frappe.ui.form.on(cur_frm.doctype,"project", function(frm) {
 				}
 			})
 		}
-	}
-})
-
-frappe.ui.form.on(cur_frm.doctype, {
-	set_as_lost_dialog: function(frm) {
-		var dialog = new frappe.ui.Dialog({
-			title: __("Set as Lost"),
-			fields: [
-				{"fieldtype": "Table MultiSelect",
-				"label": __("Lost Reasons"),
-				"fieldname": "lost_reason",
-				"options": "Lost Reason Detail",
-				"reqd": 1},
-
-				{"fieldtype": "Text", "label": __("Detailed Reason"), "fieldname": "detailed_reason"},
-			],
-			primary_action: function() {
-				var values = dialog.get_values();
-				var reasons = values["lost_reason"];
-				var detailed_reason = values["detailed_reason"];
-
-				frm.call({
-					doc: frm.doc,
-					method: 'declare_enquiry_lost',
-					args: {
-						'lost_reasons_list': reasons,
-						'detailed_reason': detailed_reason
-					},
-					callback: function(r) {
-						dialog.hide();
-						frm.reload_doc();
-					},
-				});
-				refresh_field("lost_reason");
-			},
-			primary_action_label: __('Declare Lost')
-		});
-
-		dialog.show();
 	}
 })

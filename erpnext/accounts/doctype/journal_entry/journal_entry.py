@@ -52,6 +52,7 @@ class JournalEntry(AccountsController):
 		self.update_loan()
 		self.update_inter_company_jv()
 
+
 	def get_title(self):
 		return self.pay_to_recd_from or self.accounts[0].account
 
@@ -424,8 +425,9 @@ class JournalEntry(AccountsController):
 					pay_to_recd_from = frappe.db.get_value(d.party_type, d.party,
 						"customer_name" if d.party_type=="Customer" else "supplier_name")
 
-				party_amount += (d.debit_in_account_currency or d.credit_in_account_currency)
-				party_account_currency = d.account_currency
+				if pay_to_recd_from and pay_to_recd_from == d.party:
+					party_amount += (d.debit_in_account_currency or d.credit_in_account_currency)
+					party_account_currency = d.account_currency
 
 			elif frappe.db.get_value("Account", d.account, "account_type") in ["Bank", "Cash"]:
 				bank_amount += (d.debit_in_account_currency or d.credit_in_account_currency)
@@ -800,7 +802,7 @@ def get_against_jv(doctype, txt, searchfield, start, page_len, filters):
 		from `tabJournal Entry` jv, `tabJournal Entry Account` jv_detail
 		where jv_detail.parent = jv.name and jv_detail.account = %s and ifnull(jv_detail.party, '') = %s
 		and (jv_detail.reference_type is null or jv_detail.reference_type = '')
-		and jv.docstatus = 1 and jv.`{0}` like %s order by jv.name desc limit %s, %s""".format(searchfield),
+		and jv.docstatus = 1 and jv.`{0}` like %s order by jv.name desc limit %s, %s""".format(frappe.db.escape(searchfield)),
 		(filters.get("account"), cstr(filters.get("party")), "%{0}%".format(txt), start, page_len))
 
 

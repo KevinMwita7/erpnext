@@ -139,13 +139,6 @@ erpnext.accounts.bankTransactionUpload = class bankTransactionUpload {
 	}
 
 	make() {
-<<<<<<< HEAD
-		const me = this;	
-		new frappe.ui.FileUploader({
-			method: 'erpnext.accounts.doctype.bank_transaction.bank_transaction_upload.upload_bank_statement',
-			allow_multiple: 0,
-			on_success: function(attachment, r) {
-=======
 		const me = this;
 		frappe.upload.make({
 			args: {
@@ -155,7 +148,6 @@ erpnext.accounts.bankTransactionUpload = class bankTransactionUpload {
 			no_socketio: true,
 			sample_url: "e.g. http://example.com/somefile.csv",
 			callback: function(attachment, r) {
->>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 				if (!r.exc && r.message) {
 					me.data = r.message;
 					me.setup_transactions_dom();
@@ -541,22 +533,9 @@ erpnext.accounts.ReconciliationRow = class ReconciliationRow {
 			frappe.db.get_doc(dt, event.value)
 			.then(doc => {
 				let displayed_docs = []
-<<<<<<< HEAD
-				let payment = []
 				if (dt === "Payment Entry") {
 					payment.currency = doc.payment_type == "Receive" ? doc.paid_to_account_currency : doc.paid_from_account_currency;
 					payment.doctype = dt
-					payment.posting_date = doc.posting_date;
-					payment.party = doc.party;
-					payment.reference_no = doc.reference_no;
-					payment.reference_date = doc.reference_date;
-					payment.paid_amount = doc.paid_amount;
-					payment.name = doc.name;
-=======
-				if (dt === "Payment Entry") {
-					payment.currency = doc.payment_type == "Receive" ? doc.paid_to_account_currency : doc.paid_from_account_currency;
-					payment.doctype = dt
->>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 					displayed_docs.push(payment);
 				} else if (dt === "Journal Entry") {
 					doc.accounts.forEach(payment => {
@@ -589,20 +568,11 @@ erpnext.accounts.ReconciliationRow = class ReconciliationRow {
 
 				const details_wrapper = me.dialog.fields_dict.payment_details.$wrapper;
 				details_wrapper.append(frappe.render_template("linked_payment_header"));
-<<<<<<< HEAD
-				displayed_docs.forEach(payment => {
-					details_wrapper.append(frappe.render_template("linked_payment_row", payment));
-=======
 				displayed_docs.forEach(values => {
 					details_wrapper.append(frappe.render_template("linked_payment_row", values));
->>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 				})
 			})
 		}
 
 	}
-<<<<<<< HEAD
 }
-=======
-}
->>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2

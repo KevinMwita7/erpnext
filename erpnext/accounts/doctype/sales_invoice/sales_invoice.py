@@ -54,8 +54,8 @@ class SalesInvoice(SellingController):
 
 	def set_indicator(self):
 		"""Set indicator for portal"""
-		if cint(self.is_return) == 1:
-			self.indicator_title = _("Return")
+		if self.outstanding_amount < 0:
+			self.indicator_title = _("Credit Note Issued")
 			self.indicator_color = "darkgrey"
 		elif self.outstanding_amount > 0 and getdate(self.due_date) >= getdate(nowdate()):
 			self.indicator_color = "orange"
@@ -63,8 +63,8 @@ class SalesInvoice(SellingController):
 		elif self.outstanding_amount > 0 and getdate(self.due_date) < getdate(nowdate()):
 			self.indicator_color = "red"
 			self.indicator_title = _("Overdue")
-		elif self.outstanding_amount < 0:
-			self.indicator_title = _("Credit Note Issued")
+		elif cint(self.is_return) == 1:
+			self.indicator_title = _("Return")
 			self.indicator_color = "darkgrey"
 		else:
 			self.indicator_color = "green"
@@ -166,6 +166,7 @@ class SalesInvoice(SellingController):
 		self.make_gl_entries()
 
 		if not self.is_return:
+			self.update_billing_status_for_zero_amount_refdoc("Delivery Note")
 			self.update_billing_status_for_zero_amount_refdoc("Sales Order")
 			self.check_credit_limit()
 
@@ -205,6 +206,7 @@ class SalesInvoice(SellingController):
 	def before_cancel(self):
 		self.update_time_sheet(None)
 
+
 	def on_cancel(self):
 		self.check_close_sales_order("sales_order")
 
@@ -221,6 +223,7 @@ class SalesInvoice(SellingController):
 		self.update_billing_status_in_dn()
 
 		if not self.is_return:
+			self.update_billing_status_for_zero_amount_refdoc("Delivery Note")
 			self.update_billing_status_for_zero_amount_refdoc("Sales Order")
 			self.update_serial_no(in_cancel=True)
 
@@ -255,7 +258,7 @@ class SalesInvoice(SellingController):
 
 	def update_status_updater_args(self):
 		if cint(self.update_stock):
-			self.status_updater.extend([{
+			self.status_updater.append({
 				'source_dt':'Sales Invoice Item',
 				'target_dt':'Sales Order Item',
 				'target_parent_dt':'Sales Order',
@@ -273,21 +276,20 @@ class SalesInvoice(SellingController):
 				'overflow_type': 'delivery',
 				'extra_cond': """ and exists(select name from `tabSales Invoice`
 					where name=`tabSales Invoice Item`.parent and update_stock = 1)"""
-			},
-			{
-				'source_dt': 'Sales Invoice Item',
-				'target_dt': 'Sales Order Item',
-				'join_field': 'so_detail',
-				'target_field': 'returned_qty',
-				'target_parent_dt': 'Sales Order',
-				# 'target_parent_field': 'per_delivered',
-				# 'target_ref_field': 'qty',
-				'source_field': '-1 * qty',
-				# 'percent_join_field': 'sales_order',
-				# 'overflow_type': 'delivery',
-				'extra_cond': """ and exists (select name from `tabSales Invoice` where name=`tabSales Invoice Item`.parent and update_stock=1 and is_return=1)"""
-			}
-		])
+			})
+			if cint(self.is_return):
+				self.status_updater.append({
+					'source_dt': 'Sales Invoice Item',
+					'target_dt': 'Sales Order Item',
+					'join_field': 'so_detail',
+					'target_field': 'returned_qty',
+					'target_parent_dt': 'Sales Order',
+					'source_field': '-1 * qty',
+					'second_source_dt': 'Delivery Note Item',
+					'second_source_field': '-1 * qty',
+					'second_join_field': 'so_detail',
+					'extra_cond': """ and exists (select name from `tabSales Invoice` where name=`tabSales Invoice Item`.parent and update_stock=1 and is_return=1)"""
+				})
 
 	def check_credit_limit(self):
 		from erpnext.selling.doctype.customer.customer import check_credit_limit
@@ -397,11 +399,20 @@ class SalesInvoice(SellingController):
 			if pos.get('account_for_change_amount'):
 				self.account_for_change_amount = pos.get('account_for_change_amount')
 
-			for fieldname in ('territory', 'naming_series', 'currency', 'taxes_and_charges', 'letter_head', 'tc_name',
-				'selling_price_list', 'company', 'select_print_heading', 'cash_bank_account', 'company_address',
-				'write_off_account', 'write_off_cost_center', 'apply_discount_on'):
+			for fieldname in ('territory', 'naming_series', 'currency', 'letter_head', 'tc_name',
+				'company', 'select_print_heading', 'cash_bank_account', 'write_off_account',
+				'write_off_cost_center', 'apply_discount_on', 'cost_center'):
 					if (not for_validate) or (for_validate and not self.get(fieldname)):
 						self.set(fieldname, pos.get(fieldname))
+
+			customer_price_list = frappe.get_value("Customer", self.customer, 'default_price_list')
+
+			for field in ['taxes_and_charges', 'company_address']:
+				if pos.get(field):
+					self.set(field, pos.get(field))
+
+			if not customer_price_list:
+				self.set('selling_price_list', pos.get('selling_price_list'))
 
 			if not for_validate:
 				self.update_stock = cint(pos.get("update_stock"))
@@ -482,7 +493,7 @@ class SalesInvoice(SellingController):
 		"""Set against account for debit to account"""
 		against_acc = []
 		for d in self.get('items'):
-			if d.income_account not in against_acc:
+			if d.income_account and d.income_account not in against_acc:
 				against_acc.append(d.income_account)
 		self.against_income_account = ','.join(against_acc)
 
@@ -498,12 +509,15 @@ class SalesInvoice(SellingController):
 
 	def so_dn_required(self):
 		"""check in manage account if sales order / delivery note required or not."""
+		if self.is_return:
+			return
 		dic = {'Sales Order':['so_required', 'is_pos'],'Delivery Note':['dn_required', 'update_stock']}
 		for i in dic:
 			if frappe.db.get_single_value('Selling Settings', dic[i][0]) == 'Yes':
 				for d in self.get('items'):
-					if frappe.get_cached_value('Item', d.item_code, 'is_stock_item') == 1 \
-						and not d.get(i.lower().replace(' ','_')) and not self.get(dic[i][1]):
+					is_stock_item = frappe.get_cached_value('Item', d.item_code, 'is_stock_item')
+					if  (d.item_code and is_stock_item == 1\
+						and not d.get(i.lower().replace(' ','_')) and not self.get(dic[i][1])):
 						msgprint(_("{0} is mandatory for Item {1}").format(i,d.item_code), raise_exception=1)
 
 
@@ -518,8 +532,8 @@ class SalesInvoice(SellingController):
 
 	def validate_pos(self):
 		if self.is_return:
-			if flt(self.paid_amount) + flt(self.write_off_amount) - flt(self.grand_total) < \
-				1/(10**(self.precision("grand_total") + 1)):
+			if flt(self.paid_amount) + flt(self.write_off_amount) - flt(self.grand_total) > \
+				1.0/(10.0**(self.precision("grand_total") + 1.0)):
 					frappe.throw(_("Paid amount + Write Off Amount can not be greater than Grand Total"))
 
 	def validate_item_code(self):
@@ -684,7 +698,8 @@ class SalesInvoice(SellingController):
 			if repost_future_gle and cint(self.update_stock) \
 				and cint(auto_accounting_for_stock):
 					items, warehouses = self.get_items_and_warehouses()
-					update_gl_entries_after(self.posting_date, self.posting_time, warehouses, items)
+					update_gl_entries_after(self.posting_date, self.posting_time,
+						warehouses, items, company = self.company)
 		elif self.docstatus == 2 and cint(self.update_stock) \
 			and cint(auto_accounting_for_stock):
 				from erpnext.accounts.general_ledger import delete_gl_entries
@@ -761,7 +776,14 @@ class SalesInvoice(SellingController):
 				if item.is_fixed_asset:
 					asset = frappe.get_doc("Asset", item.asset)
 
-					fixed_asset_gl_entries = get_gl_entries_on_asset_disposal(asset, item.base_net_amount)
+					if (len(asset.finance_books) > 1 and not item.finance_book
+						and asset.finance_books[0].finance_book):
+						frappe.throw(_("Select finance book for the item {0} at row {1}")
+							.format(item.item_code, item.idx))
+
+					fixed_asset_gl_entries = get_gl_entries_on_asset_disposal(asset,
+						item.base_net_amount, item.finance_book)
+
 					for gle in fixed_asset_gl_entries:
 						gle["against"] = self.customer
 						gl_entries.append(self.get_gl_dict(gle))
@@ -769,10 +791,13 @@ class SalesInvoice(SellingController):
 					asset.db_set("disposal_date", self.posting_date)
 					asset.set_status("Sold" if self.docstatus==1 else None)
 				else:
-					account_currency = get_account_currency(item.income_account)
+					income_account = (item.income_account
+						if (not item.enable_deferred_revenue or self.is_return) else item.deferred_revenue_account)
+
+					account_currency = get_account_currency(income_account)
 					gl_entries.append(
 						self.get_gl_dict({
-							"account": item.income_account if not item.enable_deferred_revenue else item.deferred_revenue_account,
+							"account": income_account,
 							"against": self.customer,
 							"credit": flt(item.base_net_amount, item.precision("base_net_amount")),
 							"credit_in_account_currency": (flt(item.base_net_amount, item.precision("base_net_amount"))
@@ -1007,16 +1032,16 @@ class SalesInvoice(SellingController):
 			for serial_no in item.serial_no.split("\n"):
 				sales_invoice = frappe.db.get_value("Serial No", serial_no, "sales_invoice")
 				if sales_invoice and self.name != sales_invoice:
-					frappe.throw(_("Serial Number: {0} is already referenced in Sales Invoice: {1}".format(
-						serial_no, sales_invoice
-					)))
+					sales_invoice_company = frappe.db.get_value("Sales Invoice", sales_invoice, "company")
+					if sales_invoice_company == self.company:
+						frappe.throw(_("Serial Number: {0} is already referenced in Sales Invoice: {1}"
+							.format(serial_no, sales_invoice)))
 
 	def update_project(self):
 		if self.project:
 			project = frappe.get_doc("Project", self.project)
-			project.flags.dont_sync_tasks = True
 			project.update_billed_amount()
-			project.save()
+			project.db_update()
 
 
 	def verify_payment_amount_is_positive(self):
@@ -1160,6 +1185,8 @@ class SalesInvoice(SellingController):
 		self.set_missing_values(for_validate = True)
 
 def validate_inter_company_party(doctype, party, company, inter_company_invoice_reference):
+	if not party:
+		return
 	if doctype == "Sales Invoice":
 		partytype, ref_partytype, internal = "Customer", "Supplier", "is_internal_customer"
 		ref_doc =  "Purchase Invoice"

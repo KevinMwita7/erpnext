@@ -33,6 +33,14 @@ frappe.ui.form.on("Purchase Order", {
 				}
 			}
 		});
+
+		frm.set_query("expense_account", "items", function() {
+			return {
+				query: "erpnext.controllers.queries.get_expense_account",
+				filters: {'company': frm.doc.company}
+			}
+		});
+
 	},
 
 	refresh: function(frm) {
@@ -42,7 +50,6 @@ frappe.ui.form.on("Purchase Order", {
 					frm: frm,
 					child_docname: "items",
 					child_doctype: "Purchase Order Detail",
-					cannot_add_row: false,
 				})
 			});
 		}
@@ -97,7 +104,7 @@ erpnext.buying.PurchaseOrderController = erpnext.buying.BuyingController.extend(
 
 		if(doc.docstatus == 1 && !in_list(["Closed", "Delivered"], doc.status)) {
 			if (this.frm.has_perm("submit")) {
-				if(flt(doc.per_billed, 2) < 100 || doc.per_received < 100) {
+				if(flt(doc.per_billed, 6) < 100 || flt(doc.per_received, 6) < 100) {
 					cur_frm.add_custom_button(__('Close'), this.close_purchase_order, __("Status"));
 				}
 			}
@@ -120,7 +127,7 @@ erpnext.buying.PurchaseOrderController = erpnext.buying.BuyingController.extend(
 
 		if(doc.docstatus == 1 && doc.status != "Closed") {
 			if(flt(doc.per_received, 2) < 100 && allow_receipt) {
-				cur_frm.add_custom_button(__('Receipt'), this.make_purchase_receipt, __('Create'));
+				cur_frm.add_custom_button(__('Receipt'), this.make_purchase_receipt, __("Make"));
 
 				if(doc.is_subcontracted==="Yes") {
 					cur_frm.add_custom_button(__('Material to Supplier'),
@@ -130,24 +137,24 @@ erpnext.buying.PurchaseOrderController = erpnext.buying.BuyingController.extend(
 
 			if(flt(doc.per_billed, 2) < 100)
 				cur_frm.add_custom_button(__('Invoice'),
-					this.make_purchase_invoice, __('Create'));
+					this.make_purchase_invoice, __("Make"));
 
 			if(flt(doc.per_billed)==0 && doc.status != "Delivered") {
-				cur_frm.add_custom_button(__('Payment'), cur_frm.cscript.make_payment_entry, __('Create'));
+				cur_frm.add_custom_button(__('Payment'), cur_frm.cscript.make_payment_entry, __("Make"));
 			}
 
 			if(!doc.auto_repeat) {
 				cur_frm.add_custom_button(__('Subscription'), function() {
 					erpnext.utils.make_subscription(doc.doctype, doc.name)
-				}, __('Create'))
+				}, __("Make"))
 			}
 
 			if(flt(doc.per_billed)==0) {
 				this.frm.add_custom_button(__('Payment Request'),
-					function() { me.make_payment_request() }, __('Create'));
+					function() { me.make_payment_request() }, __("Make"));
 			}
 
-			cur_frm.page.set_inner_btn_group_as_primary(__('Create'));
+			cur_frm.page.set_inner_btn_group_as_primary(__("Make"));
 		}
 	},
 

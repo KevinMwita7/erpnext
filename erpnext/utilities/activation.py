@@ -1,53 +1,40 @@
 # Copyright (c) 2015, Frappe Technologies Pvt. Ltd. and Contributors
 # License: GNU General Public License v3. See license.txt
 
+from __future__ import unicode_literals
 import frappe, erpnext
 
 from frappe import _
+from six import iteritems
 
 def get_level():
+
 	activation_level = 0
+	sales_data = []
+	min_count = 0
+	doctypes = {"Item": 5, "Customer": 5, "Sales Order": 2, "Sales Invoice": 2, "Purchase Order": 2, "Employee": 3, "Lead": 3, "Quotation": 3,
+					"Payment Entry": 2, "User": 5, "Student": 5, "Instructor": 5, "BOM": 3, "Journal Entry": 3, "Stock Entry": 3}
+	for doctype, min_count in iteritems(doctypes):
+		count = frappe.db.count(doctype)
+		if count > min_count:
+			activation_level += 1
+		sales_data.append({doctype: count})
+
 	if frappe.db.get_single_value('System Settings', 'setup_complete'):
-		activation_level = 1
-
-	if frappe.db.count('Item') > 5:
 		activation_level += 1
 
-	if frappe.db.count('Customer') > 5:
+	communication_number = frappe.db.count('Communication', dict(communication_medium='Email'))
+	if communication_number > 10:
 		activation_level += 1
-
-	if frappe.db.count('Sales Order') > 2:
-		activation_level += 1
-
-	if frappe.db.count('Purchase Order') > 2:
-		activation_level += 1
-
-	if frappe.db.count('Employee') > 3:
-		activation_level += 1
-
-	if frappe.db.count('Lead') > 3:
-		activation_level += 1
-
-	if frappe.db.count('Payment Entry') > 2:
-		activation_level += 1
-
-	if frappe.db.count('Communication', dict(communication_medium='Email')) > 10:
-		activation_level += 1
-
-	if frappe.db.count('User') > 5:
-		activation_level += 1
-
-	if frappe.db.count('Student') > 5:
-		activation_level += 1
-
-	if frappe.db.count('Instructor') > 5:
-		activation_level += 1
+	sales_data.append({"Communication": communication_number})
 
 	# recent login
 	if frappe.db.sql('select name from tabUser where last_login > date_sub(now(), interval 2 day) limit 1'):
 		activation_level += 1
 
-	return activation_level
+	level = {"activation_level": activation_level, "sales_data": sales_data}
+
+	return level
 
 def get_help_messages():
 	'''Returns help messages to be shown on Desktop'''
@@ -62,7 +49,7 @@ def get_help_messages():
 			doctype='Lead',
 			title=_('Create Leads'),
 			description=_('Leads help you get business, add all your contacts and more as your leads'),
-			action=_('Create Lead'),
+			action=_('Make Lead'),
 			route='List/Lead',
 			domain=('Manufacturing', 'Retail', 'Services', 'Distribution'),
 			target=3
@@ -71,7 +58,7 @@ def get_help_messages():
 			doctype='Quotation',
 			title=_('Create customer quotes'),
 			description=_('Quotations are proposals, bids you have sent to your customers'),
-			action=_('Create Quotation'),
+			action=_('Make Quotation'),
 			route='List/Quotation',
 			domain=('Manufacturing', 'Retail', 'Services', 'Distribution'),
 			target=3
@@ -79,8 +66,8 @@ def get_help_messages():
 		frappe._dict(
 			doctype='Sales Order',
 			title=_('Manage your orders'),
-			description=_('Create Sales Orders to help you plan your work and deliver on-time'),
-			action=_('Create Sales Order'),
+			description=_('Make Sales Orders to help you plan your work and deliver on-time'),
+			action=_('Make Sales Order'),
 			route='List/Sales Order',
 			domain=('Manufacturing', 'Retail', 'Services', 'Distribution'),
 			target=3
@@ -89,7 +76,7 @@ def get_help_messages():
 			doctype='Purchase Order',
 			title=_('Create Purchase Orders'),
 			description=_('Purchase orders help you plan and follow up on your purchases'),
-			action=_('Create Purchase Order'),
+			action=_('Make Purchase Order'),
 			route='List/Purchase Order',
 			domain=('Manufacturing', 'Retail', 'Services', 'Distribution'),
 			target=3
@@ -98,7 +85,7 @@ def get_help_messages():
 			doctype='User',
 			title=_('Create Users'),
 			description=_('Add the rest of your organization as your users. You can also add invite Customers to your portal by adding them from Contacts'),
-			action=_('Create User'),
+			action=_('Make User'),
 			route='List/User',
 			domain=('Manufacturing', 'Retail', 'Services', 'Distribution'),
 			target=3
@@ -107,7 +94,7 @@ def get_help_messages():
 			doctype='Timesheet',
 			title=_('Add Timesheets'),
 			description=_('Timesheets help keep track of time, cost and billing for activites done by your team'),
-			action=_('Create Timesheet'),
+			action=_('Make Timesheet'),
 			route='List/Timesheet',
 			domain=('Services',),
 			target=5
@@ -116,7 +103,7 @@ def get_help_messages():
 			doctype='Student',
 			title=_('Add Students'),
 			description=_('Students are at the heart of the system, add all your students'),
-			action=_('Create Student'),
+			action=_('Make Student'),
 			route='List/Student',
 			domain=('Education',),
 			target=5
@@ -125,7 +112,7 @@ def get_help_messages():
 			doctype='Student Batch',
 			title=_('Group your students in batches'),
 			description=_('Student Batches help you track attendance, assessments and fees for students'),
-			action=_('Create Student Batch'),
+			action=_('Make Student Batch'),
 			route='List/Student Batch',
 			domain=('Education',),
 			target=3
@@ -134,7 +121,7 @@ def get_help_messages():
 			doctype='Employee',
 			title=_('Create Employee Records'),
 			description=_('Create Employee records to manage leaves, expense claims and payroll'),
-			action=_('Create Employee'),
+			action=_('Make Employee'),
 			route='List/Employee',
 			target=3
 		)

@@ -16,6 +16,9 @@ from erpnext.setup.doctype.item_group.item_group import get_item_group_defaults
 
 from six import string_types, iteritems
 
+sales_doctypes = ['Quotation', 'Sales Order', 'Delivery Note', 'Sales Invoice']
+purchase_doctypes = ['Material Request', 'Supplier Quotation', 'Purchase Order', 'Purchase Receipt', 'Purchase Invoice']
+
 @frappe.whitelist()
 def get_item_details(args):
 	"""
@@ -228,7 +231,7 @@ def get_basic_details(args, item):
 
 	#Set the UOM to the Default Sales UOM or Default Purchase UOM if configured in the Item Master
 	if not args.uom:
-		if args.get('doctype') in ['Quotation', 'Sales Order', 'Delivery Note', 'Sales Invoice']:
+		if args.get('doctype') in sales_doctypes:
 			args.uom = item.sales_uom if item.sales_uom else item.stock_uom
 		elif (args.get('doctype') in ['Purchase Order', 'Purchase Receipt', 'Purchase Invoice']) or \
 			(args.get('doctype') == 'Material Request' and args.get('material_request_type') == 'Purchase'):
@@ -252,8 +255,8 @@ def get_basic_details(args, item):
 			item.get("taxes")))),
 		"uom": args.uom,
 		"min_order_qty": flt(item.min_order_qty) if args.doctype == "Material Request" else "",
-		"qty": flt(args.qty) or 1.0,
-		"stock_qty": flt(args.qty) or 1.0,
+		"qty": args.qty or 1.0,
+		"stock_qty": args.qty or 1.0,
 		"price_list_rate": 0.0,
 		"base_price_list_rate": 0.0,
 		"rate": 0.0,
@@ -281,14 +284,15 @@ def get_basic_details(args, item):
 		out.conversion_factor = 1.0
 	else:
 		out.conversion_factor = args.conversion_factor or \
-			get_conversion_factor(item.item_code, args.uom).get("conversion_factor")
+			get_conversion_factor(item.name, args.uom).get("conversion_factor")
 
 	args.conversion_factor = out.conversion_factor
 	out.stock_qty = out.qty * out.conversion_factor
 
 	# calculate last purchase rate
-	from erpnext.buying.doctype.purchase_order.purchase_order import item_last_purchase_rate
-	out.last_purchase_rate = item_last_purchase_rate(args.name, args.conversion_rate, item.item_code, out.conversion_factor)
+	if args.get('doctype') in purchase_doctypes:
+		from erpnext.buying.doctype.purchase_order.purchase_order import item_last_purchase_rate
+		out.last_purchase_rate = item_last_purchase_rate(args.name, args.conversion_rate, item.name, out.conversion_factor)
 
 	# if default specified in item is for another company, fetch from company
 	for d in [
@@ -302,7 +306,20 @@ def get_basic_details(args, item):
 	for fieldname in ("item_name", "item_group", "barcodes", "brand", "stock_uom"):
 		out[fieldname] = item.get(fieldname)
 
+	child_doctype = args.doctype + ' Item'
+	meta = frappe.get_meta(child_doctype)
+	if meta.get_field("barcode"):
+		update_barcode_value(out)
+
 	return out
+
+def update_barcode_value(out):
+	from erpnext.accounts.doctype.sales_invoice.pos import get_barcode_data
+	barcode_data = get_barcode_data([out])
+
+	# If item has one barcode then update the value of the barcode field
+	if barcode_data and len(barcode_data.get(out.item_code)) == 1:
+		out['barcode'] = barcode_data.get(out.item_code)[0]
 
 @frappe.whitelist()
 def calculate_service_end_date(args, item=None):
@@ -349,7 +366,7 @@ def get_default_deferred_account(args, item, fieldname=None):
 	else:
 		return None
 
-def get_default_cost_center(args, item, item_group):
+def get_default_cost_center(args, item, item_group, company=None):
 	cost_center = None
 	if args.get('project'):
 		cost_center = frappe.db.get_value("Project", args.get("project"), "cost_center", cache=True)
@@ -360,7 +377,13 @@ def get_default_cost_center(args, item, item_group):
 		else:
 			cost_center = item.get('buying_cost_center') or item_group.get('buying_cost_center')
 
-	return cost_center or args.get("cost_center")
+	cost_center = cost_center or args.get("cost_center")
+
+	if (company and cost_center
+		and frappe.get_cached_value("Cost Center", cost_center, "company") != company):
+		return None
+
+	return cost_center
 
 def get_default_supplier(args, item, item_group):
 	return (item.get("default_supplier")
@@ -373,7 +396,7 @@ def get_price_list_rate(args, item_doc, out):
 		pl_details = get_price_list_currency_and_exchange_rate(args)
 		args.update(pl_details)
 		validate_price_list(args)
-		if meta.get_field("currency") and args.price_list:
+		if meta.get_field("currency"):
 			validate_conversion_rate(args, meta)
 
 		price_list_rate = get_price_list_rate_for(args, item_doc.name) or 0
@@ -424,26 +447,28 @@ def insert_item_price(args):
 				frappe.msgprint(_("Item Price added for {0} in Price List {1}").format(args.item_code,
 					args.price_list), alert=True)
 
-def get_item_price(args, item_code):
+def get_item_price(args, item_code, ignore_party=False):
 	"""
 		Get name, price_list_rate from Item Price based on conditions
-			Check if the Derised qty is within the increment of the packing list.
+			Check if the desired qty is within the increment of the packing list.
 		:param args: dict (or frappe._dict) with mandatory fields price_list, uom
 			optional fields min_qty, transaction_date, customer, supplier
 		:param item_code: str, Item Doctype field item_code
 	"""
 
 	args['item_code'] = item_code
-	conditions = "where (customer is null or customer = '') and (supplier is null or supplier = '')"
-	if args.get("customer"):
-		conditions = "where customer=%(customer)s"
 
-	if args.get("supplier"):
-		conditions = "where supplier=%(supplier)s"
-
-	conditions += """ and item_code=%(item_code)s
+	conditions = """where item_code=%(item_code)s
 		and price_list=%(price_list)s
 		and ifnull(uom, '') in ('', %(uom)s)"""
+
+	if not ignore_party:
+		if args.get("customer"):
+			conditions += " and customer=%(customer)s"
+		elif args.get("supplier"):
+			conditions += " and supplier=%(supplier)s"
+		else:
+			conditions += " and (customer is null or customer = '') and (supplier is null or supplier = '')"
 
 	if args.get('min_qty'):
 		conditions += " and ifnull(min_qty, 0) <= %(min_qty)s"
@@ -463,11 +488,11 @@ def get_price_list_rate_for(args, item_code):
 		for min_qty 9 and min_qty 20. It returns Item Price Rate for qty 9 as
 		the best fit in the range of avaliable min_qtyies
 
-        :param customer: link to Customer DocType
-        :param supplier: link to Supplier DocType
+		:param customer: link to Customer DocType
+		:param supplier: link to Supplier DocType
 		:param price_list: str (Standard Buying or Standard Selling)
 		:param item_code: str, Item Doctype field item_code
-		:param qty: Derised Qty
+		:param qty: Desired Qty
 		:param transaction_date: Date of the price
 	"""
 	item_price_args = {
@@ -484,16 +509,16 @@ def get_price_list_rate_for(args, item_code):
 	price_list_rate = get_item_price(item_price_args, item_code)
 	if price_list_rate:
 		desired_qty = args.get("qty")
-		if check_packing_list(price_list_rate[0][0], desired_qty, item_code):
+		if desired_qty and check_packing_list(price_list_rate[0][0], desired_qty, item_code):
 			item_price_data = price_list_rate
 	else:
 		for field in ["customer", "supplier", "min_qty"]:
 			del item_price_args[field]
 
-		general_price_list_rate = get_item_price(item_price_args, item_code)
+		general_price_list_rate = get_item_price(item_price_args, item_code, ignore_party=args.get("ignore_party"))
 		if not general_price_list_rate and args.get("uom") != args.get("stock_uom"):
-			item_price_args["args"] = args.get("stock_uom")
-			general_price_list_rate = get_item_price(item_price_args, item_code)
+			item_price_args["uom"] = args.get("stock_uom")
+			general_price_list_rate = get_item_price(item_price_args, item_code, ignore_party=args.get("ignore_party"))
 
 		if general_price_list_rate:
 			item_price_data = general_price_list_rate
@@ -508,19 +533,22 @@ def get_price_list_rate_for(args, item_code):
 
 def check_packing_list(price_list_rate_name, desired_qty, item_code):
 	"""
-		Check if the Derised qty is within the increment of the packing list.
+		Check if the desired qty is within the increment of the packing list.
 		:param price_list_rate_name: Name of Item Price
-        :param desired_qty: Derised Qt
+		:param desired_qty: Desired Qt
 		:param item_code: str, Item Doctype field item_code
-		:param qty: Derised Qt
+		:param qty: Desired Qt
 	"""
 
+	flag = True
 	item_price = frappe.get_doc("Item Price", price_list_rate_name)
-	if desired_qty and item_price.packing_unit:
+	if item_price.packing_unit:
 		packing_increment = desired_qty % item_price.packing_unit
 
-		if packing_increment == 0:
-			return True
+		if packing_increment != 0:
+			flag = False
+
+	return flag
 
 def validate_price_list(args):
 	if args.get("price_list"):
@@ -545,25 +573,30 @@ def validate_conversion_rate(args, meta):
 		get_field_precision(meta.get_field("conversion_rate"),
 			frappe._dict({"fields": args})))
 
-	if (not args.plc_conversion_rate
-		and args.price_list_currency==frappe.db.get_value("Price List", args.price_list, "currency", cache=True)):
-		args.plc_conversion_rate = 1.0
+	if args.price_list:
+		if (not args.plc_conversion_rate
+			and args.price_list_currency==frappe.db.get_value("Price List", args.price_list, "currency", cache=True)):
+			args.plc_conversion_rate = 1.0
 
-	# validate price list currency conversion rate
-	if not args.get("price_list_currency"):
-		throw(_("Price List Currency not selected"))
-	else:
-		validate_conversion_rate(args.price_list_currency, args.plc_conversion_rate,
-			meta.get_label("plc_conversion_rate"), args.company)
+		# validate price list currency conversion rate
+		if not args.get("price_list_currency"):
+			throw(_("Price List Currency not selected"))
+		else:
+			validate_conversion_rate(args.price_list_currency, args.plc_conversion_rate,
+				meta.get_label("plc_conversion_rate"), args.company)
 
-		if meta.get_field("plc_conversion_rate"):
-			args.plc_conversion_rate = flt(args.plc_conversion_rate,
-				get_field_precision(meta.get_field("plc_conversion_rate"),
-				frappe._dict({"fields": args})))
+			if meta.get_field("plc_conversion_rate"):
+				args.plc_conversion_rate = flt(args.plc_conversion_rate,
+					get_field_precision(meta.get_field("plc_conversion_rate"),
+					frappe._dict({"fields": args})))
 
 def get_party_item_code(args, item_doc, out):
 	if args.transaction_type=="selling" and args.customer:
 		out.customer_item_code = None
+
+		if args.quotation_to and args.quotation_to != 'Customer':
+			return
+
 		customer_item_code = item_doc.get("customer_items", {"customer_name": args.customer})
 
 		if customer_item_code:
@@ -597,11 +630,14 @@ def get_pos_profile_item_details(company, args, pos_profile=None, update_data=Fa
 
 @frappe.whitelist()
 def get_pos_profile(company, pos_profile=None, user=None):
-	if pos_profile:
-		return frappe.get_cached_doc('POS Profile', pos_profile)
+	if pos_profile: return frappe.get_cached_doc('POS Profile', pos_profile)
 
 	if not user:
 		user = frappe.session['user']
+
+	condition = "pfu.user = %(user)s AND pfu.default=1"
+	if user and company:
+		condition = "pfu.user = %(user)s AND pf.company = %(company)s AND pfu.default=1"
 
 	pos_profile = frappe.db.sql("""SELECT pf.*
 		FROM
@@ -609,15 +645,23 @@ def get_pos_profile(company, pos_profile=None, user=None):
 		ON
 				pf.name = pfu.parent
 		WHERE
-			(
-				(pfu.user = %(user)s AND pf.company = %(company)s AND pfu.default=1)
-				OR (pfu.user = %(user)s AND pfu.default=1)
-				OR (ifnull(pfu.user, '') = '' AND pf.company = %(company)s)
-			) AND pf.disabled = 0
-	""", {
+			{cond} AND pf.disabled = 0
+	""".format(cond = condition), {
 		'user': user,
 		'company': company
 	}, as_dict=1)
+
+	if not pos_profile and company:
+		pos_profile = frappe.db.sql("""SELECT pf.*
+			FROM
+				`tabPOS Profile` pf LEFT JOIN `tabPOS Profile User` pfu
+			ON
+					pf.name = pfu.parent
+			WHERE
+				pf.company = %(company)s AND pf.disabled = 0
+		""", {
+			'company': company
+		}, as_dict=1)
 
 	return pos_profile and pos_profile[0] or None
 
@@ -790,12 +834,12 @@ def get_price_list_currency(price_list):
 def get_price_list_uom_dependant(price_list):
 	if price_list:
 		result = frappe.db.get_value("Price List", {"name": price_list,
-			"enabled": 1}, ["name", "price_not_uom_dependant"], as_dict=True)
+			"enabled": 1}, ["name", "price_not_uom_dependent"], as_dict=True)
 
 		if not result:
 			throw(_("Price List {0} is disabled or does not exist").format(price_list))
 
-		return not result.price_not_uom_dependant
+		return not result.price_not_uom_dependent
 
 
 def get_price_list_currency_and_exchange_rate(args):

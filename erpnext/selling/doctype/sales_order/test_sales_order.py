@@ -12,8 +12,6 @@ from erpnext.selling.doctype.sales_order.sales_order import make_work_orders
 from erpnext.controllers.accounts_controller import update_child_qty_rate
 import json
 from erpnext.selling.doctype.sales_order.sales_order import make_raw_material_request
-
-
 class TestSalesOrder(unittest.TestCase):
 	def tearDown(self):
 		frappe.set_user("Administrator")
@@ -124,6 +122,44 @@ class TestSalesOrder(unittest.TestCase):
 
 		so.load_from_db()
 		self.assertEqual(so.get("items")[0].delivered_qty, 9)
+
+	def test_return_against_sales_order(self):
+		so = make_sales_order()
+
+		dn = create_dn_against_so(so.name, 6)
+
+		so.load_from_db()
+		self.assertEqual(so.get("items")[0].delivered_qty, 6)
+
+		# Check delivered_qty after make_sales_invoice with update_stock checked
+		si2 = make_sales_invoice(so.name)
+		si2.set("update_stock", 1)
+		si2.get("items")[0].qty = 3
+		si2.insert()
+		si2.submit()
+
+		so.load_from_db()
+
+		self.assertEqual(so.get("items")[0].delivered_qty, 9)
+
+		# Make return deliver note, sales invoice and check quantity
+		from erpnext.stock.doctype.delivery_note.test_delivery_note import create_delivery_note
+		from erpnext.accounts.doctype.sales_invoice.test_sales_invoice import create_sales_invoice
+
+		dn1 = create_delivery_note(is_return=1, return_against=dn.name, qty=-3, do_not_submit=True)
+		dn1.items[0].against_sales_order = so.name
+		dn1.items[0].so_detail = so.items[0].name
+		dn1.submit()
+
+		si1 = create_sales_invoice(is_return=1, return_against=si2.name, qty=-1, update_stock=1, do_not_submit=True)
+		si1.items[0].sales_order = so.name
+		si1.items[0].so_detail = so.items[0].name
+		si1.submit()
+
+
+		so.load_from_db()
+		self.assertEqual(so.get("items")[0].delivered_qty, 5)
+
 
 	def test_reserved_qty_for_partial_delivery(self):
 		make_stock_entry(target="_Test Warehouse - _TC", qty=10, rate=100)
@@ -269,22 +305,6 @@ class TestSalesOrder(unittest.TestCase):
 		self.assertEqual(get_reserved_qty("_Test Item"), existing_reserved_qty_item1 + 50)
 		self.assertEqual(get_reserved_qty("_Test Item Home Desktop 100"),
 			existing_reserved_qty_item2 + 20)
-
-	def test_add_new_item_in_update_child_qty_rate(self):
-		so = make_sales_order(item_code= "_Test Item", qty=4)
-		create_dn_against_so(so.name, 4)
-		make_sales_invoice(so.name)
-
-		trans_item = json.dumps([{'item_code' : '_Test Item 2', 'rate' : 200, 'qty' : 7}])
-		update_child_qty_rate('Sales Order', trans_item, so.name)
-
-		so.reload()
-		self.assertEqual(so.get("items")[-1].item_code, '_Test Item 2')
-		self.assertEqual(so.get("items")[-1].rate, 200)
-		self.assertEqual(so.get("items")[-1].qty, 7)
-		self.assertEqual(so.get("items")[-1].amount, 1400)
-		self.assertEqual(so.status, 'To Deliver and Bill')
-
 
 	def test_update_child_qty_rate(self):
 		so = make_sales_order(item_code= "_Test Item", qty=4)
@@ -591,7 +611,8 @@ class TestSalesOrder(unittest.TestCase):
 				"item_code": item.get("item_code"),
 				"pending_qty": item.get("pending_qty"),
 				"sales_order_item": item.get("sales_order_item"),
-				"bom": item.get("bom")
+				"bom": item.get("bom"),
+				"description": item.get("description")
 			})
 			so_item_name[item.get("sales_order_item")]= item.get("pending_qty")
 		make_work_orders(json.dumps({"items":po_items}), so.name, so.company)

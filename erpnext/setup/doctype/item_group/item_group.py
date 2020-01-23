@@ -12,7 +12,6 @@ from frappe.website.render import clear_cache
 from frappe.website.doctype.website_slideshow.website_slideshow import get_slideshow
 from erpnext.shopping_cart.product_info import set_product_info_for_website
 from erpnext.utilities.product import get_qty_in_stock
-from frappe.utils.html_utils import clean_html
 
 class ItemGroup(NestedSet, WebsiteGenerator):
 	nsm_parent_field = 'parent_item_group'
@@ -27,7 +26,6 @@ class ItemGroup(NestedSet, WebsiteGenerator):
 
 	def validate(self):
 		super(ItemGroup, self).validate()
-		self.description = clean_html(self.description)
 		self.make_route()
 
 	def on_update(self):
@@ -72,7 +70,7 @@ class ItemGroup(NestedSet, WebsiteGenerator):
 				limit=context.page_length + 1, search=frappe.form_dict.get("search")),
 			"parents": get_parent_item_groups(self.parent_item_group),
 			"title": self.name,
-			"products_as_list": cint(frappe.db.get_single_value('Website Settings', 'products_as_list'))
+			"products_as_list": cint(frappe.db.get_single_value('Products Settings', 'products_as_list'))
 		})
 
 		if self.slideshow:
@@ -88,7 +86,7 @@ def get_product_list_for_group(product_group=None, start=0, limit=10, search=Non
 			# return child item groups if the type is of "Is Group"
 			return get_child_groups_for_list_in_html(item_group, start, limit, search)
 
-	child_groups = ", ".join([frappe.db.escape(i[0]) for i in get_child_groups(product_group)])
+	child_groups = ", ".join(['"' + frappe.db.escape(i[0]) + '"' for i in get_child_groups(product_group)])
 
 	# base query
 	query = """select I.name, I.item_name, I.item_code, I.route, I.image, I.website_image, I.thumbnail, I.item_group,
@@ -116,8 +114,9 @@ def get_product_list_for_group(product_group=None, start=0, limit=10, search=Non
 	data = frappe.db.sql(query, {"product_group": product_group,"search": search, "today": nowdate()}, as_dict=1)
 	data = adjust_qty_for_expired_items(data)
 
-	for item in data:
-		set_product_info_for_website(item)
+	if cint(frappe.db.get_single_value("Shopping Cart Settings", "enabled")):
+		for item in data:
+			set_product_info_for_website(item)
 
 	return [get_item_for_list_in_html(r) for r in data]
 
@@ -150,7 +149,7 @@ def adjust_qty_for_expired_items(data):
 		if item.get('has_batch_no') and item.get('website_warehouse'):
 			stock_qty_dict = get_qty_in_stock(
 				item.get('name'), 'website_warehouse', item.get('website_warehouse'))
-			qty = stock_qty_dict.stock_qty[0][0]
+			qty = stock_qty_dict.stock_qty[0][0] if stock_qty_dict.stock_qty else 0
 			item['in_stock'] = 1 if qty else 0
 		adjusted_data.append(item)
 

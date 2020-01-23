@@ -1,10 +1,3 @@
-<<<<<<< HEAD
-{% include "erpnext/regional/india/taxes.js" %}
-
-erpnext.setup_auto_gst_taxation('Sales Invoice');
-
-=======
->>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 frappe.ui.form.on("Sales Invoice", {
 	setup: function(frm) {
 		frm.set_query('transporter', function() {
@@ -42,8 +35,4 @@ frappe.ui.form.on("Sales Invoice", {
 			}, __("Make"));
 		}
 	}
-<<<<<<< HEAD
-
-=======
->>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
 });

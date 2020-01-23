@@ -6,21 +6,15 @@ import frappe, erpnext
 from frappe import _
 from frappe.utils import flt, fmt_money, getdate, formatdate
 from frappe.model.document import Document
-from frappe.model.naming import set_name_from_naming_options
+from frappe.model.meta import get_field_precision
 from erpnext.accounts.party import validate_party_gle_currency, validate_party_frozen_disabled
 from erpnext.accounts.utils import get_account_currency
 from erpnext.accounts.utils import get_fiscal_year
 from erpnext.exceptions import InvalidAccountCurrency
 
 exclude_from_linked_with = True
-class GLEntry(Document):
-	def autoname(self):
-		"""
-		Temporarily name doc for fast insertion
-		name will be changed using autoname options (in a scheduled job)
-		"""
-		self.name = frappe.generate_hash(txt="", length=10)
 
+class GLEntry(Document):
 	def validate(self):
 		self.flags.ignore_submit_comment = True
 		self.check_mandatory()
@@ -63,7 +57,7 @@ class GLEntry(Document):
 					.format(self.voucher_type, self.voucher_no, self.account))
 
 		# Zero value transaction is not allowed
-		if not (flt(self.debit) or flt(self.credit)):
+		if not (flt(self.debit, self.precision("debit")) or flt(self.credit, self.precision("credit"))):
 			frappe.throw(_("{0} {1}: Either debit or credit amount is required for {2}")
 				.format(self.voucher_type, self.voucher_no, self.account))
 
@@ -81,7 +75,8 @@ class GLEntry(Document):
 
 	def check_pl_account(self):
 		if self.is_opening=='Yes' and \
-				frappe.db.get_value("Account", self.account, "report_type")=="Profit and Loss":
+				frappe.db.get_value("Account", self.account, "report_type")=="Profit and Loss" and \
+				self.voucher_type not in ['Purchase Invoice', 'Sales Invoice']:
 			frappe.throw(_("{0} {1}: 'Profit and Loss' type account {2} not allowed in Opening Entry")
 				.format(self.voucher_type, self.voucher_no, self.account))
 
@@ -168,7 +163,7 @@ def check_freezing_date(posting_date, adv_adj=False):
 
 def update_outstanding_amt(account, party_type, party, against_voucher_type, against_voucher, on_cancel=False):
 	if party_type and party:
-		party_condition = " and party_type={0} and party={1}"\
+		party_condition = " and party_type='{0}' and party='{1}'"\
 			.format(frappe.db.escape(party_type), frappe.db.escape(party))
 	else:
 		party_condition = ""
@@ -222,32 +217,24 @@ def validate_frozen_account(account, adv_adj=None):
 def update_against_account(voucher_type, voucher_no):
 	entries = frappe.db.get_all("GL Entry",
 		filters={"voucher_type": voucher_type, "voucher_no": voucher_no},
-		fields=["name", "party", "against", "debit", "credit", "account"])
+		fields=["name", "party", "against", "debit", "credit", "account", "company"])
+
+	if not entries:
+		return
+	company_currency = erpnext.get_company_currency(entries[0].company)
+	precision = get_field_precision(frappe.get_meta("GL Entry")
+			.get_field("debit"), company_currency)
 
 	accounts_debited, accounts_credited = [], []
 	for d in entries:
-		if flt(d.debit > 0): accounts_debited.append(d.party or d.account)
-		if flt(d.credit) > 0: accounts_credited.append(d.party or d.account)
+		if flt(d.debit, precision) > 0: accounts_debited.append(d.party or d.account)
+		if flt(d.credit, precision) > 0: accounts_credited.append(d.party or d.account)
 
 	for d in entries:
-		if flt(d.debit > 0):
+		if flt(d.debit, precision) > 0:
 			new_against = ", ".join(list(set(accounts_credited)))
-		if flt(d.credit > 0):
+		if flt(d.credit, precision) > 0:
 			new_against = ", ".join(list(set(accounts_debited)))
 
 		if d.against != new_against:
 			frappe.db.set_value("GL Entry", d.name, "against", new_against)
-
-
-def rename_gle_sle_docs():
-	for doctype in ["GL Entry", "Stock Ledger Entry"]:
-		rename_temporarily_named_docs(doctype)
-
-def rename_temporarily_named_docs(doctype):
-	"""Rename temporarily named docs using autoname options"""
-	docs_to_rename = frappe.get_all(doctype, {"to_rename": "1"}, order_by="creation")
-	for doc in docs_to_rename:
-		oldname = doc.name
-		set_name_from_naming_options(frappe.get_meta(doctype).autoname, doc)
-		newname = doc.name
-		frappe.db.sql("""UPDATE `tab{}` SET name = %s, to_rename = 0 where name = %s""".format(doctype), (newname, oldname))

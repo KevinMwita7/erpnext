@@ -24,16 +24,20 @@ def _execute(filters, additional_table_columns=None, additional_query_columns=No
 		invoice_income_map, income_accounts)
 	#Cost Center & Warehouse Map
 	invoice_cc_wh_map = get_invoice_cc_wh_map(invoice_list)
+	invoice_so_dn_map = get_invoice_so_dn_map(invoice_list)
+	company_currency = frappe.get_cached_value('Company',  filters.get("company"),  "default_currency")
 	mode_of_payments = get_mode_of_payments([inv.name for inv in invoice_list])
 
 	data = []
 	for inv in invoice_list:
 		# invoice details
+		sales_order = list(set(invoice_so_dn_map.get(inv.name, {}).get("sales_order", [])))
+		delivery_note = list(set(invoice_so_dn_map.get(inv.name, {}).get("delivery_note", [])))
 		cost_center = list(set(invoice_cc_wh_map.get(inv.name, {}).get("cost_center", [])))
 		warehouse = list(set(invoice_cc_wh_map.get(inv.name, {}).get("warehouse", [])))
 
 		row = [
-			inv.name, inv.posting_date, inv.customer
+			inv.name, inv.posting_date, inv.customer, inv.customer_name
 		]
 
 		if additional_query_columns:
@@ -42,10 +46,12 @@ def _execute(filters, additional_table_columns=None, additional_query_columns=No
 
 		row +=[
 			inv.get("customer_group"),
+			inv.get("territory"),
+			inv.get("tax_id"),
 			inv.debit_to, ", ".join(mode_of_payments.get(inv.name, [])),
 			inv.project, inv.owner, inv.remarks,
-			", ".join(cost_center),
-			", ".join(warehouse)
+			", ".join(sales_order), ", ".join(delivery_note),", ".join(cost_center),
+			", ".join(warehouse), company_currency
 		]
 		# map income values
 		base_net_total = 0
@@ -58,13 +64,15 @@ def _execute(filters, additional_table_columns=None, additional_query_columns=No
 		row.append(base_net_total or inv.base_net_total)
 
 		# tax account
+		total_tax = 0
 		for tax_acc in tax_accounts:
 			if tax_acc not in income_accounts:
 				tax_amount = flt(invoice_tax_map.get(inv.name, {}).get(tax_acc))
+				total_tax += tax_amount
 				row.append(tax_amount)
 
-		# outstanding amount
-		row += [inv.outstanding_amount]
+		# total tax, grand total, outstanding amount & rounded total
+		row += [total_tax, inv.base_grand_total, inv.base_rounded_total, inv.outstanding_amount]
 
 		data.append(row)
 
@@ -74,17 +82,24 @@ def get_columns(invoice_list, additional_table_columns):
 	"""return columns based on filters"""
 	columns = [
 		_("Invoice") + ":Link/Sales Invoice:120", _("Posting Date") + ":Date:80",
-		_("Customer") + ":Link/Customer:120"
+		_("Customer") + ":Link/Customer:120", _("Customer Name") + "::120"
 	]
 
 	if additional_table_columns:
 		columns += additional_table_columns
 
 	columns +=[
-		_("Customer Group") + ":Link/Customer Group:120",
-		_("Receivable Account") + ":Link/Account:120", _("Mode of Payment") + "::120",
+		_("Customer Group") + ":Link/Customer Group:120", _("Territory") + ":Link/Territory:80",
+		_("Tax Id") + "::80", _("Receivable Account") + ":Link/Account:120", _("Mode of Payment") + "::120",
 		_("Project") +":Link/Project:80", _("Owner") + "::150", _("Remarks") + "::150",
-		_("Cost Center") + ":Link/Cost Center:100", _("Warehouse") + ":Link/Warehouse:100"
+		_("Sales Order") + ":Link/Sales Order:100", _("Delivery Note") + ":Link/Delivery Note:100",
+		_("Cost Center") + ":Link/Cost Center:100", _("Warehouse") + ":Link/Warehouse:100",
+		{
+			"fieldname": "currency",
+			"label": _("Currency"),
+			"fieldtype": "Data",
+			"width": 80
+		}
 	]
 
 	income_accounts = tax_accounts = income_columns = tax_columns = []
@@ -107,7 +122,8 @@ def get_columns(invoice_list, additional_table_columns):
 			tax_columns.append(account + ":Currency/currency:120")
 
 	columns = columns + income_columns + [_("Net Total") + ":Currency/currency:120"] + tax_columns + \
-		[_("Outstanding Amount") + ":Currency/currency:120"]
+		[_("Total Tax") + ":Currency/currency:120", _("Grand Total") + ":Currency/currency:120",
+		_("Rounded Total") + ":Currency/currency:120", _("Outstanding Amount") + ":Currency/currency:120"]
 
 	return columns, income_accounts, tax_accounts
 
@@ -156,8 +172,8 @@ def get_invoices(filters, additional_query_columns):
 	conditions = get_conditions(filters)
 	return frappe.db.sql("""
 		select name, posting_date, debit_to, project, customer,
-		owner, remarks, customer_group,
-		base_net_total, outstanding_amount {0}
+		customer_name, owner, remarks, territory, tax_id, customer_group,
+		base_net_total, base_grand_total, base_rounded_total, outstanding_amount {0}
 		from `tabSales Invoice`
 		where docstatus = 1 %s order by posting_date desc, name desc""".format(additional_query_columns or '') %
 		conditions, filters, as_dict=1)
@@ -194,13 +210,23 @@ def get_invoice_tax_map(invoice_list, invoice_income_map, income_accounts):
 	return invoice_income_map, invoice_tax_map
 
 def get_invoice_so_dn_map(invoice_list):
-	si_items = frappe.db.sql("""select parent, so_detail
-		from `tabSales Invoice Item` where parent in (%s) 
-		""" % ', '.join(['%s']*len(invoice_list)), tuple([inv.name for inv in invoice_list]), as_dict=1)
+	si_items = frappe.db.sql("""select parent, sales_order, delivery_note, so_detail
+		from `tabSales Invoice Item` where parent in (%s)
+		and (ifnull(sales_order, '') != '' or ifnull(delivery_note, '') != '')""" %
+		', '.join(['%s']*len(invoice_list)), tuple([inv.name for inv in invoice_list]), as_dict=1)
 
 	invoice_so_dn_map = {}
 	for d in si_items:
+		if d.sales_order:
+			invoice_so_dn_map.setdefault(d.parent, frappe._dict()).setdefault(
+				"sales_order", []).append(d.sales_order)
+
 		delivery_note_list = None
+		if d.delivery_note:
+			delivery_note_list = [d.delivery_note]
+		elif d.sales_order:
+			delivery_note_list = frappe.db.sql_list("""select distinct parent from `tabDelivery Note Item`
+				where docstatus=1 and so_detail=%s""", d.so_detail)
 
 		if delivery_note_list:
 			invoice_so_dn_map.setdefault(d.parent, frappe._dict()).setdefault("delivery_note", delivery_note_list)

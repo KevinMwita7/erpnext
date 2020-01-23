@@ -428,8 +428,9 @@ class BuyingController(StockController):
 			elif not flt(d.rejected_qty):
 				d.rejected_qty = flt(d.received_qty) -  flt(d.qty)
 
+			val  = flt(d.qty) + flt(d.rejected_qty)
 			# Check Received Qty = Accepted Qty + Rejected Qty
-			if ((flt(d.qty) + flt(d.rejected_qty)) != flt(d.received_qty)):
+			if (flt(val, d.precision("received_qty")) != flt(d.received_qty, d.precision("received_qty"))):
 				frappe.throw(_("Accepted + Rejected Qty must be equal to Received quantity for Item {0}").format(d.item_code))
 
 	def validate_negative_quantity(self, item_row, field_list):
@@ -761,7 +762,7 @@ def validate_item_type(doc, fieldname, message):
 	if not items:
 		return
 
-	item_list = ", ".join(["%s" % frappe.db.escape(d) for d in items])
+	item_list = ", ".join(["'%s'" % frappe.db.escape(d) for d in items])
 
 	invalid_items = [d[0] for d in frappe.db.sql("""
 		select item_code from tabItem where name in ({0}) and {1}=0
