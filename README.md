@@ -1,9 +1,5 @@
 <div align="center">
-<<<<<<< HEAD
     <img src="https://raw.githubusercontent.com/frappe/erpnext/develop/erpnext/public/images/erpnext-logo.png" height="128">
-=======
-    <img src="https://github.com/frappe/design/blob/master/logos/logo-2019/erpnext-logo.png" height="128">
->>>>>>> 47a7e3422b04aa66197d7140e144b70b99ee2ca2
     <h2>ERPNext</h2>
     <p align="center">
         <p>ERP made simple</p>
