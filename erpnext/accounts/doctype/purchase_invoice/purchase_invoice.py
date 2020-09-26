@@ -889,12 +889,11 @@ def make_debit_note(source_name, target_doc=None):
 @frappe.whitelist()
 def make_stock_entry(source_name, target_doc=None):
 	def update_item(obj, target, source_parent):
-		if(source_parent.supplier):
 			pass
 	
 	def set_missing_values(source, target):
-		frappe.msgprint("<pre>{}</pre>".format(frappe.as_json(source)))
-		frappe.msgprint("<pre>{}</pre>".format(frappe.as_json(target)))
+		if(source.supplier):
+			target.supplier = source.supplier
 
 	doc = get_mapped_doc("Purchase Invoice", source_name, {
 		"Purchase Invoice": {
