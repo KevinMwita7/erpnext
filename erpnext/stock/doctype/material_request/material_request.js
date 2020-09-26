@@ -57,12 +57,7 @@ frappe.ui.form.on('Material Request', {
 				// make
 				if (frm.doc.material_request_type === "Material Transfer") {
 					frm.add_custom_button(__("Transfer Material"),
-						() => {
-							var fugazy = frm.events.make_stock_entry(frm)
-							fugazy.source_name = frm
-							frappe.msgprint('<pre>' + JSON.stringify(fugazy, null, 2) + '</pre>')
-							return fugazy;
-						}, __("Make"));
+						() => frm.events.make_stock_entry(frm), __("Make"));
 				}
 
 				if (frm.doc.material_request_type === "Material Issue") {
