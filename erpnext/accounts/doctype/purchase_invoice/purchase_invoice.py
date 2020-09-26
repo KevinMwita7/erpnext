@@ -888,6 +888,9 @@ def make_debit_note(source_name, target_doc=None):
 
 @frappe.whitelist()
 def make_stock_entry(source_name, target_doc=None):
+	def update_item(obj, target, source_parent):
+		frappe.msgprint("<pre>{}</pre>".format(frappe.as_json(source_parent)))
+
 	doc = get_mapped_doc("Purchase Invoice", source_name, {
 		"Purchase Invoice": {
 			"doctype": "Stock Entry",
@@ -901,6 +904,7 @@ def make_stock_entry(source_name, target_doc=None):
 				"stock_qty": "transfer_qty",
 				"batch_no": "batch_no"
 			},
+			"postprocess": update_item,
 		}
 	}, target_doc)
 
