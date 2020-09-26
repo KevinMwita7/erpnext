@@ -411,7 +411,6 @@ def make_supplier_quotation(source_name, target_doc=None):
 @frappe.whitelist()
 def make_stock_entry(source_name, target_doc=None):
 	def update_item(obj, target, source_parent):
-		frappe.msgprint(source_name)
 		qty = flt(flt(obj.stock_qty) - flt(obj.ordered_qty))/ target.conversion_factor \
 			if flt(obj.stock_qty) > flt(obj.ordered_qty) else 0
 		target.qty = qty
@@ -419,6 +418,7 @@ def make_stock_entry(source_name, target_doc=None):
 		target.conversion_factor = obj.conversion_factor
 
 		if source_parent.material_request_type == "Material Transfer":
+			frappe.msgprint(obj)
 			target.t_warehouse = obj.warehouse
 		else:
 			target.s_warehouse = obj.warehouse
