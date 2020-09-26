@@ -889,7 +889,7 @@ def make_debit_note(source_name, target_doc=None):
 @frappe.whitelist()
 def make_stock_entry(source_name, target_doc=None):
 	def update_item(obj, target, source_parent):
-			pass
+		pass
 	
 	def set_missing_values(source, target):
 		if(source.supplier):
