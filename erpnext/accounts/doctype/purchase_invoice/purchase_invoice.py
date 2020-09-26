@@ -893,7 +893,7 @@ def make_stock_entry(source_name, target_doc=None):
 	
 	def set_missing_values(source, target):
 		frappe.msgprint("<pre>{}</pre>".format(frappe.as_json(target)))
-		if(source.supplier):
+		if(target.purpose == "Material Receipt" and source.supplier):
 			target.supplier = source.supplier
 
 	doc = get_mapped_doc("Purchase Invoice", source_name, {
