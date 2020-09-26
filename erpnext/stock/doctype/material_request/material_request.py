@@ -418,7 +418,7 @@ def make_stock_entry(source_name, target_doc=None):
 		target.conversion_factor = obj.conversion_factor
 
 		if source_parent.material_request_type == "Material Transfer":
-			frappe.msgprint(obj)
+			frappe.msgprint("<pre>{}</pre>".format(frappe.as_json(obj)))
 			target.t_warehouse = obj.warehouse
 		else:
 			target.s_warehouse = obj.warehouse
