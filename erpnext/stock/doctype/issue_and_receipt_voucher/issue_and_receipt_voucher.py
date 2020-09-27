@@ -26,16 +26,6 @@ def get_items_from_purchase_order(source_name, target_doc=None):
 			"validation": {
 				"docstatus": ["=", 1]
 			}
-		},
-		"Purchase Order Item": {
-			"doctype": "Issue and Receipt Voucher Item",
-			"field_map": {
-				# Source      Target
-				"item_code": "item_description",
-				"uom": "batch_no",
-				"qty": "qty_required"
-			},
-			# "postprocess": update_item,
 		}
 	}, target_doc, set_missing_values)
 
