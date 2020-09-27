@@ -70,8 +70,8 @@ website_generators = ["Item Group", "Item", "BOM", "Sales Partner",
 	"Job Opening", "Student Admission"]
 
 website_context = {
-	"favicon": 	"/assets/erpnext/images/favicon.png",
-	"splash_image": "/assets/erpnext/images/erp-icon.svg"
+	"favicon": 	"/assets/erpnext/images/kiri-logo.png",
+	"splash_image": "/assets/erpnext/images/kiri-logo.png"
 }
 
 website_route_rules = [
@@ -261,7 +261,7 @@ scheduler_events = {
 	]
 }
 
-email_brand_image = "assets/erpnext/images/erpnext-logo.jpg"
+email_brand_image = "assets/erpnext/images/kiri-logo.png"
 
 default_mail_footer = """
 	<span>
