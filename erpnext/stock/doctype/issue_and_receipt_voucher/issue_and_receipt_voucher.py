@@ -12,14 +12,13 @@ class IssueandReceiptVoucher(Document):
 
 @frappe.whitelist()
 def get_items_from_purchase_order(source_name, target_doc=None):
-	frappe.msgprint("<pre>{}</pre>".format(frappe.as_json(source_name)))
 	def update_item(obj, target, source_parent):
 		pass
 	
 	def set_missing_values(source, target):
 		frappe.msgprint("<pre>{}</pre>".format(frappe.as_json(source)))
 		frappe.msgprint("<pre>{}</pre>".format(frappe.as_json(target)))
-		target.issued_date = frappe.utils.nowdate()
+		#target.issued_date = frappe.utils.nowdate()
 
 	doc = get_mapped_doc("Purchase Order", source_name, {
 		"Purchase Invoice": {
