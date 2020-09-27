@@ -5,7 +5,7 @@ frappe.ui.form.on('Issue and Receipt Voucher', {
 	refresh: function(frm) {
 		frm.add_custom_button(__('Purchase Order'), function() {
 			erpnext.utils.map_current_doc({
-				method: "erpnext.buying.doctype.purchase_order.purchase_order.make_purchase_invoice",
+				method: "erpnext.stock.doctype.issue_and_receipt_voucher.issue_and_receipt_voucher.get_items_from_purchase_order",
 				source_doctype: "Purchase Order",
 				target: frm,
 				setters: {
