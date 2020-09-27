@@ -21,13 +21,13 @@ def get_items_from_purchase_order(source_name, target_doc=None):
 		#target.issued_date = frappe.utils.nowdate()
 
 	doc = get_mapped_doc("Purchase Order", source_name, {
-		"Purchase Invoice": {
+		"Purchase Order": {
 			"doctype": "Issue and Receipt Voucher",
 			"validation": {
 				"docstatus": ["=", 1]
 			}
 		},
-		"Purchase Invoice Item": {
+		"Purchase Order Item": {
 			"doctype": "Issue and Receipt Voucher Item",
 			"field_map": {
 				# Source      Target
