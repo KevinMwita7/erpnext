@@ -23,7 +23,7 @@ frappe.ui.form.on('Issue and Receipt Voucher', {
 		frm.add_custom_button(__('Material Request'), function() {
 			erpnext.utils.map_current_doc({
 				method: "erpnext.stock.doctype.issue_and_receipt_voucher.issue_and_receipt_voucher.get_items_from_material_request",
-				source_doctype: "Purchase Order",
+				source_doctype: "Material Request",
 				target: frm,
 				setters: {
 					// supplier: frm.doc.supplier || undefined,
