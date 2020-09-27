@@ -19,7 +19,6 @@ def get_items_from_purchase_order(source_name, target_doc=None):
 		pass
 		#frappe.msgprint("<pre>{}</pre>".format(frappe.as_json(source)))
 		#frappe.msgprint("<pre>{}</pre>".format(frappe.as_json(target)))
-		#target.issued_date = frappe.utils.nowdate()
 
 	doc = get_mapped_doc("Purchase Order", source_name, {
 		"Purchase Order": {
@@ -33,11 +32,32 @@ def get_items_from_purchase_order(source_name, target_doc=None):
 			"field_map": {
 				# Source      Target
 				"item_code": "item_description",
-				"uom": "batch_no",
+				"uom": "unit_of_issue",
 				"qty": "qty_required"
 			},
 			# "postprocess": update_item,
 		}
 	}, target_doc, set_missing_values)
+
+	return doc
+
+def get_items_from_material_request(source_name, target_doc=None):
+	doc = get_mapped_doc("Material Request", source_name, {
+	"Material Request": {
+		"doctype": "Issue and Receipt Voucher",
+		"validation": {
+			"docstatus": ["=", 1]
+		}
+	},
+	"Material Request Item": {
+		"doctype": "Issue and Receipt Voucher Items",
+		"field_map": {
+			# Source      Target
+			"item_code": "item_description",
+			"uom": "unit_of_issue",
+			"qty": "qty_required"
+		}
+	}
+}, target_doc)
 
 	return doc
