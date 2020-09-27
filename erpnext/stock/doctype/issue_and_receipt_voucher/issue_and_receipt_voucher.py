@@ -40,7 +40,8 @@ def get_items_from_purchase_order(source_name, target_doc=None):
 	}, target_doc, set_missing_values)
 
 	return doc
-
+	
+@frappe.whitelist()
 def get_items_from_material_request(source_name, target_doc=None):
 	doc = get_mapped_doc("Material Request", source_name, {
 	"Material Request": {
