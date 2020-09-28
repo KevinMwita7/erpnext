@@ -22,6 +22,14 @@ def get_data():
 					"type": "doctype",
 					"name": "Material Request",
 				},
+				{
+					"type": "doctype",
+					"name": "Issue and Receipt Voucher",
+				},
+				{
+					"type": "doctype",
+					"name": "Stock Control",
+				}
 			]
 		},
 		{
