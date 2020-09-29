@@ -18,7 +18,6 @@ class QualityInspectionNotSubmittedError(frappe.ValidationError): pass
 
 class StockController(AccountsController):
 	def validate(self):
-		frappe.msgprint("<pre>{}</pre>".format(frappe.as_json(self)))
 		super(StockController, self).validate()
 		self.validate_inspection()
 	
