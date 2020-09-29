@@ -72,8 +72,8 @@ def get_stock_ledger_entries(filters, items):
 			stockEntry.supplier
 		from `tabStock Ledger Entry` as sle
 		inner join `tabStock Entry` as stockEntry on stockEntry.name=sle.voucher_no
-		where company = %(company)s and
-			posting_date between %(from_date)s and %(to_date)s
+		where sle.company = %(company)s and
+			sle.posting_date between %(from_date)s and %(to_date)s
 			{sle_conditions}
 			{item_conditions_sql}
 			order by sle.posting_date asc, sle.posting_time asc, sle.name asc"""\
