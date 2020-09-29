@@ -18,9 +18,10 @@ class QualityInspectionNotSubmittedError(frappe.ValidationError): pass
 
 class StockController(AccountsController):
 	def validate(self):
+		frappe.msgprint("<pre>{}</pre>".format(frappe.as_json(self)))
 		super(StockController, self).validate()
 		self.validate_inspection()
-
+	
 	def make_gl_entries(self, gl_entries=None, repost_future_gle=True, from_repost=False):
 		if self.docstatus == 2:
 			delete_gl_entries(voucher_type=self.doctype, voucher_no=self.name)
