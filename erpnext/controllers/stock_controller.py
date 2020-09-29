@@ -20,9 +20,6 @@ class StockController(AccountsController):
 	def validate(self):
 		super(StockController, self).validate()
 		self.validate_inspection()
-	
-	def beforeInsert(self):
-		frappe.msgprint("<pre>{}</pre>".format(frappe.as_json(self)))
 
 	def make_gl_entries(self, gl_entries=None, repost_future_gle=True, from_repost=False):
 		if self.docstatus == 2:
