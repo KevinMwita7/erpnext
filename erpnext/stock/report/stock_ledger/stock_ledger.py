@@ -29,7 +29,7 @@ def execute(filters=None):
 			conversion_factors.append(item_detail.conversion_factor)
 
 	update_included_uom_in_report(columns, data, include_uom, conversion_factors)
-	frappe.msgprint("<pre>{}</pre>".format(frappe.as_json(data)))
+	frappe.msgprint(sl_entries)
 	return columns, data
 
 def get_columns():
