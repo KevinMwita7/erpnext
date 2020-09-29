@@ -66,16 +66,17 @@ def get_stock_ledger_entries(filters, items):
 		item_conditions_sql = 'and sle.item_code in ({})'\
 			.format(', '.join(['"' + frappe.db.escape(i) + '"' for i in items]))
 
-	return frappe.db.sql("""select concat_ws(" ", sle.posting_date, sle.posting_time) as sle.date,
+	return frappe.db.sql("""select sle.posting_date, sle.posting_time, sle.date,
 			sle.item_code, sle.warehouse, sle.actual_qty, sle.qty_after_transaction, sle.incoming_rate, sle.valuation_rate,
 			sle.stock_value, sle.voucher_type, sle.voucher_no, sle.batch_no, sle.serial_no, sle.company, sle.project, 
 			stockEntry.supplier
-		from `tabStock Ledger Entry` sle
+		from `tabStock Ledger Entry` as sle
+		inner join `tabStock Entry` as stockEntry on stockEntry.name=sle.voucher_no
 		where company = %(company)s and
 			posting_date between %(from_date)s and %(to_date)s
 			{sle_conditions}
 			{item_conditions_sql}
-			order by posting_date asc, posting_time asc, name asc INNER JOIN `tabStock Entry` stockEntry on stockEntry.name=sle.voucher_no"""\
+			order by sle.posting_date asc, sle.posting_time asc, sle.name asc"""\
 		.format(
 			sle_conditions=get_sle_conditions(filters),
 			item_conditions_sql = item_conditions_sql
@@ -132,13 +133,13 @@ def get_sle_conditions(filters):
 	if filters.get("warehouse"):
 		warehouse_condition = get_warehouse_condition(filters.get("warehouse"))
 		if warehouse_condition:
-			conditions.append(warehouse_condition)
+			conditions.append("sle.warehouse=" + warehouse_condition)
 	if filters.get("voucher_no"):
-		conditions.append("voucher_no=%(voucher_no)s")
+		conditions.append("sle.voucher_no=%(voucher_no)s")
 	if filters.get("batch_no"):
-		conditions.append("batch_no=%(batch_no)s")
+		conditions.append("sle.batch_no=%(batch_no)s")
 	if filters.get("project"):
-		conditions.append("project=%(project)s")
+		conditions.append("sle.project=%(project)s")
 
 	return "and {}".format(" and ".join(conditions)) if conditions else ""
 
