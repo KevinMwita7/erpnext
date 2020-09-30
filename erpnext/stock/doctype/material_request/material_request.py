@@ -239,7 +239,7 @@ def set_missing_values(source, target_doc):
 def update_item(obj, target, source_parent):
 	target.conversion_factor = obj.conversion_factor
 	target.qty = flt(flt(obj.stock_qty) - flt(obj.ordered_qty))/ target.conversion_factor
-	target.stock_qty = (target.qty * target.conversion_factor)
+	target.stock_qty = (target.qty * 2)
 	if getdate(target.schedule_date) < getdate(nowdate()):
 		target.schedule_date = None
 
