@@ -74,6 +74,7 @@ class StockEntry(StockController):
 		self.set_incoming_rate()
 		self.set_actual_qty()
 		self.calculate_rate_and_amount(update_finished_item_rate=False)
+		frappe.msgprint("<pre>{}</pre>".format(frappe.as_json(self.get("supplier"))))
 
 	def on_submit(self):
 
