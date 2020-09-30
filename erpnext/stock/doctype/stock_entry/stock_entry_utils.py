@@ -124,9 +124,6 @@ def make_stock_entry(**args):
 		'cost_center': args.cost_center,
 		'expense_account': args.expense_account
 	})
-	
-	frappe.msgprint("<pre>{}</pre>".format(frappe.as_json(args)))
-
 
 	if not args.do_not_save:
 		s.insert()
