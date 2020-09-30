@@ -770,7 +770,7 @@ erpnext.stock.StockEntry = erpnext.stock.StockController.extend({
 		if (doc.purpose == 'Subcontract') {
 			doc.customer = doc.customer_name = doc.customer_address =
 				doc.delivery_note_no = doc.sales_invoice_no = null;
-		} else {
+		} else if(doc.purpose !== "Material Receipt"){
 			doc.customer = doc.customer_name = doc.customer_address =
 				doc.delivery_note_no = doc.sales_invoice_no = doc.supplier =
 				doc.supplier_name = doc.supplier_address = doc.purchase_receipt_no =
