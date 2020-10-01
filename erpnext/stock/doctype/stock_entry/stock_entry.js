@@ -764,17 +764,22 @@ erpnext.stock.StockEntry = erpnext.stock.StockController.extend({
 		this.frm.fields_dict["items"].grid.set_column_disp("t_warehouse", doc.purpose!='Material Issue');
 		this.frm.fields_dict["items"].grid.set_column_disp("retain_sample", doc.purpose=='Material Receipt');
 		this.frm.fields_dict["items"].grid.set_column_disp("sample_quantity", doc.purpose=='Material Receipt');
+		this.frm.fields_dict["items"].grid.set_column_disp("requested_qty", doc.purpose=='Material Transfer');
 
 		this.frm.cscript.toggle_enable_bom();
 
 		if (doc.purpose == 'Subcontract') {
 			doc.customer = doc.customer_name = doc.customer_address =
 				doc.delivery_note_no = doc.sales_invoice_no = null;
-		} else if(doc.purpose !== "Material Receipt"){
+		} else {
 			doc.customer = doc.customer_name = doc.customer_address =
-				doc.delivery_note_no = doc.sales_invoice_no = doc.supplier =
-				doc.supplier_name = doc.supplier_address = doc.purchase_receipt_no =
-				doc.address_display = null;
+				doc.delivery_note_no = doc.sales_invoice_no =  doc.purchase_receipt_no = doc.address_display = null;
+		}
+		if(doc.purpose !== "Material Receipt") {
+			doc.supplier = doc.supplier_name = doc.supplier_address = null;
+		}
+		if(doc.purpose !== "Material Transfer") {
+			doc.requested_qty = null 
 		}
 		if(doc.purpose == "Material Receipt") {
 			this.frm.set_value("from_bom", 0);
