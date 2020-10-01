@@ -140,7 +140,7 @@
    "no_copy": 0, 
    "oldfieldname": "purpose", 
    "oldfieldtype": "Select", 
-   "options": "Material Issue\nMaterial Receipt\nMaterial Transfer\nMaterial Transfer for Manufacture\nMaterial Consumption for Manufacture\nManufacture\nRepack\nSubcontract", 
+   "options": "Material Issue\nMaterial Receipt\nMaterial Transfer", 
    "permlevel": 0, 
    "print_hide": 0, 
    "print_hide_if_no_value": 0, 
