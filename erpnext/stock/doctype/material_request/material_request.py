@@ -94,10 +94,15 @@ class MaterialRequest(BuyingController):
 
 	def before_save(self):
 		self.set_status(update=True)
-		frappe.msgprint("<pre>{}</pre>".format(frappe.as_json(self.workflow_state)))
+		if(self.workflow_state == "Approved by Supplying"):
+			self.supplying_approver = frappe.session.user
+		frappe.msgprint("<pre>{}</pre>".format("before_save " + self.workflow_state))
 
 	def before_submit(self):
 		self.set_status(update=True)
+		if(self.workflow_state == "Approved by Receiving"):
+			self.supplying_approver = frappe.session.user
+		frappe.msgprint("<pre>{}</pre>".format("before_submit " + self.workflow_state))
 
 	def before_cancel(self):
 		# if MRQ is already closed, no point saving the document
