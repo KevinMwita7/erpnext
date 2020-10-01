@@ -350,7 +350,9 @@ class StockEntry(StockController):
 
 	def set_actual_qty(self):
 		allow_negative_stock = cint(frappe.db.get_value("Stock Settings", None, "allow_negative_stock"))
-
+		# If the purpose is a material transfer, there is a source warehouse and an item_code, get the item's stock details
+		#if(self.purpose == "Material Transfer" and args.get("warehouse") and args.get("item_code")):
+			#stock_details = get_bin_details(args.get("item_code"), args.get("warehouse"))
 		for d in self.get('items'):
 			previous_sle = get_previous_sle({
 				"item_code": d.item_code,
@@ -361,7 +363,7 @@ class StockEntry(StockController):
 
 			# get actual stock at source warehouse
 			d.actual_qty = previous_sle.get("qty_after_transaction") or 0
-
+			frappe.msgprint("<pre>{}</pre>".format(frappe.as_json(d.actual_qty)))
 			# validate qty during submit
 			if d.docstatus==1 and d.s_warehouse and not allow_negative_stock and flt(d.actual_qty, d.precision("actual_qty")) < flt(d.transfer_qty, d.precision("actual_qty")):
 				frappe.throw(_("Row {0}: Qty not available for {4} in warehouse {1} at posting time of the entry ({2} {3})").format(d.idx,
@@ -670,9 +672,6 @@ class StockEntry(StockController):
 			'has_batch_no'			: item.has_batch_no,
 			'sample_quantity'		: item.sample_quantity,
 		})
-		# If the purpose is a material transfer, there is a source warehouse and an item_code, get the item's stock details
-		#if(self.purpose == "Material Transfer" and args.get("warehouse") and args.get("item_code")):
-			#stock_details = get_bin_details(args.get("item_code"), args.get("warehouse"))
 
 		# update uom
 		if args.get("uom") and for_update:
@@ -692,15 +691,12 @@ class StockEntry(StockController):
 		args['posting_time'] = self.posting_time
 
 		stock_and_rate = get_warehouse_details(args) if args.get('warehouse') else {}
-		#frappe.msgprint("<pre>{}</pre>".format(frappe.as_json(stock_and_rate)))
-		frappe.msgprint("<pre>{}</pre>".format(frappe.as_json(args.get('warehouse'))))
 		ret.update(stock_and_rate)
 
 		# automatically select batch for outgoing item
 		if (args.get('s_warehouse', None) and args.get('qty') and
 			ret.get('has_batch_no') and not args.get('batch_no')):
 			args.batch_no = get_batch_no(args['item_code'], args['s_warehouse'], args['qty'])
-		
 		return ret
 
 	def get_items(self):
