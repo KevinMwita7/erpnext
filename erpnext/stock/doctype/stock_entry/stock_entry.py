@@ -692,13 +692,14 @@ class StockEntry(StockController):
 		args['posting_time'] = self.posting_time
 
 		stock_and_rate = get_warehouse_details(args) if args.get('warehouse') else {}
+		frappe.msgprint("<pre>{}</pre>".format(frappe.as_json(stock_and_rate)))
 		ret.update(stock_and_rate)
 
 		# automatically select batch for outgoing item
 		if (args.get('s_warehouse', None) and args.get('qty') and
 			ret.get('has_batch_no') and not args.get('batch_no')):
 			args.batch_no = get_batch_no(args['item_code'], args['s_warehouse'], args['qty'])
-				
+		
 		return ret
 
 	def get_items(self):
@@ -1304,7 +1305,6 @@ def get_warehouse_details(args):
 			"actual_qty" : get_previous_sle(args).get("qty_after_transaction") or 0,
 			"basic_rate" : get_incoming_rate(args)
 		}
-	frappe.msgprint("<pre>{}</pre>".format(frappe.as_json(get_previous_sle(args).get("qty_after_transaction"))))
 	return ret
 
 @frappe.whitelist()
