@@ -692,7 +692,8 @@ class StockEntry(StockController):
 		args['posting_time'] = self.posting_time
 
 		stock_and_rate = get_warehouse_details(args) if args.get('warehouse') else {}
-		frappe.msgprint("<pre>{}</pre>".format(frappe.as_json(stock_and_rate)))
+		#frappe.msgprint("<pre>{}</pre>".format(frappe.as_json(stock_and_rate)))
+		frappe.msgprint("<pre>{}</pre>".format(frappe.as_json(args.get('warehouse'))))
 		ret.update(stock_and_rate)
 
 		# automatically select batch for outgoing item
