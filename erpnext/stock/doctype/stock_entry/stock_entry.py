@@ -649,10 +649,6 @@ class StockEntry(StockController):
 			frappe.throw(_("Item {0} is not active or end of life has been reached").format(args.get("item_code")))
 
 		item = item[0]
-		# If the purpose is a material transfer, there is a source warehouse and an item_code, get the item's stock details
-		if(self.purpose == "Material Transfer" and args.get("warehouse") and args.get("item_code")):
-			item["bin"] = get_bin_details(args.get("item_code"), args.get("warehouse"))
-			frappe.msgprint("<pre>{}</pre>".format(frappe.as_json(item)))
 
 		item_group_defaults = get_item_group_defaults(item.name, self.company)
 
@@ -667,13 +663,16 @@ class StockEntry(StockController):
 			'transfer_qty'			: args.get('qty'),
 			'conversion_factor'		: 1,
 			'batch_no'				: '',
-			'actual_qty'			: 0,
+			'actual_qty'			: 10000,
 			'basic_rate'			: 0,
 			'serial_no'				: '',
 			'has_serial_no'			: item.has_serial_no,
 			'has_batch_no'			: item.has_batch_no,
-			'sample_quantity'		: item.sample_quantity
+			'sample_quantity'		: item.sample_quantity,
 		})
+		# If the purpose is a material transfer, there is a source warehouse and an item_code, get the item's stock details
+		#if(self.purpose == "Material Transfer" and args.get("warehouse") and args.get("item_code")):
+			#stock_details = get_bin_details(args.get("item_code"), args.get("warehouse"))
 
 		# update uom
 		if args.get("uom") and for_update:
