@@ -644,7 +644,7 @@ class StockEntry(StockController):
 				and i.disabled=0
 				and (i.end_of_life is null or i.end_of_life='0000-00-00' or i.end_of_life > %s)""",
 			(self.company, args.get('item_code'), nowdate()), as_dict = 1)
-
+		frappe.msgprint("<pre>{}</pre>".format(frappe.as_json(item)))
 		if not item:
 			frappe.throw(_("Item {0} is not active or end of life has been reached").format(args.get("item_code")))
 
