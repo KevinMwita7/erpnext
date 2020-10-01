@@ -133,10 +133,8 @@ class StockEntry(StockController):
 			if not flt(item.qty):
 				# Allow for an empty quantity field only if the purpose is material transfer, reason being
 				# the creator of the document cannot set the value, only the approver can
-				if(self.purpose == "Material Transfer"):
-					item.qty = flt(0)
-				else:
-					frappe.throw(_("Row {0}: Qty is mandatory").format(item.idx))
+				item.qty = flt(0)
+				#frappe.throw(_("Row {0}: Qty is mandatory").format(item.idx))
 			if not flt(item.conversion_factor):
 				frappe.throw(_("Row {0}: UOM Conversion Factor is mandatory").format(item.idx))
 			item.transfer_qty = flt(flt(item.qty) * flt(item.conversion_factor),
