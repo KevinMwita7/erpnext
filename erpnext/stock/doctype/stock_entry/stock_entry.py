@@ -38,7 +38,7 @@ class StockEntry(StockController):
 
 	def onload(self):
 		for item in self.get("items"):
-			item.update(get_bin_details(item.item_code, item.s_warehouse))
+			item.update(get_bin_details(item.item_code, item.s_warehouse or item.t_warehouse))
 
 	def validate(self):
 		self.pro_doc = frappe._dict()
@@ -362,8 +362,8 @@ class StockEntry(StockController):
 			})
 
 			# get actual stock at source warehouse
-			d.actual_qty = previous_sle.get("qty_after_transaction") #or 0
-			frappe.msgprint("<pre>{}</pre>".format(frappe.as_json(d.actual_qty)))
+			d.actual_qty = previous_sle.get("qty_after_transaction") or 0
+
 			# validate qty during submit
 			if d.docstatus==1 and d.s_warehouse and not allow_negative_stock and flt(d.actual_qty, d.precision("actual_qty")) < flt(d.transfer_qty, d.precision("actual_qty")):
 				frappe.throw(_("Row {0}: Qty not available for {4} in warehouse {1} at posting time of the entry ({2} {3})").format(d.idx,
