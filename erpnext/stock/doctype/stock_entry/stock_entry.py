@@ -644,15 +644,16 @@ class StockEntry(StockController):
 				and i.disabled=0
 				and (i.end_of_life is null or i.end_of_life='0000-00-00' or i.end_of_life > %s)""",
 			(self.company, args.get('item_code'), nowdate()), as_dict = 1)
-		# If the purpose is a material transfer, there is a source warehouse and an item_code, get the item's stock details
-		if(self.purpose == "Material Transfer" and args.get("warehouse") and args.get("item_code")):
-			#item["bin"] = get_bin_details(args.get("item_code"), args.get("warehouse"))
-			frappe.msgprint("<pre>{}</pre>".format(frappe.as_json(item)))
 
 		if not item:
 			frappe.throw(_("Item {0} is not active or end of life has been reached").format(args.get("item_code")))
 
 		item = item[0]
+		# If the purpose is a material transfer, there is a source warehouse and an item_code, get the item's stock details
+		if(self.purpose == "Material Transfer" and args.get("warehouse") and args.get("item_code")):
+			item["bin"] = get_bin_details(args.get("item_code"), args.get("warehouse"))
+			frappe.msgprint("<pre>{}</pre>".format(frappe.as_json(item)))
+
 		item_group_defaults = get_item_group_defaults(item.name, self.company)
 
 		ret = frappe._dict({
