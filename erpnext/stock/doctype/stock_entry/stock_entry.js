@@ -764,7 +764,6 @@ erpnext.stock.StockEntry = erpnext.stock.StockController.extend({
 		this.frm.fields_dict["items"].grid.set_column_disp("t_warehouse", doc.purpose!='Material Issue');
 		this.frm.fields_dict["items"].grid.set_column_disp("retain_sample", doc.purpose=='Material Receipt');
 		this.frm.fields_dict["items"].grid.set_column_disp("sample_quantity", doc.purpose=='Material Receipt');
-		this.frm.fields_dict["items"].grid.set_column_disp("requested_qty", doc.purpose=='Material Transfer');
 
 		this.frm.cscript.toggle_enable_bom();
 
