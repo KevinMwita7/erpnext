@@ -646,7 +646,7 @@ class StockEntry(StockController):
 			(self.company, args.get('item_code'), nowdate()), as_dict = 1)
 		# If the purpose is a material transfer, there is a source warehouse and an item_code, get the item's stock details
 		if(self.purpose == "Material Transfer" and args.get("warehouse") and args.get("item_code")):
-			item.append("bin", get_bin_details(args.get("item_code"), args.get("warehouse")))
+			item["bin"] = get_bin_details(args.get("item_code"), args.get("warehouse"))
 			frappe.msgprint("<pre>{}</pre>".format(frappe.as_json(item)))
 
 		if not item:
