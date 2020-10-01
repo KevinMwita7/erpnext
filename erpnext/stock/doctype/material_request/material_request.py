@@ -94,6 +94,7 @@ class MaterialRequest(BuyingController):
 
 	def before_save(self):
 		self.set_status(update=True)
+		frappe.msgprint("<pre>{}</pre>".format(frappe.as_json(self.workflow_state)))
 
 	def before_submit(self):
 		self.set_status(update=True)
