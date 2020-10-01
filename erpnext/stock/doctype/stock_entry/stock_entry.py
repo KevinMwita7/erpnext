@@ -362,7 +362,7 @@ class StockEntry(StockController):
 			})
 
 			# get actual stock at source warehouse
-			d.actual_qty = previous_sle.get("qty_after_transaction") or 0
+			d.actual_qty = previous_sle.get("qty_after_transaction") #or 0
 			frappe.msgprint("<pre>{}</pre>".format(frappe.as_json(d.actual_qty)))
 			# validate qty during submit
 			if d.docstatus==1 and d.s_warehouse and not allow_negative_stock and flt(d.actual_qty, d.precision("actual_qty")) < flt(d.transfer_qty, d.precision("actual_qty")):
