@@ -646,8 +646,8 @@ class StockEntry(StockController):
 			(self.company, args.get('item_code'), nowdate()), as_dict = 1)
 		# If the purpose is a material transfer, there is a source warehouse and an item_code, get the item's stock details
 		if(self.purpose == "Material Transfer" and args.get("warehouse") and args.get("item_code")):
-			item.append("bin", get_bin_details(args.get("item_code", args.get("warehouse"))))
-			frappe.msgprint("<pre>{}</pre>".format(frappe.as_json(item)))
+			#item.append("bin", get_bin_details(args.get("item_code", args.get("warehouse"))))
+			frappe.msgprint("<pre>{}</pre>".format(frappe.as_json(get_bin_details(args.get("item_code", args.get("warehouse"))))))
 
 		if not item:
 			frappe.throw(_("Item {0} is not active or end of life has been reached").format(args.get("item_code")))
