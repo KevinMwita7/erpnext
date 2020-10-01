@@ -663,7 +663,7 @@ class StockEntry(StockController):
 			'transfer_qty'			: args.get('qty'),
 			'conversion_factor'		: 1,
 			'batch_no'				: '',
-			'actual_qty'			: 10000,
+			'actual_qty'			: 0,
 			'basic_rate'			: 0,
 			'serial_no'				: '',
 			'has_serial_no'			: item.has_serial_no,
@@ -698,7 +698,9 @@ class StockEntry(StockController):
 		if (args.get('s_warehouse', None) and args.get('qty') and
 			ret.get('has_batch_no') and not args.get('batch_no')):
 			args.batch_no = get_batch_no(args['item_code'], args['s_warehouse'], args['qty'])
-
+		
+		frappe.msgprint("<pre>{}</pre>".format(frappe.as_json(ret)))
+		
 		return ret
 
 	def get_items(self):
