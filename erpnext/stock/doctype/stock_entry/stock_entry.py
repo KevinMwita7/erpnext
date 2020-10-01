@@ -89,6 +89,7 @@ class StockEntry(StockController):
 		self.validate_reserved_serial_no_consumption()
 		if self.work_order and self.purpose == "Manufacture":
 			self.update_so_in_serial_number()
+		self.submitted_by = frappe.session.user
 
 	def on_cancel(self):
 
