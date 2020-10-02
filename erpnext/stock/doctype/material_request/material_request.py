@@ -10,6 +10,7 @@ import frappe
 from frappe.utils import cstr, flt, getdate, new_line_sep, nowdate, add_days
 from frappe import msgprint, _
 from frappe.model.mapper import get_mapped_doc
+from erpnext.stock.get_item_details import get_bin_details
 from erpnext.stock.stock_balance import update_bin_qty, get_indented_qty
 from erpnext.controllers.buying_controller import BuyingController
 from erpnext.manufacturing.doctype.work_order.work_order import get_item_details
@@ -421,7 +422,7 @@ def make_stock_entry(source_name, target_doc=None):
 		target.transfer_qty = qty * obj.conversion_factor
 		target.conversion_factor = obj.conversion_factor
 		if not target.actual_qty:
-			target.actual_qty = get_item_details(target.item_code).actual_qty
+			target.actual_qty = get_bin_details(target.item_code, target.warehouse)
 
 		if source_parent.material_request_type == "Material Transfer":
 			#frappe.msgprint("<pre>{}</pre>".format(frappe.as_json(source_parent)))
