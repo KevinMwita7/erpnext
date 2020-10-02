@@ -420,6 +420,8 @@ def make_stock_entry(source_name, target_doc=None):
 		target.qty = qty
 		target.transfer_qty = qty * obj.conversion_factor
 		target.conversion_factor = obj.conversion_factor
+		if not target.actual_qty:
+			target.actual_qty = get_item_details(target.item_code).actual_qty
 
 		if source_parent.material_request_type == "Material Transfer":
 			#frappe.msgprint("<pre>{}</pre>".format(frappe.as_json(source_parent)))
