@@ -186,7 +186,6 @@ erpnext.buying.BuyingController = erpnext.TransactionController.extend({
 
 	warehouse: function(doc, cdt, cdn) {
 		var item = frappe.get_doc(cdt, cdn);
-		frappe.msgprint(item);
 		if(item.item_code && item.warehouse) {
 			return this.frm.call({
 				method: "erpnext.stock.get_item_details.get_bin_details",
