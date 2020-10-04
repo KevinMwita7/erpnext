@@ -100,7 +100,7 @@ class MaterialRequest(BuyingController):
 			# Make a stock entry and update the stock
 			se = make_stock_entry(self.name, target_doc=None)
 			frappe.msgprint("<pre>{}</pre>".format(frappe.as_json(se)))
-			update_completed_and_requested_qty(se)
+			update_completed_and_requested_qty(se, method=None)
 
 	def before_submit(self):
 		self.set_status(update=True)
