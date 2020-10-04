@@ -16,6 +16,7 @@ from erpnext.controllers.buying_controller import BuyingController
 from erpnext.controllers.stock_controller import update_gl_entries_after
 from erpnext.manufacturing.doctype.work_order.work_order import get_item_details
 from erpnext.buying.utils import check_for_closed_status, validate_for_items
+from erpnext.accounts.utils import get_fiscal_year
 from erpnext.stock.doctype.item.item import get_item_defaults
 from erpnext.accounts.general_ledger import make_gl_entries, delete_gl_entries, process_gl_map
 from erpnext.stock.doctype.serial_no.serial_no import update_serial_nos_after_submit, get_serial_nos
@@ -111,7 +112,7 @@ class MaterialRequest(BuyingController):
 			}
 			update_completed_and_requested_qty(se, None, mr_details)
 			# Update the stock and general ledger
-			self.update_stock_ledger(se)
+			update_stock_ledger(se)
 			update_serial_nos_after_submit(se, "items")
 			self.make_gl_entries(se)
 			self.validate_reserved_serial_no_consumption(se)
@@ -234,41 +235,6 @@ class MaterialRequest(BuyingController):
 			doc.set_status()
 			doc.db_set('status', doc.status)
 
-	def update_stock_ledger(self, stock_entry):
-		sl_entries = []
-
-		# make sl entries for source warehouse first, then do for target warehouse
-		for d in stock_entry.get('items'):
-			if cstr(d.s_warehouse):
-				sl_entries.append(self.get_sl_entries(d, {
-					"warehouse": cstr(d.s_warehouse),
-					"actual_qty": -flt(d.transfer_qty),
-					"incoming_rate": 0
-				}))
-
-		for d in stock_entry.get('items'):
-			if cstr(d.t_warehouse):
-				sl_entries.append(self.get_sl_entries(d, {
-					"warehouse": cstr(d.t_warehouse),
-					"actual_qty": flt(d.transfer_qty),
-					"incoming_rate": flt(d.valuation_rate)
-				}))
-
-		# On cancellation, make stock ledger entry for
-		# target warehouse first, to update serial no values properly
-
-			# if cstr(d.s_warehouse) and self.docstatus == 2:
-			# 	sl_entries.append(self.get_sl_entries(d, {
-			# 		"warehouse": cstr(d.s_warehouse),
-			# 		"actual_qty": -flt(d.transfer_qty),
-			# 		"incoming_rate": 0
-			# 	}))
-
-		if stock_entry.docstatus == 2:
-			sl_entries.reverse()
-
-		self.make_sl_entries(sl_entries, stock_entry.amended_from and 'Yes' or 'No')
-
 	def make_gl_entries(self, stock_entry, gl_entries=None, repost_future_gle=True, from_repost=False):
 		if stock_entry.docstatus == 2:
 			delete_gl_entries(voucher_type=stock_entry.doctype, voucher_no=stock_entry.name)
@@ -283,7 +249,6 @@ class MaterialRequest(BuyingController):
 
 			if repost_future_gle:
 				items, warehouses = get_items_and_warehouses(stock_entry)
-				frappe.msgprint("<pre>{}</pre>".format(frappe.as_json(stock_entry)))
 				update_gl_entries_after(stock_entry.posting_date, stock_entry.posting_time, warehouses, items,
 					warehouse_account, company=stock_entry.company)
 
@@ -611,3 +576,66 @@ def get_items_and_warehouses(stock_entry):
 					warehouses.append(d.t_warehouse)
 
 	return items, warehouses
+
+@frappe.whitelist
+def update_stock_ledger(stock_entry):
+	sl_entries = []
+
+	# make sl entries for source warehouse first, then do for target warehouse
+	for d in stock_entry.get('items'):
+		if cstr(d.s_warehouse):
+			sl_entries.append(get_sl_entries(stock_entry, d, {
+				"warehouse": cstr(d.s_warehouse),
+				"actual_qty": -flt(d.transfer_qty),
+				"incoming_rate": 0
+			}))
+
+	for d in stock_entry.get('items'):
+		if cstr(d.t_warehouse):
+			sl_entries.append(get_sl_entries(stock_entry, d, {
+				"warehouse": cstr(d.t_warehouse),
+				"actual_qty": flt(d.transfer_qty),
+				"incoming_rate": flt(d.valuation_rate)
+			}))
+
+	# On cancellation, make stock ledger entry for
+	# target warehouse first, to update serial no values properly
+
+		# if cstr(d.s_warehouse) and self.docstatus == 2:
+		# 	sl_entries.append(self.get_sl_entries(d, {
+		# 		"warehouse": cstr(d.s_warehouse),
+		# 		"actual_qty": -flt(d.transfer_qty),
+		# 		"incoming_rate": 0
+		# 	}))
+
+	if stock_entry.docstatus == 2:
+		sl_entries.reverse()
+
+	make_stock_ledger_entries(sl_entries, stock_entry.amended_from and 'Yes' or 'No')
+
+def get_sl_entries(parent, d, args):
+	sl_dict = frappe._dict({
+		"item_code": d.get("item_code", None),
+		"warehouse": d.get("warehouse", None),
+		"posting_date": parent.posting_date,
+		"posting_time": parent.posting_time,
+		'fiscal_year': get_fiscal_year(parent.posting_date, company=parent.company)[0],
+		"voucher_type": parent.doctype,
+		"voucher_no": parent.name,
+		"voucher_detail_no": d.name,
+		"actual_qty": (parent.docstatus==1 and 1 or -1)*flt(d.get("stock_qty")),
+		"stock_uom": frappe.db.get_value("Item", args.get("item_code") or d.get("item_code"), "stock_uom"),
+		"incoming_rate": 0,
+		"company": parent.company,
+		"batch_no": cstr(d.get("batch_no")).strip(),
+		"serial_no": d.get("serial_no"),
+		"project": d.get("project") or parent.get('project'),
+		"is_cancelled": parent.docstatus==2 and "Yes" or "No"
+	})
+
+	sl_dict.update(args)
+	return sl_dict
+
+def make_stock_ledger_entries(sl_entries, is_amended=None, allow_negative_stock=False, via_landed_cost_voucher=False):
+	from erpnext.stock.stock_ledger import make_sl_entries
+	make_sl_entries(sl_entries, is_amended, allow_negative_stock, via_landed_cost_voucher)
