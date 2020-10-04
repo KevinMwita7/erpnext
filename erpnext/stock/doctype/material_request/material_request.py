@@ -248,6 +248,7 @@ class MaterialRequest(BuyingController):
 				make_gl_entries(gl_entries, from_repost=from_repost)
 
 			if repost_future_gle:
+				frappe.msgprint("<pre>{}</pre>".format(frappe.as_json(stock_entry)))
 				items, warehouses = get_items_and_warehouses(stock_entry)
 				update_gl_entries_after(stock_entry.posting_date, stock_entry.posting_time, warehouses, items,
 					warehouse_account, company=stock_entry.company)
@@ -556,7 +557,6 @@ def raise_work_orders(material_request):
 
 @frappe.whitelist
 def get_items_and_warehouses(stock_entry):
-	frappe.msgprint("<pre>{}</pre>".format(frappe.as_json(stock_entry)))
 	items, warehouses = [], []
 
 	if hasattr(stock_entry, "items"):
