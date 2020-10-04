@@ -104,7 +104,13 @@ class MaterialRequest(BuyingController):
 			self.supplying_approver = frappe.session.user
 			# Make a stock entry
 			se = make_stock_entry(self.name, target_doc=None)
-			update_completed_and_requested_qty(se, method=None)
+			frappe.msgprint("<pre>{}</pre>".format(frappe.as_json(se)))
+			mr_details = {
+				"doctype": "Material Request",
+				"material_request_type": self.material_request_type,
+				"workflow_state": self.workflow_state
+			}
+			update_completed_and_requested_qty(se, None, mr_details)
 			# Update the stock and general ledger
 			self.update_stock_ledger(se)
 			update_serial_nos_after_submit(se, "items")
@@ -290,9 +296,9 @@ class MaterialRequest(BuyingController):
 						frappe.throw(_("Item {0} (Serial No: {1}) cannot be consumed as is reserverd\
 						 to fullfill Sales Order {2}.").format(item.item_code, sr, sales_order))
 
-def update_completed_and_requested_qty(stock_entry, method):
+def update_completed_and_requested_qty(stock_entry, method, mr_details):
 	# Make deductions from stock if it is a stock entry or the workflow_state is Acknowledged Supply(if the supplier agrees to supplier then automatically deduct from the stock)
-	if stock_entry.doctype == "Stock Entry" or (stock_entry.doctype == "Material Request" and stock_entry.material_request_type == "Material Transfer" and stock_entry.workflow_state == "Acknowledged Supply"):
+	if stock_entry.doctype == "Stock Entry" or (mr_details.doctype == "Material Request" and mr_details.material_request_type == "Material Transfer" and mr_details.workflow_state == "Acknowledged Supply"):
 		material_request_map = {}
 
 		for d in stock_entry.get("items"):
