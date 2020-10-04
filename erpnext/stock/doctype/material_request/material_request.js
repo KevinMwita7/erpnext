@@ -43,7 +43,7 @@ frappe.ui.form.on('Material Request', {
 	},
 
 	refresh: function(frm) {
-		frm.events.make_custom_buttons(frm);
+		// frm.events.make_custom_buttons(frm);
 	},
 
 	make_custom_buttons: function(frm) {
