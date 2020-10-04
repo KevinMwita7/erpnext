@@ -110,12 +110,12 @@ class MaterialRequest(BuyingController):
 				"material_request_type": self.material_request_type,
 				"workflow_state": self.workflow_state
 			}
-			update_completed_and_requested_qty(se, None, mr_details)
+			#update_completed_and_requested_qty(se, None, mr_details)
 			# Update the stock and general ledger
-			self.update_stock_ledger(se)
-			update_serial_nos_after_submit(se, "items")
-			self.make_gl_entries(se)
-			self.validate_reserved_serial_no_consumption(se)
+			#self.update_stock_ledger(se)
+			#update_serial_nos_after_submit(se, "items")
+			#self.make_gl_entries(se)
+			#self.validate_reserved_serial_no_consumption(se)
 
 	def before_submit(self):
 		self.set_status(update=True)
