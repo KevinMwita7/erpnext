@@ -95,12 +95,16 @@ class MaterialRequest(BuyingController):
 
 	def before_save(self):
 		self.set_status(update=True)
-		if(self.workflow_state == "Approved by Supplying"):
+		if(self.workflow_state == "Acknowledged Supply" and self.doctype == "Material Request" and self.material_request_type == "Material Transfer"):
 			self.supplying_approver = frappe.session.user
+			# Make a stock entry and update the stock
+			se = make_stock_entry(self.name, target_doc=None)
+			frappe.msgprint("<pre>{}</pre>".format(frappe.as_json(se)))
+			update_completed_and_requested_qty(se)
 
 	def before_submit(self):
 		self.set_status(update=True)
-		if(self.workflow_state == "Approved by Receiving"):
+		if(self.workflow_state == "Acknowledged Receipt"):
 			self.receiving_approver = frappe.session.user
 
 	def before_cancel(self):
@@ -217,7 +221,8 @@ class MaterialRequest(BuyingController):
 			doc.db_set('status', doc.status)
 
 def update_completed_and_requested_qty(stock_entry, method):
-	if stock_entry.doctype == "Stock Entry":
+	# Make deductions from stock if it is a stock entry or the workflow_state is Acknowledged Supply(if the supplier agrees to supplier then automatically deduct from the stock)
+	if stock_entry.doctype == "Stock Entry" or (stock_entry.doctype == "Material Request" and stock_entry.material_request_type == "Material Transfer" and stock_entry.workflow_state == "Acknowledged Supply"):
 		material_request_map = {}
 
 		for d in stock_entry.get("items"):
