@@ -557,13 +557,12 @@ def raise_work_orders(material_request):
 @frappe.whitelist
 def get_items_and_warehouses(stock_entry):
 	items, warehouses = [], []
-
-	if ("items" in stock_entry):
+	frappe.msgprint("<pre>{}</pre>".format(frappe.as_json(stock_entry)))
+	"""if ("items" in stock_entry):
 		item_doclist = stock_entry.get("items")
 
 	if item_doclist:
-		frappe.msgprint("<pre>{}</pre>".format(frappe.as_json(item_doclist)))
-		"""for d in item_doclist:
+		for d in item_doclist:
 			if d.item_code and d.item_code not in items:
 				items.append(d.item_code)
 
