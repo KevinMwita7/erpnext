@@ -101,10 +101,11 @@ class MaterialRequest(BuyingController):
 
 	def before_save(self):
 		self.set_status(update=True)
-		if(self.workflow_state == "Acknowledged Supply" and self.doctype == "Material Request" and self.material_request_type == "Material Transfer"):
+		#if(self.workflow_state == "Acknowledged Supply" and self.doctype == "Material Request" and self.material_request_type == "Material Transfer"):
+		if(self.workflow_state == "Approved by Supplying"):
 			self.supplying_approver = frappe.session.user
 			# Make a stock entry
-			se = make_stock_entry(self.name, target_doc=None)
+			"""se = make_stock_entry(self.name, target_doc=None)
 			mr_details = {
 				"doctype": "Material Request",
 				"material_request_type": self.material_request_type,
@@ -115,11 +116,11 @@ class MaterialRequest(BuyingController):
 			update_stock_ledger(se)
 			update_serial_nos_after_submit(se, "items")
 			self.make_gl_entries(se)
-			self.validate_reserved_serial_no_consumption(se)
+			self.validate_reserved_serial_no_consumption(se)"""
 
 	def before_submit(self):
 		self.set_status(update=True)
-		if(self.workflow_state == "Acknowledged Receipt"):
+		if(self.workflow_state == "Approved by Receiving"):
 			self.receiving_approver = frappe.session.user
 
 	def before_cancel(self):
@@ -248,7 +249,7 @@ class MaterialRequest(BuyingController):
 				make_gl_entries(gl_entries, from_repost=from_repost)
 
 			if repost_future_gle:
-				#items, warehouses = get_items_and_warehouses(stock_entry)
+				items, warehouses = get_items_and_warehouses(stock_entry)
 				update_gl_entries_after(stock_entry.posting_date, stock_entry.posting_time, [], [],
 					warehouse_account, company=stock_entry.company)
 
