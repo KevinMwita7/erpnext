@@ -5,7 +5,7 @@
 # For license information, please see license.txt
 
 from __future__ import unicode_literals
-import frappe
+import frappe, erpnext
 
 from frappe.utils import cstr, flt, getdate, new_line_sep, nowdate, add_days
 from frappe import msgprint, _
@@ -13,9 +13,14 @@ from frappe.model.mapper import get_mapped_doc
 from erpnext.stock.get_item_details import get_bin_details
 from erpnext.stock.stock_balance import update_bin_qty, get_indented_qty
 from erpnext.controllers.buying_controller import BuyingController
+from erpnext.controllers.stock_controller import update_gl_entries_after
 from erpnext.manufacturing.doctype.work_order.work_order import get_item_details
 from erpnext.buying.utils import check_for_closed_status, validate_for_items
 from erpnext.stock.doctype.item.item import get_item_defaults
+from erpnext.accounts.general_ledger import make_gl_entries, delete_gl_entries, process_gl_map
+from erpnext.stock.doctype.serial_no.serial_no import update_serial_nos_after_submit, get_serial_nos
+from erpnext.stock import get_warehouse_account_map
+from frappe.utils import cint, flt, cstr
 
 from six import string_types
 
@@ -97,9 +102,14 @@ class MaterialRequest(BuyingController):
 		self.set_status(update=True)
 		if(self.workflow_state == "Acknowledged Supply" and self.doctype == "Material Request" and self.material_request_type == "Material Transfer"):
 			self.supplying_approver = frappe.session.user
-			# Make a stock entry and update the stock
+			# Make a stock entry
 			se = make_stock_entry(self.name, target_doc=None)
 			update_completed_and_requested_qty(se, method=None)
+			# Update the stock and general ledger
+			self.update_stock_ledger(se)
+			update_serial_nos_after_submit(se, "items")
+			self.make_gl_entries(se)
+			self.validate_reserved_serial_no_consumption(se)
 
 	def before_submit(self):
 		self.set_status(update=True)
@@ -218,6 +228,67 @@ class MaterialRequest(BuyingController):
 			doc = frappe.get_doc('Production Plan', production_plan)
 			doc.set_status()
 			doc.db_set('status', doc.status)
+
+	def update_stock_ledger(self, stock_entry):
+		sl_entries = []
+
+		# make sl entries for source warehouse first, then do for target warehouse
+		for d in stock_entry.get('items'):
+			if cstr(d.s_warehouse):
+				sl_entries.append(self.get_sl_entries(d, {
+					"warehouse": cstr(d.s_warehouse),
+					"actual_qty": -flt(d.transfer_qty),
+					"incoming_rate": 0
+				}))
+
+		for d in stock_entry.get('items'):
+			if cstr(d.t_warehouse):
+				sl_entries.append(self.get_sl_entries(d, {
+					"warehouse": cstr(d.t_warehouse),
+					"actual_qty": flt(d.transfer_qty),
+					"incoming_rate": flt(d.valuation_rate)
+				}))
+
+		# On cancellation, make stock ledger entry for
+		# target warehouse first, to update serial no values properly
+
+			# if cstr(d.s_warehouse) and self.docstatus == 2:
+			# 	sl_entries.append(self.get_sl_entries(d, {
+			# 		"warehouse": cstr(d.s_warehouse),
+			# 		"actual_qty": -flt(d.transfer_qty),
+			# 		"incoming_rate": 0
+			# 	}))
+
+		if stock_entry.docstatus == 2:
+			sl_entries.reverse()
+
+		self.make_sl_entries(sl_entries, stock_entry.amended_from and 'Yes' or 'No')
+
+	def make_gl_entries(self, stock_entry, gl_entries=None, repost_future_gle=True, from_repost=False):
+		if stock_entry.docstatus == 2:
+			delete_gl_entries(voucher_type=stock_entry.doctype, voucher_no=stock_entry.name)
+
+		if cint(erpnext.is_perpetual_inventory_enabled(stock_entry.company)):
+			warehouse_account = get_warehouse_account_map(stock_entry.company)
+
+			if stock_entry.docstatus==1:
+				if not gl_entries:
+					gl_entries = stock_entry.get_gl_entries(warehouse_account)
+				make_gl_entries(gl_entries, from_repost=from_repost)
+
+			if repost_future_gle:
+				items, warehouses = get_items_and_warehouses(stock_entry)
+				update_gl_entries_after(stock_entry.posting_date, stock_entry.posting_time, warehouses, items,
+					warehouse_account, company=stock_entry.company)
+
+	def validate_reserved_serial_no_consumption(self, stock_entry):
+		for item in stock_entry.items:
+			if item.s_warehouse and not item.t_warehouse and item.serial_no:
+				for sr in get_serial_nos(item.serial_no):
+					sales_order = frappe.db.get_value("Serial No", sr, "sales_order")
+					if sales_order:
+						frappe.throw(_("Item {0} (Serial No: {1}) cannot be consumed as is reserverd\
+						 to fullfill Sales Order {2}.").format(item.item_code, sr, sales_order))
 
 def update_completed_and_requested_qty(stock_entry, method):
 	# Make deductions from stock if it is a stock entry or the workflow_state is Acknowledged Supply(if the supplier agrees to supplier then automatically deduct from the stock)
@@ -511,3 +582,26 @@ def raise_work_orders(material_request):
 		frappe.throw(_("Productions Orders cannot be raised for:") + '\n' + new_line_sep(errors))
 
 	return work_orders
+
+@frappe.whitelist
+def get_items_and_warehouses(stock_entry):
+	items, warehouses = [], []
+
+	if hasattr(stock_entry, "items"):
+		item_doclist = stock_entry.get("items")
+
+	if item_doclist:
+		for d in item_doclist:
+			if d.item_code and d.item_code not in items:
+				items.append(d.item_code)
+
+			if d.get("warehouse") and d.warehouse not in warehouses:
+				warehouses.append(d.warehouse)
+
+			if stock_entry.doctype == "Material Request" and stock_entry.material_request_type == "Material Receipt":
+				if d.get("s_warehouse") and d.s_warehouse not in warehouses:
+					warehouses.append(d.s_warehouse)
+				if d.get("t_warehouse") and d.t_warehouse not in warehouses:
+					warehouses.append(d.t_warehouse)
+
+	return items, warehouses
