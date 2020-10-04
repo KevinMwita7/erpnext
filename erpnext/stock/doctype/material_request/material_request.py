@@ -248,8 +248,8 @@ class MaterialRequest(BuyingController):
 				make_gl_entries(gl_entries, from_repost=from_repost)
 
 			if repost_future_gle:
-				items, warehouses = get_items_and_warehouses(stock_entry)
-				update_gl_entries_after(stock_entry.posting_date, stock_entry.posting_time, warehouses, items,
+				#items, warehouses = get_items_and_warehouses(stock_entry)
+				update_gl_entries_after(stock_entry.posting_date, stock_entry.posting_time, [], [],
 					warehouse_account, company=stock_entry.company)
 
 	def validate_reserved_serial_no_consumption(self, stock_entry):
@@ -557,8 +557,8 @@ def raise_work_orders(material_request):
 @frappe.whitelist
 def get_items_and_warehouses(stock_entry):
 	items, warehouses = [], []
-	frappe.msgprint("<pre>{}</pre>".format(frappe.as_json(stock_entry)))
-	"""if ("items" in stock_entry):
+
+	if ("items" in stock_entry):
 		item_doclist = stock_entry.get("items")
 
 	if item_doclist:
@@ -573,7 +573,7 @@ def get_items_and_warehouses(stock_entry):
 				if d.get("s_warehouse") and d.s_warehouse not in warehouses:
 					warehouses.append(d.s_warehouse)
 				if d.get("t_warehouse") and d.t_warehouse not in warehouses:
-					warehouses.append(d.t_warehouse)"""
+					warehouses.append(d.t_warehouse)
 
 	return items, warehouses
 
