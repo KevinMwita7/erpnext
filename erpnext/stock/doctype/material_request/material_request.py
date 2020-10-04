@@ -562,7 +562,8 @@ def get_items_and_warehouses(stock_entry):
 		item_doclist = stock_entry.get("items")
 
 	if item_doclist:
-		for d in item_doclist:
+		frappe.msgprint("<pre>{}</pre>".format(frappe.as_json(item_doclist)))
+		"""for d in item_doclist:
 			if d.item_code and d.item_code not in items:
 				items.append(d.item_code)
 
@@ -573,7 +574,7 @@ def get_items_and_warehouses(stock_entry):
 				if d.get("s_warehouse") and d.s_warehouse not in warehouses:
 					warehouses.append(d.s_warehouse)
 				if d.get("t_warehouse") and d.t_warehouse not in warehouses:
-					warehouses.append(d.t_warehouse)
+					warehouses.append(d.t_warehouse)"""
 
 	return items, warehouses
 
