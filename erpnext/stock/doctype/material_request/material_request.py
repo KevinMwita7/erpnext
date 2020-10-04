@@ -556,6 +556,7 @@ def raise_work_orders(material_request):
 
 @frappe.whitelist
 def get_items_and_warehouses(stock_entry):
+	frappe.msgprint("<pre>{}</pre>".format(frappe.as_json(stock_entry)))
 	items, warehouses = [], []
 
 	if hasattr(stock_entry, "items"):
