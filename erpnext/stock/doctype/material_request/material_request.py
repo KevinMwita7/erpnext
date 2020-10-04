@@ -421,9 +421,10 @@ def make_stock_entry(source_name, target_doc=None):
 		target.qty = qty
 		target.transfer_qty = qty * obj.conversion_factor
 		target.conversion_factor = obj.conversion_factor
+		target.actual_qty = get_bin_details(obj.item_code, obj.warehouse).actual_qty
 
 		if source_parent.material_request_type == "Material Transfer":
-			frappe.msgprint("<pre>{}</pre>".format(frappe.as_json(obj)))
+			#frappe.msgprint("<pre>{}</pre>".format(frappe.as_json(obj)))
 			target.t_warehouse = obj.warehouse
 			# Set the quantity requested and quantity issued
 			target.qty_requested = target.qty
