@@ -52,6 +52,12 @@ frappe.ui.form.on('Material Request', {
 				() => frm.events.get_items_from_bom(frm), __("Get items from"));
 		}
 
+		// Show a make material receipt button to enable the user to make a material receipt
+		if(frm.doc.owner === frappe.session.user && frm.doc.docstatus === 1) {
+			frm.add_custom_button(__("Material Receipt"),
+			() => frm.events.make_stock_entry(frm), __("Make"));
+		}
+
 		if (frm.doc.docstatus == 1 && frm.doc.status != 'Stopped') {
 				// Only show the make transfer button if it is a pharmacist in charge
 				if (flt(frm.doc.per_ordered, 2) < 100 && (frappe.user.has_role("Pharmacist in Charge") || frappe.user.has_role("Commodity Hospital Nurse"))) {
