@@ -493,7 +493,7 @@ def make_stock_entry(source_name, target_doc=None):
 		"Material Request": {
 			"doctype": "Stock Entry",
 			"validation": {
-				# "docstatus": ["=", 1],
+				"docstatus": ["=", 1],
 				"material_request_type": ["in", ["Material Transfer", "Material Issue"]]
 			}
 		},
