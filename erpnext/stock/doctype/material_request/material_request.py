@@ -262,9 +262,9 @@ class MaterialRequest(BuyingController):
 						frappe.throw(_("Item {0} (Serial No: {1}) cannot be consumed as is reserverd\
 						 to fullfill Sales Order {2}.").format(item.item_code, sr, sales_order))
 
-def update_completed_and_requested_qty(stock_entry, method, mr_details):
+def update_completed_and_requested_qty(stock_entry, method=None):
 	# Make deductions from stock if it is a stock entry or the workflow_state is Acknowledged Supply(if the supplier agrees to supplier then automatically deduct from the stock)
-	if stock_entry.doctype == "Stock Entry" or (mr_details.doctype == "Material Request" and mr_details.material_request_type == "Material Transfer" and mr_details.workflow_state == "Acknowledged Supply"):
+	if stock_entry.doctype == "Stock Entry":
 		material_request_map = {}
 
 		for d in stock_entry.get("items"):
