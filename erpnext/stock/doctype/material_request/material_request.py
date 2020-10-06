@@ -482,18 +482,19 @@ def make_stock_entry(source_name, target_doc=None):
 			target.s_warehouse = obj.warehouse
 
 	def set_missing_values(source, target):
+		frappe.msgprint("<pre>{}</pre>".format(frappe.as_json(source.material_request_type)))
 		target.purpose = source.material_request_type
 		if source.job_card:
 			target.purpose = 'Material Transfer for Manufacture'
 
 		target.run_method("calculate_rate_and_amount")
 		target.set_job_card_data()
-
+	
 	doclist = get_mapped_doc("Material Request", source_name, {
 		"Material Request": {
 			"doctype": "Stock Entry",
 			"validation": {
-				#"docstatus": ["=", 1],
+				"docstatus": ["=", 1],
 				"material_request_type": ["in", ["Material Transfer", "Material Issue", "Material Receipt"]]
 			}
 		},
