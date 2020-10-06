@@ -533,7 +533,7 @@ def make_material_receipt(source_name, target_doc=None):
 
 	def set_missing_values(source, target):
 		items = []
-		for item in source["items"]:
+		for item in source.items:
 			temp_item = {}
 			qty = flt(flt(item.stock_qty) - flt(item.ordered_qty))/ item.conversion_factor \
 				if flt(item.stock_qty) > flt(item.ordered_qty) else 0
