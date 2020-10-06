@@ -512,7 +512,7 @@ def make_stock_entry(source_name, target_doc=None):
 
 @frappe.whitelist()
 def make_material_receipt(source_name, target_doc=None):
-	def set_missing_values(source, target):
+	"""def set_missing_values(source, target):
 		items = []
 		for item in source.items:
 			temp_item = {}
@@ -538,30 +538,51 @@ def make_material_receipt(source_name, target_doc=None):
 		target.purpose = "Material Receipt"
 
 		#target.run_method("calculate_rate_and_amount")
-		#target.set_job_card_data()
-	
+		#target.set_job_card_data()"""
+		
+	def update_item(obj, target, source_parent):
+		qty = flt(flt(obj.stock_qty) - flt(obj.ordered_qty))/ target.conversion_factor \
+			if flt(obj.stock_qty) > flt(obj.ordered_qty) else 0
+		target.qty = qty
+		target.transfer_qty = qty * obj.conversion_factor
+		target.conversion_factor = obj.conversion_factor
+		target.actual_qty = get_bin_details(obj.item_code, obj.warehouse).actual_qty
+
+		if source_parent.material_request_type == "Material Transfer":
+			#frappe.msgprint("<pre>{}</pre>".format(frappe.as_json(obj)))
+			target.t_warehouse = obj.warehouse
+			# Set the quantity requested and quantity issued
+			target.qty_requested = target.qty
+			target.qty = 0
+			if source_parent.source_warehouse:
+				target.s_warehouse = source_parent.source_warehouse
+		else:
+			target.s_warehouse = obj.warehouse
+
+	def set_missing_values(source, target):
+		target.purpose = source.material_request_type
+		target.run_method("calculate_rate_and_amount")
+		target.set_job_card_data()
+
 	doclist = get_mapped_doc("Material Request", source_name, {
 		"Material Request": {
-			"doctype": "Stock Entry",
+			"doctype": "Material Receipt",
 			"validation": {
 				"docstatus": ["=", 1]
 			}
 		},
 		"Material Request Item": {
-			"doctype": "Stock Entry Detail",
+			"doctype": "Material Receipt Item",
 			"field_map": {
 				"name": "material_request_item",
 				"parent": "material_request",
 				"uom": "stock_uom",
 			},
-			# "postprocess": update_item,
+			"postprocess": update_item,
 			"condition": lambda doc: doc.ordered_qty < doc.stock_qty
 		}
 	}, target_doc, set_missing_values)
-	
-	# Add a update_stock bool field to determine if it should deduct the stock
-	doclist.update_stock = False
-	frappe.msgprint("<pre>{}</pre>".format(frappe.as_json(doclist)))
+
 	return doclist
 
 @frappe.whitelist()
