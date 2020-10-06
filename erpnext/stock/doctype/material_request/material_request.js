@@ -62,8 +62,7 @@ frappe.ui.form.on('Material Request', {
 				if (flt(frm.doc.per_ordered, 2) < 100 && 
 				(
 					frappe.user.has_role("Pharmacist in Charge") || 
-					frappe.user.has_role("Commodity Hospital Nurse") || 
-					frappe.user.has_role("Administrator")
+					frappe.user.has_role("Commodity Hospital Nurse")
 				)) {
 				if (frm.doc.material_request_type === "Material Transfer") {
 					frm.add_custom_button(__("Transfer Material"),
