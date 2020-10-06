@@ -268,6 +268,13 @@ frappe.ui.form.on('Material Request', {
 		});
 	},
 
+	make_material_receipt: function(frm) {
+		frappe.model.open_mapped_doc({
+			method: "erpnext.stock.doctype.material_request.material_request.make_material_receipt",
+			frm: frm
+		});
+	},
+
 	raise_work_orders: function(frm) {
 		frappe.call({
 			method:"erpnext.stock.doctype.material_request.material_request.raise_work_orders",
