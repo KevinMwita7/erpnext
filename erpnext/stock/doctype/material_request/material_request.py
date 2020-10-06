@@ -508,7 +508,7 @@ def make_stock_entry(source_name, target_doc=None):
 			"condition": lambda doc: doc.ordered_qty < doc.stock_qty
 		}
 	}, target_doc, set_missing_values)
-
+	frappe.msgprint("<pre>{}</pre>".format(frappe.as_json(doclist)))
 	return doclist
 
 @frappe.whitelist()
