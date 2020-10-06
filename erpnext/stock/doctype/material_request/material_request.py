@@ -104,19 +104,6 @@ class MaterialRequest(BuyingController):
 		#if(self.workflow_state == "Acknowledged Supply" and self.doctype == "Material Request" and self.material_request_type == "Material Transfer"):
 		if(self.workflow_state == "Approved by Supplying"):
 			self.supplying_approver = frappe.session.user
-			# Make a stock entry
-			"""se = make_stock_entry(self.name, target_doc=None)
-			mr_details = {
-				"doctype": "Material Request",
-				"material_request_type": self.material_request_type,
-				"workflow_state": self.workflow_state
-			}
-			update_completed_and_requested_qty(se, None, mr_details)
-			# Update the stock and general ledger
-			update_stock_ledger(se)
-			update_serial_nos_after_submit(se, "items")
-			self.make_gl_entries(se)
-			self.validate_reserved_serial_no_consumption(se)"""
 
 	def before_submit(self):
 		self.set_status(update=True)
@@ -558,7 +545,8 @@ def make_material_receipt(source_name, target_doc=None):
 			"condition": lambda doc: doc.ordered_qty < doc.stock_qty
 		}
 	}, target_doc, set_missing_values)
-
+	
+	frappe.msgprint("<pre>{}</pre>".format(frappe.as_json(doclist)))
 	return doclist
 
 @frappe.whitelist()
