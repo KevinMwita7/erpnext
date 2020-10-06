@@ -462,7 +462,14 @@ def make_supplier_quotation(source_name, target_doc=None):
 
 @frappe.whitelist()
 def make_stock_entry(source_name, target_doc=None):
+	frappe.msgprint("<pre>{}</pre>".format(frappe.as_json(source_name)))
+	frappe.msgprint("<pre>{}</pre>".format(frappe.as_json(target_doc)))
+
 	def update_item(obj, target, source_parent):
+		frappe.msgprint("<pre>{}</pre>".format(frappe.as_json(obj)))
+		frappe.msgprint("<pre>{}</pre>".format(frappe.as_json(target)))
+		frappe.msgprint("<pre>{}</pre>".format(frappe.as_json(source_parent)))
+
 		qty = flt(flt(obj.stock_qty) - flt(obj.ordered_qty))/ target.conversion_factor \
 			if flt(obj.stock_qty) > flt(obj.ordered_qty) else 0
 		target.qty = qty
@@ -482,6 +489,9 @@ def make_stock_entry(source_name, target_doc=None):
 			target.s_warehouse = obj.warehouse
 
 	def set_missing_values(source, target):
+		frappe.msgprint("<pre>{}</pre>".format(frappe.as_json(source)))
+		frappe.msgprint("<pre>{}</pre>".format(frappe.as_json(target)))
+
 		target.purpose = source.material_request_type
 		if source.job_card:
 			target.purpose = 'Material Transfer for Manufacture'
@@ -508,7 +518,6 @@ def make_stock_entry(source_name, target_doc=None):
 			"condition": lambda doc: doc.ordered_qty < doc.stock_qty
 		}
 	}, target_doc, set_missing_values)
-	frappe.msgprint("<pre>{}</pre>".format(frappe.as_json(doclist)))
 	return doclist
 
 @frappe.whitelist()
