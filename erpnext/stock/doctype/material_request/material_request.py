@@ -539,8 +539,8 @@ def make_material_receipt(source_name, target_doc=None):
 		target.items = items
 		target.purpose = source.material_request_type
 
-		target.run_method("calculate_rate_and_amount")
-		target.set_job_card_data()
+		#target.run_method("calculate_rate_and_amount")
+		#target.set_job_card_data()
 	
 	doclist = get_mapped_doc("Material Request", source_name, {
 		"Material Request": {
