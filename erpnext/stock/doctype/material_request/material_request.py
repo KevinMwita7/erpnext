@@ -512,34 +512,7 @@ def make_stock_entry(source_name, target_doc=None):
 
 @frappe.whitelist()
 def make_material_receipt(source_name, target_doc=None):
-	"""def set_missing_values(source, target):
-		items = []
-		for item in source.items:
-			temp_item = {}
-			qty = flt(flt(item.stock_qty) - flt(item.ordered_qty))/ item.conversion_factor \
-				if flt(item.stock_qty) > flt(item.ordered_qty) else 0
-			temp_item["qty"] = qty
-			temp_item["transfer_qty"] = qty * item.conversion_factor
-			temp_item["conversion_factor"] = item.conversion_factor
-			temp_item["actual_qty"] = get_bin_details(item.item_code, item.warehouse).actual_qty
-		
-			#frappe.msgprint("<pre>{}</pre>".format(frappe.as_json(obj)))
-			temp_item["t_warehouse"] = item.warehouse
-			# Set the quantity requested and quantity issued
-			temp_item["qty_requested"] = item.qty
-
-			if source.source_warehouse:
-				temp_item["s_warehouse"] = source.source_warehouse
-			else:
-				temp_item["s_warehouse"] = item.warehouse
-			items.append(item)
-
-		target.items = items
-		target.purpose = "Material Receipt"
-
-		#target.run_method("calculate_rate_and_amount")
-		#target.set_job_card_data()"""
-		
+	# Set the material receipt Item child table
 	def update_item(obj, target, source_parent):
 		qty = flt(flt(obj.stock_qty) - flt(obj.ordered_qty))/ target.conversion_factor \
 			if flt(obj.stock_qty) > flt(obj.ordered_qty) else 0
@@ -559,9 +532,12 @@ def make_material_receipt(source_name, target_doc=None):
 		else:
 			target.s_warehouse = obj.warehouse
 
+	# Set the material receipt parent
 	def set_missing_values(source, target):
 		target.purpose = source.material_request_type
 		target.run_method("calculate_rate_and_amount")
+		target.posting_date = nowdate()
+		target.material_request_name = source.name
 		#target.set_job_card_data()
 
 	doclist = get_mapped_doc("Material Request", source_name, {
