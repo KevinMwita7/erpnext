@@ -532,8 +532,30 @@ def make_material_receipt(source_name, target_doc=None):
 			target.s_warehouse = obj.warehouse
 
 	def set_missing_values(source, target):
-		frappe.msgprint("<pre>{}</pre>".format(frappe.as_json(source)))
-		frappe.msgprint("<pre>{}</pre>".format(frappe.as_json(target)))
+		items = []
+		for item in source["items"]:
+			temp_item = {}
+			qty = flt(flt(item.stock_qty) - flt(item.ordered_qty))/ item.conversion_factor \
+				if flt(item.stock_qty) > flt(item.ordered_qty) else 0
+			temp_item["qty"] = qty
+			temp_item["transfer_qty"] = qty * item.conversion_factor
+			temp_item["conversion_factor"] = item.conversion_factor
+			temp_item["actual_qty"] = get_bin_details(item.item_code, item.warehouse).actual_qty
+		
+			if source.material_request_type == "Material Transfer":
+				#frappe.msgprint("<pre>{}</pre>".format(frappe.as_json(obj)))
+				temp_item["t_warehouse"] = item.warehouse
+				# Set the quantity requested and quantity issued
+				temp_item["qty_requested"] = item.qty
+				target.qty = 0
+
+				if source.source_warehouse:
+					temp_item["s_warehouse"] = source.source_warehouse
+			else:
+				temp_item["s_warehouse"] = item.warehouse
+			items.append(item)
+
+		target.items = items
 		target.purpose = source.material_request_type
 
 		target.run_method("calculate_rate_and_amount")
