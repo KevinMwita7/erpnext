@@ -527,7 +527,6 @@ def make_material_receipt(source_name, target_doc=None):
 			temp_item["t_warehouse"] = item.warehouse
 			# Set the quantity requested and quantity issued
 			temp_item["qty_requested"] = item.qty
-			target.qty = 0
 
 			if source.source_warehouse:
 				temp_item["s_warehouse"] = source.source_warehouse
@@ -559,6 +558,10 @@ def make_material_receipt(source_name, target_doc=None):
 			"condition": lambda doc: doc.ordered_qty < doc.stock_qty
 		}
 	}, target_doc, set_missing_values)
+	
+	# Add a update_stock bool field to determine if it should deduct the stock
+	doclist.update_stock = False
+	frappe.msgprint("<pre>{}</pre>".format(frappe.as_json(doclist)))
 	return doclist
 
 @frappe.whitelist()
