@@ -544,9 +544,8 @@ def make_material_receipt(source_name, target_doc=None):
 			"postprocess": update_item,
 			"condition": lambda doc: doc.ordered_qty < doc.stock_qty
 		}
-	}, target_doc, set_missing_values)
+	}, target_doc, set_missing_values, True)
 	
-	frappe.msgprint("<pre>{}</pre>".format(frappe.as_json(doclist)))
 	return doclist
 
 @frappe.whitelist()
