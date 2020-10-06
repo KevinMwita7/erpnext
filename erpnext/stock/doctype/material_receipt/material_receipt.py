@@ -8,3 +8,6 @@ from frappe.model.document import Document
 
 class MaterialReceipt(Document):
 	pass
+
+	def on_submit(self):
+		pass
