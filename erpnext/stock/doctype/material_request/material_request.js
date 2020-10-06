@@ -54,7 +54,7 @@ frappe.ui.form.on('Material Request', {
 
 		if (frm.doc.docstatus == 1 && frm.doc.status != 'Stopped') {
 				// Show a make material receipt button to enable the user to make a material receipt
-				if(frm.doc.owner === frappe.session.user) {
+				if(frm.doc.owner === frappe.session.user && frm.doc.status !== "Pending") {
 					frm.add_custom_button(__("Material Receipt"),
 					() => frm.events.make_material_receipt(frm), __("Make"));
 				}
