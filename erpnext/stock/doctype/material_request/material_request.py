@@ -98,7 +98,6 @@ class MaterialRequest(BuyingController):
 		self.update_requested_qty_in_production_plan()
 		if self.material_request_type == 'Purchase':
 			self.validate_budget()
-		self.per_ordered = 100
 
 	def before_save(self):
 		self.set_status(update=True)
@@ -251,7 +250,7 @@ class MaterialRequest(BuyingController):
 						 to fullfill Sales Order {2}.").format(item.item_code, sr, sales_order))
 
 def update_completed_and_requested_qty(stock_entry, method=None):
-	# Make deductions from stock if it is a stock entry or the workflow_state is Acknowledged Supply(if the supplier agrees to supplier then automatically deduct from the stock)
+	# Make deductions from stock if it is a stock entry
 	if stock_entry.doctype == "Stock Entry":
 		material_request_map = {}
 
