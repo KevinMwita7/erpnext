@@ -11,6 +11,8 @@ def execute():
 							ELSE CASE
 								WHEN status = 'Stopped' THEN 'Stopped'
 								WHEN status != 'Stopped' AND per_ordered = 0 THEN 'Pending'
+								WHEN per_ordered < 100 AND per_ordered > 0 AND status != 'Stopped' AND material_request_type = 'Material Transfer'
+									THEN 'Partially Transferred'
 								WHEN per_ordered < 100 AND per_ordered > 0 AND status != 'Stopped'
 									THEN 'Partially Ordered'
 								WHEN per_ordered = 100 AND material_request_type = 'Purchase'
