@@ -513,7 +513,7 @@ def make_material_receipt(source_name, target_doc=None):
 			target.t_warehouse = obj.warehouse
 			# Set the quantity requested and quantity issued
 			target.qty = obj.ordered_qty
-			target.qty_requested = target.qty
+			target.qty_requested = obj.qty
 			if source_parent.source_warehouse:
 				target.s_warehouse = source_parent.source_warehouse
 		else:
