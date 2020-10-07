@@ -3,9 +3,12 @@ frappe.listview_settings['Material Request'] = {
 	get_indicator: function(doc) {
 		if(doc.status=="Stopped") {
 			return [__("Stopped"), "red", "status,=,Stopped"];
-		} else if(doc.docstatus==1 && flt(doc.per_ordered, 2) == 0) {
-			return [__("Pending"), "orange", "per_ordered,=,0"];
-		}  else if(doc.docstatus==1 && flt(doc.per_ordered, 2) < 100) {
+		} else if(doc.docstatus==1/* && flt(doc.per_ordered, 2) == 0*/) {
+			return [__("Transferred"), "green"];
+		} else if(doc.docstatus==0/* && flt(doc.per_ordered, 2) == 0*/) {
+			return [__("Pending"), "orange"];
+		}  
+		/*else if(doc.docstatus==1 && flt(doc.per_ordered, 2) < 100) {
 			return [__("Partially ordered"), "yellow", "per_ordered,<,100"];
 		} else if(doc.docstatus==1 && flt(doc.per_ordered, 2) == 100) {
 			if (doc.material_request_type == "Purchase") {
@@ -17,6 +20,6 @@ frappe.listview_settings['Material Request'] = {
 			} else if (doc.material_request_type == "Manufacture") {
 				return [__("Manufactured"), "green", "per_ordered,=,100"];
 			}
-		}
+		}*/
 	}
 };
