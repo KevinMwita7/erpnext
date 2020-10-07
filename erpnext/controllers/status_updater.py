@@ -296,7 +296,7 @@ class StatusUpdater(Document):
 					%(update_modified)s
 				where name='%(name)s'""" % args)
 			
-			frappe.msgprint("<pre>{}</pre>").format("""update `tab%(target_parent_dt)s`
+			frappe.msgprint("""update `tab%(target_parent_dt)s`
 				set %(target_parent_field)s = round(
 					ifnull((select
 						ifnull(sum(if(%(target_ref_field)s > %(target_field)s, abs(%(target_field)s), abs(%(target_ref_field)s))), 0)
