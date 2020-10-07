@@ -77,7 +77,7 @@ class MaterialRequest(BuyingController):
 		from erpnext.controllers.status_updater import validate_status
 		validate_status(self.status,
 			["Draft", "Submitted", "Stopped", "Cancelled", "Pending",
-			"Partially Ordered", "Ordered", "Issued", "Transferred"])
+			"Partially Ordered", "Partially Transferred", "Ordered", "Issued", "Transferred"])
 
 		validate_for_items(self)
 

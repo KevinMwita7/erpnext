@@ -533,7 +533,7 @@
    "no_copy": 1,
    "oldfieldname": "status",
    "oldfieldtype": "Select",
-   "options": "\nDraft\nSubmitted\nStopped\nCancelled\nPending\nPartially Ordered\nOrdered\nIssued\nTransferred",
+   "options": "\nDraft\nSubmitted\nStopped\nCancelled\nPending\nPartially Ordered\nPartially Transferred\nOrdered\nIssued\nTransferred",
    "permlevel": 0,
    "print_hide": 1,
    "print_hide_if_no_value": 0,
