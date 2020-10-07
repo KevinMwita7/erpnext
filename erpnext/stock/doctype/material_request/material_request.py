@@ -511,7 +511,7 @@ def make_material_receipt(source_name, target_doc=None):
 			temp["conversion_factor"] = item.conversion_factor
 			temp["actual_qty"] = get_bin_details(item.item_code, item.warehouse).actual_qty
 
-			"""if source.material_request_type == "Material Transfer":
+			if source.material_request_type == "Material Transfer":
 				#frappe.msgprint("<pre>{}</pre>".format(frappe.as_json(obj)))
 				temp["t_warehouse"] = item.warehouse
 				# Set the quantity requested and quantity issued
@@ -522,7 +522,7 @@ def make_material_receipt(source_name, target_doc=None):
 					temp["s_warehouse"] = source.source_warehouse
 			else:
 				temp["s_warehouse"] = item.warehouse
-			items.append(temp)"""
+			# items.append(temp)
 
 		target.items = items
 		target.purpose = source.material_request_type
