@@ -98,6 +98,7 @@ class MaterialRequest(BuyingController):
 		self.update_requested_qty_in_production_plan()
 		if self.material_request_type == 'Purchase':
 			self.validate_budget()
+		self.per_ordered = 100
 
 	def before_save(self):
 		self.set_status(update=True)
