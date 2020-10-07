@@ -500,7 +500,7 @@ def make_stock_entry(source_name, target_doc=None):
 @frappe.whitelist()
 def make_material_receipt(source_name, target_doc=None):
 	# Set the material receipt Item child table
-	def update_item(obj, target, source_parent):
+	"""def update_item(obj, target, source_parent):
 		qty = flt(flt(obj.stock_qty) - flt(obj.ordered_qty))/ target.conversion_factor \
 			if flt(obj.stock_qty) > flt(obj.ordered_qty) else 0
 		target.qty = qty
@@ -517,12 +517,33 @@ def make_material_receipt(source_name, target_doc=None):
 			if source_parent.source_warehouse:
 				target.s_warehouse = source_parent.source_warehouse
 		else:
-			target.s_warehouse = obj.warehouse
+			target.s_warehouse = obj.warehouse"""
 
 	# Set the material receipt parent
 	def set_missing_values(source, target):
-		frappe.msgprint("<pre>{}</pre>".format(frappe.as_json(source)))
-		frappe.msgprint("<pre>{}</pre>".format(frappe.as_json(target)))
+		target.items = []
+		for item in source.items:
+			temp = {}
+			qty = flt(flt(item.stock_qty) - flt(item.ordered_qty))/ target.conversion_factor \
+				if flt(item.stock_qty) > flt(item.ordered_qty) else 0
+			temp["qty"] = qty
+			temp["transfer_qty"] = qty * item.conversion_factor
+			temp["conversion_factor"] = item.conversion_factor
+			temp["actual_qty"] = get_bin_details(item.item_code, item.warehouse).actual_qty
+
+			if source.material_request_type == "Material Transfer":
+				#frappe.msgprint("<pre>{}</pre>".format(frappe.as_json(obj)))
+				temp["t_warehouse"] = item.warehouse
+				# Set the quantity requested and quantity issued
+				temp["qty_requested"] = item.qty
+				# Qty approved
+				temp["qty"] = 0
+				if source.source_warehouse:
+					temp["s_warehouse"] = source.source_warehouse
+			else:
+				temp["s_warehouse"] = item.warehouse
+			target.items.append(temp)
+
 		target.purpose = source.material_request_type
 		target.run_method("calculate_rate_and_amount")
 		target.posting_date = nowdate()
@@ -543,11 +564,12 @@ def make_material_receipt(source_name, target_doc=None):
 				"parent": "material_request",
 				"uom": "stock_uom",
 			},
-			"postprocess": update_item,
+			#"postprocess": update_item,
 			"condition": lambda doc: doc.ordered_qty < doc.stock_qty
 		}
 	}, target_doc, set_missing_values)
 	
+	frappe.msgprint("<pre>{}</pre>".format(frappe.as_json(doclist)))
 	return doclist
 
 @frappe.whitelist()
