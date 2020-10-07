@@ -521,10 +521,10 @@ def make_material_receipt(source_name, target_doc=None):
 
 	# Set the material receipt parent
 	def set_missing_values(source, target):
-		target.items = []
+		items = []
 		for item in source.items:
 			temp = {}
-			qty = flt(flt(item.stock_qty) - flt(item.ordered_qty))/ target.conversion_factor \
+			qty = flt(flt(item.stock_qty) - flt(item.ordered_qty))/ item.conversion_factor \
 				if flt(item.stock_qty) > flt(item.ordered_qty) else 0
 			temp["qty"] = qty
 			temp["transfer_qty"] = qty * item.conversion_factor
@@ -542,8 +542,8 @@ def make_material_receipt(source_name, target_doc=None):
 					temp["s_warehouse"] = source.source_warehouse
 			else:
 				temp["s_warehouse"] = item.warehouse
-			target.items.append(temp)
-
+			items.append(temp)
+		target.items = items
 		target.purpose = source.material_request_type
 		target.run_method("calculate_rate_and_amount")
 		target.posting_date = nowdate()
