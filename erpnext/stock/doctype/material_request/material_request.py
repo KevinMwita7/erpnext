@@ -467,6 +467,8 @@ def make_stock_entry(source_name, target_doc=None):
 				target.s_warehouse = source_parent.source_warehouse
 		else:
 			target.s_warehouse = obj.warehouse
+		frappe.msgprint("<pre>{}</pre>".format(frappe.as_json(obj)))
+		frappe.msgprint("<pre>{}</pre>".format(frappe.as_json(target)))
 
 	def set_missing_values(source, target):
 		target.purpose = source.material_request_type
