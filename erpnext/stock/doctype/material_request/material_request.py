@@ -521,6 +521,8 @@ def make_material_receipt(source_name, target_doc=None):
 
 	# Set the material receipt parent
 	def set_missing_values(source, target):
+		frappe.msgprint("<pre>{}</pre>".format(frappe.as_json(source)))
+		frappe.msgprint("<pre>{}</pre>".format(frappe.as_json(target)))
 		target.purpose = source.material_request_type
 		target.run_method("calculate_rate_and_amount")
 		target.posting_date = nowdate()
@@ -544,7 +546,7 @@ def make_material_receipt(source_name, target_doc=None):
 			"postprocess": update_item,
 			"condition": lambda doc: doc.ordered_qty < doc.stock_qty
 		}
-	}, target_doc, set_missing_values, True)
+	}, target_doc, set_missing_values)
 	
 	return doclist
 
