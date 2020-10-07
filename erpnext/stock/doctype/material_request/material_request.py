@@ -455,7 +455,6 @@ def make_stock_entry(source_name, target_doc=None):
 		target.qty = qty
 		target.transfer_qty = qty * obj.conversion_factor
 		target.conversion_factor = obj.conversion_factor
-		target.actual_qty = get_bin_details(obj.item_code, obj.warehouse).actual_qty
 
 		if source_parent.material_request_type == "Material Transfer":
 			#frappe.msgprint("<pre>{}</pre>".format(frappe.as_json(obj)))
@@ -467,8 +466,8 @@ def make_stock_entry(source_name, target_doc=None):
 				target.s_warehouse = source_parent.source_warehouse
 		else:
 			target.s_warehouse = obj.warehouse
-		frappe.msgprint("<pre>{}</pre>".format(frappe.as_json(obj)))
-		frappe.msgprint("<pre>{}</pre>".format(frappe.as_json(target)))
+		# Get the stock of the item in the source warehouse
+		target.actual_qty = get_bin_details(target.item_code, target.s_warehouse).actual_qty
 
 	def set_missing_values(source, target):
 		target.purpose = source.material_request_type
