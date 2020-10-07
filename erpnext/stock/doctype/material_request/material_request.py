@@ -501,6 +501,7 @@ def make_stock_entry(source_name, target_doc=None):
 def make_material_receipt(source_name, target_doc=None):
 	# Set the material receipt Item child table
 	def update_item(obj, target, source_parent):
+		frappe.msgprint("<pre>{}</pre>".format(frappe.as_json(obj)))
 		qty = flt(flt(obj.stock_qty) - flt(obj.ordered_qty))/ target.conversion_factor \
 			if flt(obj.stock_qty) > flt(obj.ordered_qty) else 0
 		target.qty = qty
