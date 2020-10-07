@@ -81,7 +81,6 @@ def check_for_closed_status(doctype, docname):
 
 @frappe.whitelist()
 def get_linked_material_requests(items):
-	frappe.msgprint("<pre>{}</pre>".format(frappe.as_json(items)))
 	items = json.loads(items)
 	mr_list = []
 	for item in items:
