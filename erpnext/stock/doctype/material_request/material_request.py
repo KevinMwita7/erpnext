@@ -569,7 +569,6 @@ def make_material_receipt(source_name, target_doc=None):
 		}
 	}, target_doc, set_missing_values)
 	
-	frappe.msgprint("<pre>{}</pre>".format(frappe.as_json(doclist)))
 	return doclist
 
 @frappe.whitelist()
