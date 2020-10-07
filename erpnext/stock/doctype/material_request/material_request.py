@@ -522,7 +522,7 @@ def make_material_receipt(source_name, target_doc=None):
 	# Set the material receipt parent
 	def set_missing_values(source, target):
 		target.purpose = source.material_request_type
-		target.run_method("calculate_rate_and_amount")
+		# target.run_method("calculate_rate_and_amount")
 		target.posting_date = nowdate()
 		target.material_request_name = source.name
 		#target.set_job_card_data()
@@ -530,9 +530,9 @@ def make_material_receipt(source_name, target_doc=None):
 	doclist = get_mapped_doc("Material Request", source_name, {
 		"Material Request": {
 			"doctype": "Material Receipt",
-			#"validation": {
-			#	"docstatus": ["=", 1]
-			#}
+			"validation": {
+				"docstatus": ["=", 1]
+			}
 		},
 		"Material Request Item": {
 			"doctype": "Material Receipt Item",

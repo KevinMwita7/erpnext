@@ -81,6 +81,7 @@ def check_for_closed_status(doctype, docname):
 
 @frappe.whitelist()
 def get_linked_material_requests(items):
+	frappe.msgprint("<pre>{}</pre>".format(frappe.as_json(items)))
 	items = json.loads(items)
 	mr_list = []
 	for item in items:
@@ -92,6 +93,7 @@ def get_linked_material_requests(items):
 			WHERE mr.name = mr_item.parent
 				AND mr_item.item_code = %(item)s 
 				AND mr.material_request_type = 'Purchase'
+				AND mr.per_ordered < 99.99
 				AND mr.docstatus = 1
 				AND mr.status != 'Stopped'
                         ORDER BY mr_item.item_code ASC""",{"item": item}, as_dict=1)
