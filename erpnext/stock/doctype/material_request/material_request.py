@@ -530,9 +530,9 @@ def make_material_receipt(source_name, target_doc=None):
 	doclist = get_mapped_doc("Material Request", source_name, {
 		"Material Request": {
 			"doctype": "Material Receipt",
-			"validation": {
-				"docstatus": ["=", 1]
-			}
+			#"validation": {
+			#	"docstatus": ["=", 1]
+			#}
 		},
 		"Material Request Item": {
 			"doctype": "Material Receipt Item",
