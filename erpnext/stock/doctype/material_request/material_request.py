@@ -467,7 +467,8 @@ def make_stock_entry(source_name, target_doc=None):
 		else:
 			target.s_warehouse = obj.warehouse
 		# Get the stock of the item in the source warehouse
-		target.actual_qty = get_bin_details(target.item_code, target.s_warehouse).actual_qty
+		item_bin_details = get_bin_details(target.item_code, target.s_warehouse)
+		target.actual_qty = item_bin_details.actual_qty if "actual_qty" in item_bin_details else 0
 
 	def set_missing_values(source, target):
 		target.purpose = source.material_request_type
