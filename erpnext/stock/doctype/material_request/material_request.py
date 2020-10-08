@@ -466,6 +466,7 @@ def make_stock_entry(source_name, target_doc=None):
 				target.s_warehouse = source_parent.source_warehouse
 		else:
 			target.s_warehouse = obj.warehouse
+		frappe.msgprint("<pre>{}</pre>".format(frappe.as_json(target)))
 		# Get the stock of the item in the source warehouse
 		target.actual_qty = get_bin_details(target.item_code, target.s_warehouse).actual_qty
 
