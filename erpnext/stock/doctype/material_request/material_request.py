@@ -466,9 +466,12 @@ def make_stock_entry(source_name, target_doc=None):
 				target.s_warehouse = source_parent.source_warehouse
 		else:
 			target.s_warehouse = obj.warehouse
-		frappe.msgprint("<pre>{}</pre>".format(frappe.as_json(get_bin_details(target.item_code, target.s_warehouse))))
+		item_bin_details = get_bin_details(target.item_code, target.s_warehouse)
 		# Get the stock of the item in the source warehouse
-		target.actual_qty = get_bin_details(target.item_code, target.s_warehouse).actual_qty
+		if type(item_bin_details) is dict:
+			target.actual_qty = item_bin_details['actual_qty']
+		else:
+			target.actual_qty = item_bin_details.actual_qty
 
 	def set_missing_values(source, target):
 		target.purpose = source.material_request_type
