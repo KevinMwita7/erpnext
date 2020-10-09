@@ -15,9 +15,11 @@ class MaterialReceipt(StockController):
 
 
 	def validate_items(self):
-		stock_items = self.get_stock_items()
+		if not len(self.get("items")):
+			frappe.throw(_("A material request can only be made from a material request"))
+		"""stock_items = self.get_stock_items()
 		serialized_items = self.get_serialized_items()
-		frappe.msgprint("<pre>{}</pre>".format(frappe.as_json(self.get("items"))))
+
 		if not len(self.get("items")):
 			frappe.throw(_("At least one item is required in the items table"))
 
@@ -39,7 +41,7 @@ class MaterialReceipt(StockController):
 
 			if (self.purpose in ("Material Transfer") and not item.serial_no and item.item_code in serialized_items):
 				frappe.throw(_("Row #{0}: Please specify Serial No for Item {1}").format(item.idx, item.item_code),
-					frappe.MandatoryError)
+					frappe.MandatoryError)"""
 
 	def validate_warehouse(self):
 		"""perform various (sometimes conditional) validations on warehouse"""
