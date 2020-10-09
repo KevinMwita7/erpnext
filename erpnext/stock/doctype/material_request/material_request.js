@@ -54,7 +54,7 @@ frappe.ui.form.on('Material Request', {
 
 		if (frm.doc.docstatus == 1 && frm.doc.status != 'Stopped') {
 				// Show a make material receipt button to enable the user to make a material receipt
-				if(frm.doc.owner === frappe.session.user /*&& frm.doc.status !== "Pending"*/) {
+				if(frm.doc.owner === frappe.session.user && frm.doc.status === "Partially Ordered" || frm.doc.status === "Partially Transferred"  || frm.doc.status === "Ordered"   || frm.doc.status === "Issued"  || frm.doc.status === "Transferred") {
 					frm.add_custom_button(__("Material Receipt"),
 					() => frm.events.make_material_receipt(frm), __("Make"));
 				}
@@ -62,7 +62,10 @@ frappe.ui.form.on('Material Request', {
 				if (flt(frm.doc.per_ordered, 2) < 100 && 
 				(
 					frappe.user.has_role("Pharmacist in Charge") || 
-					frappe.user.has_role("Commodity Hospital Nurse")
+					frappe.user.has_role("Commodity Hospital Nurse") ||
+					frappe.user.has_role("Radiology Incharge") ||
+					frappe.user.has_role("Nutrition Incharge") ||
+					frappe.user.has_role("PublicHealthInCharge")
 				)) {
 				if (frm.doc.material_request_type === "Material Transfer") {
 					frm.add_custom_button(__("Transfer Material"),
