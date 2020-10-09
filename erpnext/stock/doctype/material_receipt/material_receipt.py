@@ -17,6 +17,7 @@ class MaterialReceipt(StockController):
 	def validate_items(self):
 		stock_items = self.get_stock_items()
 		serialized_items = self.get_serialized_items()
+		frappe.msgprint("<pre>{}</pre>".format(frappe.as_json(self.get("items"))))
 		if not len(self.get("items")):
 			frappe.throw(_("At least one item is required in the items table"))
 
