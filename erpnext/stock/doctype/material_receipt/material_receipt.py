@@ -16,7 +16,7 @@ class MaterialReceipt(StockController):
 
 	def validate_items(self):
 		if not len(self.get("items")):
-			frappe.throw(_("A material request can only be made from a material request"))
+			frappe.throw(_("A material receipt can only be made from a material request"))
 		"""stock_items = self.get_stock_items()
 		serialized_items = self.get_serialized_items()
 
