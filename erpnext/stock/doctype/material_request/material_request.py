@@ -530,6 +530,10 @@ def make_material_receipt(source_name, target_doc=None):
 		# target.run_method("calculate_rate_and_amount")
 		target.posting_date = nowdate()
 		target.material_request_name = source.name
+		if hasattr(source, "modified_by"):
+			target.serviced_by = source.modified_by
+		else:
+			target.serviced_by = source.owner
 		#target.set_job_card_data()
 
 	doclist = get_mapped_doc("Material Request", source_name, {
