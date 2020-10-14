@@ -329,6 +329,7 @@ frappe.ui.form.on("Material Request Item", {
 			}
 		}
 	}
+
 });
 
 erpnext.buying.MaterialRequestController = erpnext.buying.BuyingController.extend({
@@ -360,6 +361,7 @@ erpnext.buying.MaterialRequestController = erpnext.buying.BuyingController.exten
 		} else {
 			this.frm.script_manager.copy_from_first_row("items", row, ["schedule_date"]);
 		}
+		this.frm.script_manager.copy_from_first_row("items", row, ["warehouse"]);
 	},
 
 	items_on_form_rendered: function() {
