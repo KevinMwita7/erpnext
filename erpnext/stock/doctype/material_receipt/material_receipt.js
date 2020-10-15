@@ -3,9 +3,7 @@
 
 frappe.ui.form.on('Material Receipt', {
 	onload: function(frm) {
-		console.log(frm);
-		console.log(cur_frm);
-		if(!frm.doc.items.length) {
+		if(!frm.doc.items) {
 			cur_frm.add_child("items");
 			cur_frm.refresh_field("items");
 		}
