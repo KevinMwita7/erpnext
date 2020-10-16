@@ -52,7 +52,11 @@ def update_status():
 			when order_type = 'Maintenance' and per_billed = 100 and docstatus = 1 then 'Completed'
 			when docstatus = 2 then 'Cancelled'
 			else 'Draft'
-		End)""")
+		End)
+		dispensed_by=(
+			Case When per_delivered < 100 and per_billed < 100 and docstatus = 1 then {}
+			else NULL
+		)""".format(frappe.db.escape(frappe.sesion.user)))
 
 	frappe.db.sql("""
 		update 
