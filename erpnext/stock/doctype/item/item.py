@@ -107,6 +107,9 @@ class Item(WebsiteGenerator):
 		elif self.item_group == 'Pharmaceuticals':
 			self.item_code += 'PM'
 			self.name += 'PM'
+		elif self.item_group == 'Nutraceuticals':
+			self.item_code += 'NC'
+			self.name += 'NC'
 
 		self.validate_uom()
 		self.validate_description()
