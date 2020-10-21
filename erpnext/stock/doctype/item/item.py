@@ -98,6 +98,13 @@ class Item(WebsiteGenerator):
 		if not self.description:
 			self.description = self.item_name
 
+		if self.item_group == 'Public Health Services':
+			self.item_code += 'PH'
+		elif self.item_group == 'Non-Pharms':
+			self.item_code += 'NP'
+		elif self.item_group == 'Pharmaceuticals':
+			self.item_code += 'DR'
+
 		self.validate_uom()
 		self.validate_description()
 		self.add_default_uom_in_conversion_factor_table()
