@@ -100,13 +100,13 @@ class Item(WebsiteGenerator):
 		
 		if self.item_group == 'Public Health Services':
 			self.item_code += 'PH'
-			self.name += 'DR'
+			self.name += 'PH'
 		elif self.item_group == 'Non-Pharms':
 			self.item_code += 'NP'
-			self.name += 'DR'
+			self.name += 'NP'
 		elif self.item_group == 'Pharmaceuticals':
-			self.item_code += 'DR'
-			self.name += 'DR'
+			self.item_code += 'PM'
+			self.name += 'PM'
 
 		self.validate_uom()
 		self.validate_description()
