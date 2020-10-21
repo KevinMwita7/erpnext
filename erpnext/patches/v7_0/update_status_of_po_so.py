@@ -54,7 +54,7 @@ def update_status():
 			else 'Draft'
 		End)
 		dispensed_by=(
-			Case When per_delivered < 100 and per_billed < 100 and docstatus = 1 then {}
+			Case When per_delivered < 100 and per_billed < 100 and docstatus = 1 and charge_type = 'Drug Order' then {}
 			else NULL
 		)""".format(frappe.db.escape(frappe.sesion.user)))
 
