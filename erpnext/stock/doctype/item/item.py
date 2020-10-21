@@ -100,11 +100,13 @@ class Item(WebsiteGenerator):
 		
 		if self.item_group == 'Public Health Services':
 			self.item_code += 'PH'
+			self.name += 'DR'
 		elif self.item_group == 'Non-Pharms':
 			self.item_code += 'NP'
+			self.name += 'DR'
 		elif self.item_group == 'Pharmaceuticals':
 			self.item_code += 'DR'
-			frappe.msgprint("<pre>{}</pre>".format(frappe.as_json(self)))
+			self.name += 'DR'
 
 		self.validate_uom()
 		self.validate_description()
