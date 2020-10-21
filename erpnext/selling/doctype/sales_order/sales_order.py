@@ -181,6 +181,8 @@ class SalesOrder(SellingController):
 		self.update_prevdoc_status('submit')
 
 		self.update_blanket_order()
+		if(self.get("docstatus") == 0):
+			self.submitted_by = frappe.session.user
 
 	def on_cancel(self):
 		# Cannot cancel closed SO
