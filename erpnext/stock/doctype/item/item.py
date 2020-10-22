@@ -110,6 +110,9 @@ class Item(WebsiteGenerator):
 		elif self.item_group == 'Nutraceuticals':
 			self.item_code += 'NC'
 			self.name += 'NC'
+		elif self.item_group == 'Covid Commodities':
+			self.item_code += 'CV'
+			self.name += 'CV'
 
 		self.validate_uom()
 		self.validate_description()
