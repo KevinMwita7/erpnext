@@ -98,7 +98,7 @@ class Item(WebsiteGenerator):
 		if not self.description:
 			self.description = self.item_name
 		
-		if self.item_group == 'Public Health Services':
+		if self.item_group == 'Public Health Commodities':
 			self.item_code += 'PH'
 			self.name += 'PH'
 		elif self.item_group == 'Non-Pharms':
