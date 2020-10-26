@@ -113,6 +113,9 @@ class Item(WebsiteGenerator):
 		elif self.item_group == 'Covid Commodities':
 			self.item_code += 'CV'
 			self.name += 'CV'
+		elif self.item_group == 'Lab Reagents':
+			self.item_code += 'LR'
+			self.name += 'LR'
 
 		self.validate_uom()
 		self.validate_description()
