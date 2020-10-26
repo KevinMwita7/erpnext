@@ -101,7 +101,10 @@ class Item(WebsiteGenerator):
 		if self.item_group == 'Public Health Commodities':
 			self.item_code += 'PH'
 			self.name += 'PH'
-		elif self.item_group == 'Non-Pharms':
+		elif self.item_group == 'Non-Pharms' or self.item_group == 'Lab Reagents' or self.item_group == 'X-Ray Consumables' \
+		or self.item_group == 'Plaster Clinic Consumables' or self.item_group == 'General Office Supplies' \
+		or self.item_group == 'Cooking Gases'  or self.item_group == 'Medical Gases' or self.item_group == 'Foodstuffs'  \
+		or self.item_group == 'Equipments' or self.item_group == 'Dental Consumables' or self.item_group == 'Cleaning Materials':
 			self.item_code += 'NP'
 			self.name += 'NP'
 		elif self.item_group == 'Pharmaceuticals':
@@ -113,9 +116,7 @@ class Item(WebsiteGenerator):
 		elif self.item_group == 'Covid Commodities':
 			self.item_code += 'CV'
 			self.name += 'CV'
-		elif self.item_group == 'Lab Reagents':
-			self.item_code += 'LR'
-			self.name += 'LR'
+																								
 
 		self.validate_uom()
 		self.validate_description()
