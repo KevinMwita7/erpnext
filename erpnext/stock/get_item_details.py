@@ -222,8 +222,7 @@ def get_basic_details(args, item):
 	item_defaults = get_item_defaults(item.name, args.company)
 	item_group_defaults = get_item_group_defaults(item.name, args.company)
 
-	warehouse = args.get("set_warehouse") or user_default_warehouse or item_defaults.get("default_warehouse") or\
-		item_group_defaults.get("default_warehouse") or args.warehouse
+	warehouse = args.get("set_warehouse") or user_default_warehouse or args.warehouse #or item_defaults.get("default_warehouse") or item_group_defaults.get("default_warehouse")
 
 	if args.get('doctype') == "Material Request" and not args.get('material_request_type'):
 		args['material_request_type'] = frappe.db.get_value('Material Request',
