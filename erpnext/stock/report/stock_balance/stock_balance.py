@@ -26,31 +26,37 @@ def execute(filters=None):
 
 	iwb_map = get_item_warehouse_map(filters, sle)
 	item_map = get_item_details(items, sle, filters)
-	item_reorder_detail_map = get_item_reorder_details(item_map.keys())
+	#item_reorder_detail_map = get_item_reorder_details(item_map.keys())
 
 	data = []
 	conversion_factors = []
 	for (company, item, warehouse) in sorted(iwb_map):
 		if item_map.get(item):
 			qty_dict = iwb_map[(company, item, warehouse)]
-			item_reorder_level = 0
-			item_reorder_qty = 0
-			if item + warehouse in item_reorder_detail_map:
-				item_reorder_level = item_reorder_detail_map[item + warehouse]["warehouse_reorder_level"]
-				item_reorder_qty = item_reorder_detail_map[item + warehouse]["warehouse_reorder_qty"]
+			#item_reorder_level = 0
+			#item_reorder_qty = 0
+			#if item + warehouse in item_reorder_detail_map:
+				#item_reorder_level = item_reorder_detail_map[item + warehouse]["warehouse_reorder_level"]
+				#item_reorder_qty = item_reorder_detail_map[item + warehouse]["warehouse_reorder_qty"]
 
 			report_data = [item, item_map[item]["item_name"],
 				item_map[item]["item_group"],
-				item_map[item]["brand"],
-				item_map[item]["description"], warehouse,
-				item_map[item]["stock_uom"], qty_dict.opening_qty,
-				qty_dict.opening_val, qty_dict.in_qty,
-				qty_dict.in_val, qty_dict.out_qty,
-				qty_dict.out_val, qty_dict.bal_qty,
-				qty_dict.bal_val, qty_dict.val_rate,
-				item_reorder_level,
-				item_reorder_qty,
-				company
+				#item_map[item]["brand"],
+				#item_map[item]["description"], 
+				warehouse,
+				item_map[item]["stock_uom"], 
+				qty_dict.opening_qty,
+				qty_dict.opening_val, 
+				qty_dict.in_qty,
+				qty_dict.in_val, 
+				qty_dict.out_qty,
+				qty_dict.out_val, 
+				qty_dict.bal_qty,
+				qty_dict.bal_val, 
+				qty_dict.val_rate,
+				#item_reorder_level,
+				#item_reorder_qty,
+				#company
 			]
 
 			if filters.get('show_variant_attributes', 0) == 1:
@@ -75,8 +81,8 @@ def get_columns():
 		{"label": _("Item"), "fieldname": "item_code", "fieldtype": "Link", "options": "Item", "width": 100},
 		{"label": _("Item Name"), "fieldname": "item_name", "width": 150},
 		{"label": _("Item Group"), "fieldname": "item_group", "fieldtype": "Link", "options": "Item Group", "width": 100},
-		{"label": _("Brand"), "fieldname": "brand", "fieldtype": "Link", "options": "Brand", "width": 90},
-		{"label": _("Description"), "fieldname": "description", "width": 140},
+		# {"label": _("Brand"), "fieldname": "brand", "fieldtype": "Link", "options": "Brand", "width": 90},
+		# {"label": _("Description"), "fieldname": "description", "width": 140},
 		{"label": _("Warehouse"), "fieldname": "warehouse", "fieldtype": "Link", "options": "Warehouse", "width": 100},
 		{"label": _("Stock UOM"), "fieldname": "stock_uom", "fieldtype": "Link", "options": "UOM", "width": 90},
 		{"label": _("Opening Qty"), "fieldname": "opening_qty", "fieldtype": "Float", "width": 100, "convertible": "qty"},
@@ -88,9 +94,9 @@ def get_columns():
 		{"label": _("Balance Qty"), "fieldname": "bal_qty", "fieldtype": "Float", "width": 100, "convertible": "qty"},
 		{"label": _("Balance Value"), "fieldname": "bal_val", "fieldtype": "Currency", "width": 100},
 		{"label": _("Valuation Rate"), "fieldname": "val_rate", "fieldtype": "Currency", "width": 90, "convertible": "rate"},
-		{"label": _("Reorder Level"), "fieldname": "reorder_level", "fieldtype": "Float", "width": 80, "convertible": "qty"},
-		{"label": _("Reorder Qty"), "fieldname": "reorder_qty", "fieldtype": "Float", "width": 80, "convertible": "qty"},
-		{"label": _("Company"), "fieldname": "company", "fieldtype": "Link", "options": "Company", "width": 100}
+		# {"label": _("Reorder Level"), "fieldname": "reorder_level", "fieldtype": "Float", "width": 80, "convertible": "qty"},
+		# {"label": _("Reorder Qty"), "fieldname": "reorder_qty", "fieldtype": "Float", "width": 80, "convertible": "qty"},
+		#{"label": _("Company"), "fieldname": "company", "fieldtype": "Link", "options": "Company", "width": 100}
 	]
 
 	return columns
