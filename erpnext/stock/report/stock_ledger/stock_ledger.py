@@ -34,8 +34,8 @@ def execute(filters=None):
 def get_columns():
 	columns = [
 		{"label": _("Date"), "fieldname": "date", "fieldtype": "Datetime", "width": 95},
-		{"label": _("Item"), "fieldname": "item_code", "fieldtype": "Link", "options": "Item", "width": 130},
-		#{"label": _("Item Name"), "fieldname": "item_name", "width": 100},
+		#{"label": _("Item"), "fieldname": "item_code", "fieldtype": "Link", "options": "Item", "width": 130},
+		{"label": _("Item Name"), "fieldname": "item_name", "width": 100},
 		{"label": _("Item Group"), "fieldname": "item_group", "fieldtype": "Link", "options": "Item Group", "width": 100},
 		#{"label": _("Brand"), "fieldname": "brand", "fieldtype": "Link", "options": "Brand", "width": 100},
 		# {"label": _("Description"), "fieldname": "description", "width": 200},
@@ -66,8 +66,8 @@ def get_stock_ledger_entries(filters, items):
 		item_conditions_sql = 'and sle.item_code in ({})'\
 			.format(', '.join(['"' + frappe.db.escape(i) + '"' for i in items]))
 
-	return frappe.db.sql("""select concat_ws(" ", sle.posting_date, sle.posting_time) as date,
-			sle.item_code, sle.warehouse, sle.actual_qty, sle.qty_after_transaction, sle.incoming_rate, sle.valuation_rate,
+	return frappe.db.sql("""select concat_ws(" ", sle.posting_date, sle.posting_time) as date, 
+	sle.warehouse, sle.actual_qty, sle.qty_after_transaction, sle.incoming_rate, sle.valuation_rate,
 			sle.stock_value, sle.voucher_type, sle.voucher_no, sle.batch_no, sle.serial_no, sle.company, sle.project, 
 			stockEntry.supplier
 		from `tabStock Ledger Entry` as sle
