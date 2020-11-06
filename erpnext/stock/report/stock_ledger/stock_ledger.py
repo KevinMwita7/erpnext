@@ -32,7 +32,7 @@ def execute(filters=None):
 	# Filter suppliers
 	if(filters.get("supplier")):
 		#frappe.msgprint("<pre>{}</pre>".format(frappe.as_json(data)))
-		data = filter(lambda el : True if el.supplier == filters.get("supplier") else False, data)
+		data = list(filter(lambda el : True if el.supplier == filters.get("supplier") else False, data))
 
 	return columns, data
 
