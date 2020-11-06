@@ -31,6 +31,7 @@ def execute(filters=None):
 	update_included_uom_in_report(columns, data, include_uom, conversion_factors)
 	# Filter suppliers
 	if(filters.get("supplier")):
+		frappe.msgprint("<pre>{}</pre>".format(frappe.as_json(data)))
 		data = filter(lambda el : True if el.supplier == filters.get("supplier") else False, data)
 
 	return columns, data
