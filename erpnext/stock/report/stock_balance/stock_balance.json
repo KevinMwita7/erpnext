@@ -7,7 +7,7 @@
  "doctype": "Report",
  "idx": 5,
  "is_standard": "Yes",
- "modified": "2020-09-25 15:35:22.294750",
+ "modified": "2020-11-05 13:51:23.952979",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Stock Balance",
@@ -22,6 +22,12 @@
   },
   {
    "role": "Accounts Manager"
+  },
+  {
+   "role": "Departmental In Charge"
+  },
+  {
+   "role": "Pharmacist in Charge"
   }
  ]
 }
