@@ -35,8 +35,9 @@ def execute(filters=None):
 		data = list(filter(lambda el : True if el.supplier == filters.get("supplier") else False, data))
 	# Filter warehouses
 	if(filters.get("warehouse")):
-		frappe.msgprint("<pre>{}</pre>".format(frappe.as_json(data)))
-		#data = list(filter(lambda el : True if el.warehouse == filters.get("warehouse") else False, data))
+		#frappe.msgprint("<pre>{}</pre>".format(frappe.as_json(data)))
+		frappe.msgprint("<pre>{}</pre>".format(filters.get("warehouse")))
+		data = list(filter(lambda el : True if el.warehouse == filters.get("warehouse") else False, data))
 
 	return columns, data
 
