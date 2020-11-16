@@ -33,6 +33,10 @@ def execute(filters=None):
 	if(filters.get("supplier")):
 		#frappe.msgprint("<pre>{}</pre>".format(frappe.as_json(data)))
 		data = list(filter(lambda el : True if el.supplier == filters.get("supplier") else False, data))
+	# Filter warehouses
+	if(filters.get("warehouse")):
+		#frappe.msgprint("<pre>{}</pre>".format(frappe.as_json(data)))
+		data = list(filter(lambda el : True if el.warehouse == filters.get("warehouse") else False, data))
 
 	return columns, data
 
@@ -70,21 +74,6 @@ def get_stock_ledger_entries(filters, items):
 	if items:
 		item_conditions_sql = 'and sle.item_code in ({})'\
 			.format(', '.join(['"' + frappe.db.escape(i) + '"' for i in items]))
-	frappe.msgprint("<pre>{}</pre>".format("""select concat_ws(" ", sle.posting_date, sle.posting_time) as date, sle.item_code, 
-	sle.warehouse, sle.actual_qty, sle.qty_after_transaction, sle.incoming_rate, sle.valuation_rate,
-			sle.stock_value, sle.voucher_type, sle.voucher_no, sle.batch_no, sle.serial_no, sle.company, sle.project, 
-			stockEntry.supplier
-		from `tabStock Ledger Entry` as sle
-		inner join `tabStock Entry` as stockEntry on stockEntry.name=sle.voucher_no
-		where sle.company = %(company)s and
-			sle.posting_date between %(from_date)s and %(to_date)s
-			{sle_conditions}
-			{item_conditions_sql}
-			order by sle.posting_date asc, sle.posting_time asc, sle.name asc"""\
-		.format(
-			sle_conditions=get_sle_conditions(filters),
-			item_conditions_sql = item_conditions_sql
-		)))
 
 	return frappe.db.sql("""select concat_ws(" ", sle.posting_date, sle.posting_time) as date, sle.item_code, 
 	sle.warehouse, sle.actual_qty, sle.qty_after_transaction, sle.incoming_rate, sle.valuation_rate,
@@ -184,7 +173,7 @@ def get_opening_balance(filters, columns):
 def get_warehouse_condition(warehouse):
 	warehouse_details = frappe.db.get_value("Warehouse", warehouse, ["lft", "rgt"], as_dict=1)
 	if warehouse_details:
-		return " exists (select name from `tabWarehouse` wh where wh.lft >= %s and wh.rgt <= %s and warehouse = '%s')"%(warehouse_details.lft, warehouse_details.rgt, warehouse)
+		return " exists (select name from `tabWarehouse` wh where wh.lft >= %s and wh.rgt <= %s)"%(warehouse_details.lft, warehouse_details.rgt)
 
 	return ''
 
