@@ -170,6 +170,7 @@ def get_warehouse_condition(warehouse):
 	warehouse_details = frappe.db.get_value("Warehouse", warehouse, ["lft", "rgt"], as_dict=1)
 	if warehouse_details:
 		frappe.msgprint("<pre>{}</pre>".format(" exists (select name from `tabWarehouse` wh where wh.name = '%s')"%(warehouse)))
+		frappe.msgprint("<pre>{}</pre>".format(" exists (select name from `tabWarehouse` wh where wh.lft >= %s and wh.rgt <= %s and wh.name = '%s')"%(warehouse_details.lft, warehouse_details.rgt, warehouse)))
 		#return " exists (select name from `tabWarehouse` wh where wh.lft >= %s and wh.rgt <= %s and wh.name = '%s')"%(warehouse_details.lft, warehouse_details.rgt, warehouse)
 		return " exists (select name from `tabWarehouse` wh where wh.name = '%s')"%(warehouse)
 
