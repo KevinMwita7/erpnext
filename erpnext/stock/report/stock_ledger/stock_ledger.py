@@ -33,6 +33,10 @@ def execute(filters=None):
 	if(filters.get("supplier")):
 		#frappe.msgprint("<pre>{}</pre>".format(frappe.as_json(data)))
 		data = list(filter(lambda el : True if el.supplier == filters.get("supplier") else False, data))
+	# Filter warehouses
+	if(filters.get("warehouse")):
+		#frappe.msgprint("<pre>{}</pre>".format(frappe.as_json(data)))
+		data = list(filter(lambda el : True if el.warehouse == filters.get("warehouse") else False, data))
 
 	return columns, data
 
@@ -168,10 +172,8 @@ def get_opening_balance(filters, columns):
 
 def get_warehouse_condition(warehouse):
 	warehouse_details = frappe.db.get_value("Warehouse", warehouse, ["lft", "rgt"], as_dict=1)
-	#if warehouse_details:
-		#return " exists (select name from `tabWarehouse` wh where wh.lft >= %s and wh.rgt <= %s and warehouse = wh.name)"%(warehouse_details.lft, warehouse_details.rgt)
 	if warehouse_details:
-		return " exists (select name from `tabWarehouse` wh where warehouse = wh.name)"
+		return " exists (select name from `tabWarehouse` wh where wh.lft >= %s and wh.rgt <= %s and warehouse = wh.name)"%(warehouse_details.lft, warehouse_details.rgt)
 
 	return ''
 
