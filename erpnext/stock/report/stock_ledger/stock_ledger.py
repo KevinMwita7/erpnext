@@ -34,13 +34,9 @@ def execute(filters=None):
 		#frappe.msgprint("<pre>{}</pre>".format(frappe.as_json(data)))
 		data = list(filter(lambda el : True if el.supplier == filters.get("supplier") else False, data))
 	# Filter warehouses
-	if(filters.get("warehouse")):
+	#if(filters.get("warehouse")):
 		#frappe.msgprint("<pre>{}</pre>".format(frappe.as_json(data)))
-		frappe.msgprint("<pre>{}</pre>".format(frappe.as_json(filters.get("warehouse"))))
-		for el in data:
-			frappe.msgprint("<pre>{}</pre>".format(frappe.as_json(el)))
-
-		data = list(filter(lambda el : True if el.warehouse == filters.get("warehouse") else False, data))
+		#data = list(filter(lambda el : True if el.warehouse == filters.get("warehouse") else False, data))
 
 	return columns, data
 
@@ -79,7 +75,7 @@ def get_stock_ledger_entries(filters, items):
 		item_conditions_sql = 'and sle.item_code in ({})'\
 			.format(', '.join(['"' + frappe.db.escape(i) + '"' for i in items]))
 
-	return frappe.db.sql("""select concat_ws(" ", sle.posting_date, sle.posting_time) as date, sle.item_code, 
+	query = """select concat_ws(" ", sle.posting_date, sle.posting_time) as date, sle.item_code, 
 	sle.warehouse, sle.actual_qty, sle.qty_after_transaction, sle.incoming_rate, sle.valuation_rate,
 			sle.stock_value, sle.voucher_type, sle.voucher_no, sle.batch_no, sle.serial_no, sle.company, sle.project, 
 			stockEntry.supplier
@@ -93,7 +89,9 @@ def get_stock_ledger_entries(filters, items):
 		.format(
 			sle_conditions=get_sle_conditions(filters),
 			item_conditions_sql = item_conditions_sql
-		), filters, as_dict=1)
+	)
+	frappe.msgprint("<pre>{}</pre>".format(query))
+	return frappe.db.sql(query, filters, as_dict=1)
 
 def get_items(filters):
 	conditions = []
