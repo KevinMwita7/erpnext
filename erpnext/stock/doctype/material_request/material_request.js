@@ -59,14 +59,14 @@ frappe.ui.form.on('Material Request', {
 					() => frm.events.make_material_receipt(frm), __("Make"));
 				}
 				// Only show the make transfer button if it is a pharmacist in charge
-				if (flt(frm.doc.per_ordered, 2) < 100 && 
+				if (flt(frm.doc.per_ordered, 2) < 100 /*&& 
 				(
 					frappe.user.has_role("Pharmacist in Charge") || 
 					frappe.user.has_role("Commodity Hospital Nurse") ||
 					frappe.user.has_role("Commodity Nurse") ||
 					frappe.user.has_role("In Charge") || 
 					frappe.user.has_role("Departmental In Charge")
-				)) {
+				)*/) {
 				if (frm.doc.material_request_type === "Material Transfer") {
 					frm.add_custom_button(__("Transfer Material"),
 						() => frm.events.make_stock_entry(frm), __("Make"));
