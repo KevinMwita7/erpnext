@@ -26,6 +26,7 @@ from erpnext.accounts.doctype.loyalty_program.loyalty_program import \
 from erpnext.accounts.deferred_revenue import validate_service_stop_date
 
 from erpnext.healthcare.utils import manage_invoice_submit_cancel
+import requests, json
 
 from six import iteritems
 
@@ -198,6 +199,17 @@ class SalesInvoice(SellingController):
 
 		if "Healthcare" in active_domains:
 			manage_invoice_submit_cancel(self, "on_submit")
+
+		if hasattr(self, "is_prod") and self.charge_type == "Registration Fee Payment" and \
+			hasattr(self, "customer_uuid") and self.customer_uuid:
+			# Make a request to openmrs indicating that the payment has been made
+			payload = {
+				"patient": self.customer_uuid,
+				"visitType": "OPD",
+				"location": "1274390e-a7d8-420e-856a-4f60d182e178"
+			}
+			headers = {'content-type': 'application/json'}
+			r = requests.post("https://mrstest.ieshealth.net/openmrs/ws/rest/v1/visit", data=json.dumps(payload), headers=headers)
 
 	def validate_pos_paid_amount(self):
 		if len(self.payments) == 0 and self.is_pos:
