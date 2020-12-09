@@ -200,7 +200,7 @@ class SalesInvoice(SellingController):
 		if "Healthcare" in active_domains:
 			manage_invoice_submit_cancel(self, "on_submit")
 
-		if hasattr(self, "is_prod") and self.charge_type == "Registration Fee Payment" and \
+		if hasattr(self, "is_dev") and self.charge_type == "Registration Fee Payment" and \
 			hasattr(self, "customer_uuid") and self.customer_uuid:
 			# Make a request to openmrs indicating that the payment has been made
 			payload = {
