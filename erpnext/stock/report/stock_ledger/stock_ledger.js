@@ -32,6 +32,12 @@ frappe.query_reports["Stock Ledger"] = {
 			"options": "Supplier"
 		},
 		{
+			"fieldname":"acquired_through",
+			"label": __("Through"),
+			"fieldtype": "Select",
+			"options": ["Purchase", "Donation", "Other Government Entities"]
+		},
+		{
 			"fieldname":"warehouse",
 			"label": __("Warehouse"),
 			"fieldtype": "Link",
