@@ -2,6 +2,8 @@
 # License: GNU General Public License v3. See license.txt
 
 from __future__ import unicode_literals
+
+from requests import auth
 import frappe, erpnext
 import frappe.defaults
 from frappe.utils import cint, flt, add_months, today, date_diff, getdate, add_days, cstr, nowdate
@@ -27,6 +29,7 @@ from erpnext.accounts.deferred_revenue import validate_service_stop_date
 
 from erpnext.healthcare.utils import manage_invoice_submit_cancel
 import requests, json
+from requests.auth import HTTPBasicAuth
 
 from six import iteritems
 
@@ -209,7 +212,7 @@ class SalesInvoice(SellingController):
 				"location": "1274390e-a7d8-420e-856a-4f60d182e178"
 			}
 			headers = {'content-type': 'application/json'}
-			r = requests.post("https://mrstest.ieshealth.net/openmrs/ws/rest/v1/visit", data=json.dumps(payload), headers=headers)
+			r = requests.post("https://mrstest.ieshealth.net/openmrs/ws/rest/v1/visit", data=json.dumps(payload), headers=headers, auth=HTTPBasicAuth('admin', 'test'))
 			frappe.msgprint("<pre>{}</pre>".format(frappe.as_json(r.json())))
 
 	def validate_pos_paid_amount(self):
