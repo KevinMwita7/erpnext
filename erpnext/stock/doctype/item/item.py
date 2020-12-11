@@ -97,25 +97,27 @@ class Item(WebsiteGenerator):
 
 		if not self.description:
 			self.description = self.item_name
-		
-		if self.item_group == 'Public Health Commodities':
-			self.item_code += 'PH'
-			self.name += 'PH'
-		elif self.item_group == 'Non-Pharms' or self.item_group == 'Lab Reagents' or self.item_group == 'X-Ray Consumables' \
-		or self.item_group == 'Plaster Clinic Consumables' or self.item_group == 'General Office Supplies' \
-		or self.item_group == 'Cooking Gases'  or self.item_group == 'Medical Gases' or self.item_group == 'Foodstuffs'  \
-		or self.item_group == 'Equipments' or self.item_group == 'Dental Consumables' or self.item_group == 'Cleaning Materials':
-			self.item_code += 'NP'
-			self.name += 'NP'
-		elif self.item_group == 'Pharmaceuticals':
-			self.item_code += 'PM'
-			self.name += 'PM'
-		elif self.item_group == 'Nutraceuticals':
-			self.item_code += 'NC'
-			self.name += 'NC'
-		elif self.item_group == 'Covid Commodities':
-			self.item_code += 'CV'
-			self.name += 'CV'
+
+		# It's a new item being saved, therefore assign it a new item_code
+		if not self.item_code:		
+			if self.item_group == 'Public Health Commodities':
+				self.item_code += 'PH'
+				self.name += 'PH'
+			elif self.item_group == 'Non-Pharms' or self.item_group == 'Lab Reagents' or self.item_group == 'X-Ray Consumables' \
+			or self.item_group == 'Plaster Clinic Consumables' or self.item_group == 'General Office Supplies' \
+			or self.item_group == 'Cooking Gases'  or self.item_group == 'Medical Gases' or self.item_group == 'Foodstuffs'  \
+			or self.item_group == 'Equipments' or self.item_group == 'Dental Consumables' or self.item_group == 'Cleaning Materials':
+				self.item_code += 'NP'
+				self.name += 'NP'
+			elif self.item_group == 'Pharmaceuticals':
+				self.item_code += 'PM'
+				self.name += 'PM'
+			elif self.item_group == 'Nutraceuticals':
+				self.item_code += 'NC'
+				self.name += 'NC'
+			elif self.item_group == 'Covid Commodities':
+				self.item_code += 'CV'
+				self.name += 'CV'
 																								
 
 		self.validate_uom()
