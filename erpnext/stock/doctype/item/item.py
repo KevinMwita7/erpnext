@@ -99,7 +99,7 @@ class Item(WebsiteGenerator):
 			self.description = self.item_name
 
 		# It's a new item being saved, therefore assign it a new item_code
-		if not self.item_code:		
+		if not hasattr(self, 'item_code'):		
 			if self.item_group == 'Public Health Commodities':
 				self.item_code += 'PH'
 				self.name += 'PH'
