@@ -7,8 +7,8 @@ from frappe.utils import cint
 from frappe import _
 
 def execute(filters=None):
-	if not filters: 
-		filters = frappe._dict({})
+	#if not filters: 
+	#	filters = frappe._dict({})
 
 	columns = data = []
 	
