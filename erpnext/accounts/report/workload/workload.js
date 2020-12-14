@@ -6,9 +6,9 @@ frappe.query_reports["Workload"] = {
 	"filters": [
 		{
 			"fieldname":"modified_by",
-			"label": __("Pharmacist Name"),
-			"fieldtype": "Data",
-			"default": "pharmacy10@gmail.com"
+			"label": __("Pharmacist"),
+			"fieldtype": "Link",
+			"options": "User"
 		},
 		{
 			"fieldname":"from_date",

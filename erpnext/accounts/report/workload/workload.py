@@ -42,12 +42,12 @@ def get_conditions(filters):
 	conditions = ""
 	
 	if filters.get("modified_by"): 
-		conditions += "modified_by = '%(modified_by)s'" % filters
+		conditions += "modified_by = '%(modified_by)s'" % filters.get("modified_by")
 	elif not filters.get("modified_by"): 
 		conditions += "modified_by = '*'"
 	if filters.get("from_date"):
-		conditions += " and transaction_date >= '%(from_date)s'" % filters
+		conditions += " and transaction_date >= '%(from_date)s'" % filters.get("from_date")
 	if filters.get("to_date"):
-		conditions += " and transaction_date <= '%(to_date)s'" % filters
+		conditions += " and transaction_date <= '%(to_date)s'" % filters.get("to_date")
 		
 	return conditions
