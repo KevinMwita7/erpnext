@@ -49,5 +49,4 @@ def get_conditions(filters):
 		conditions += "transaction_date >= '%s'" % filters.get("from_date")
 	if filters.get("to_date"):
 		conditions += " and transaction_date <= '%s'" % filters.get("to_date")
-	frappe.msgprint(conditions)
 	return conditions
