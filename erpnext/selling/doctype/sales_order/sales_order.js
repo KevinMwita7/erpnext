@@ -494,7 +494,7 @@ erpnext.selling.SalesOrderController = erpnext.selling.SellingController.extend(
 			var sales_invoice = frappe.db.get_value("Sales Invoice", { "linked_sales_order": this.frm.name }, ["name"]);
 			frappe.msgprint({
 				title: __('Important Message'),
-				message: __("This sales order has already been used to create a sales invoice " + sales_invoice.name),
+				message: __("This sales order has already been used to create a sales invoice " + JSON.stringify(sales_invoice)),
 				indicator: 'orange'
 			});
 		}
