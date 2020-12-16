@@ -484,11 +484,6 @@ erpnext.selling.SalesOrderController = erpnext.selling.SellingController.extend(
 	},
 
 	make_sales_invoice: function() {
-		frappe.msgprint({
-			title: __('Sales Invoice'),
-			message: __(this.frm.name),
-			indicator: 'orange'
-		});
 		var exists = frappe.db.exists("Sales Invoice", this.frm.name);
 		if(!exists) {
 			frappe.model.open_mapped_doc({
@@ -496,10 +491,10 @@ erpnext.selling.SalesOrderController = erpnext.selling.SellingController.extend(
 				frm: this.frm
 			})
 		} else {
-			var sales_invoice_name = frappe.db.get_value("Sales Invoice", { "linked_sales_order": this.frm.name }, ["name"]);
+			var sales_invoice = frappe.db.get_value("Sales Invoice", { "linked_sales_order": this.frm.name }, ["name"]);
 			frappe.msgprint({
 				title: __('Important Message'),
-				message: __("This sales order has already been used to create a sales invoice " + sales_invoice_name),
+				message: __("This sales order has already been used to create a sales invoice " + sales_invoice.name),
 				indicator: 'orange'
 			});
 		}
