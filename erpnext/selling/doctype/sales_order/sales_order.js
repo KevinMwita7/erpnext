@@ -489,7 +489,7 @@ erpnext.selling.SalesOrderController = erpnext.selling.SellingController.extend(
 			frappe.model.open_mapped_doc({
 				method: "erpnext.selling.doctype.sales_order.sales_order.make_sales_invoice",
 				frm: this.frm
-			})
+			}) 
 		} else {
 			var sales_invoice = frappe.db.get_value("Sales Invoice", { "linked_sales_order": this.frm.name }, ["name"]);
 			frappe.msgprint({
