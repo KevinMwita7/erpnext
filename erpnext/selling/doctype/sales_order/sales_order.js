@@ -485,7 +485,11 @@ erpnext.selling.SalesOrderController = erpnext.selling.SellingController.extend(
 
 	make_sales_invoice: function() {
 		var exists = frappe.db.exists("Sales Invoice", this.frm.name);
-		if(!exists) {
+		frappe.model.open_mapped_doc({
+			method: "erpnext.selling.doctype.sales_order.sales_order.make_sales_invoice",
+			frm: this.frm
+		})
+		/*if(!exists) {
 			frappe.model.open_mapped_doc({
 				method: "erpnext.selling.doctype.sales_order.sales_order.make_sales_invoice",
 				frm: this.frm
@@ -494,10 +498,10 @@ erpnext.selling.SalesOrderController = erpnext.selling.SellingController.extend(
 			var sales_invoice = frappe.db.get_value("Sales Invoice", { "linked_sales_order": this.frm.name }, ["name"]);
 			frappe.msgprint({
 				title: __('Important Message'),
-				message: __("This sales order has already been used to create a sales invoice " + JSON.stringify(this.frm)),
+				message: __("This sales order has already been used to create a sales invoice " + sales_invoice.name),
 				indicator: 'orange'
 			});
-		}
+		}*/
 	},
 
 	make_maintenance_schedule: function() {
