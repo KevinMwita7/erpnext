@@ -484,10 +484,25 @@ erpnext.selling.SalesOrderController = erpnext.selling.SellingController.extend(
 	},
 
 	make_sales_invoice: function() {
-		frappe.model.open_mapped_doc({
-			method: "erpnext.selling.doctype.sales_order.sales_order.make_sales_invoice",
-			frm: this.frm
-		})
+		frappe.msgprint({
+			title: __('Sales Invoice'),
+			message: __(this.frm.name),
+			indicator: 'orange'
+		});
+		var exists = frappe.db.exists("Sales Invoice", this.frm.name);
+		if(!exists) {
+			frappe.model.open_mapped_doc({
+				method: "erpnext.selling.doctype.sales_order.sales_order.make_sales_invoice",
+				frm: this.frm
+			})
+		} else {
+			var sales_invoice_name = frappe.db.get_value("Sales Invoice", { "linked_sales_order": this.frm.name }, ["name"]);
+			frappe.msgprint({
+				title: __('Important Message'),
+				message: __("This sales order has already been used to create a sales invoice " + sales_invoice_name),
+				indicator: 'orange'
+			});
+		}
 	},
 
 	make_maintenance_schedule: function() {

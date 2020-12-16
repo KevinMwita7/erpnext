@@ -638,7 +638,8 @@ def make_sales_invoice(source_name, target_doc=None, ignore_permissions=False):
 		target.run_method("set_missing_values")
 		target.run_method("set_po_nos")
 		target.run_method("calculate_taxes_and_totals")
-
+		target.age = source.age
+		target.linked_sales_order = source.name
 		# set company address
 		target.update(get_company_address(target.company))
 		if target.company_address:
