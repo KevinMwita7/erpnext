@@ -213,7 +213,8 @@ class SalesInvoice(SellingController):
 			}
 			headers = {'content-type': 'application/json'}
 			r = requests.post("https://mrstest.ieshealth.net/openmrs/ws/rest/v1/visit", data=json.dumps(payload), headers=headers, auth=HTTPBasicAuth('admin', 'test'))
-			frappe.msgprint("<pre>{}</pre>".format(frappe.as_json(r.json())))
+			# frappe.msgprint("<pre>{}</pre>".format(frappe.as_json(r.json())))
+			frappe.msgprint("<pre>{}</pre>".format(frappe.as_json(self)))
 
 	def validate_pos_paid_amount(self):
 		if len(self.payments) == 0 and self.is_pos:
