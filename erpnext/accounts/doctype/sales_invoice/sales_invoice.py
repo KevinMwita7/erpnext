@@ -204,7 +204,7 @@ class SalesInvoice(SellingController):
 			manage_invoice_submit_cancel(self, "on_submit")
 
 		if hasattr(self, "is_dev") and self.charge_type == "Registration Fee Payment" and \
-			hasattr(self, "customer_uuid") and self.customer_uuid:
+			hasattr(self, "customer_uuid") and self.customer_uuid and self.status == "Paid":
 			# Make a request to openmrs indicating that the payment has been made
 			payload = {
 				"patient": self.customer_uuid,
@@ -213,8 +213,7 @@ class SalesInvoice(SellingController):
 			}
 			headers = {'content-type': 'application/json'}
 			r = requests.post("https://mrstest.ieshealth.net/openmrs/ws/rest/v1/visit", data=json.dumps(payload), headers=headers, auth=HTTPBasicAuth('admin', 'test'))
-			# frappe.msgprint("<pre>{}</pre>".format(frappe.as_json(r.json())))
-			frappe.msgprint("<pre>{}</pre>".format(frappe.as_json(self)))
+			frappe.msgprint("<pre>{}</pre>".format(frappe.as_json(r.json())))
 
 	def validate_pos_paid_amount(self):
 		if len(self.payments) == 0 and self.is_pos:
