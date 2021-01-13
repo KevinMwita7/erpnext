@@ -214,7 +214,7 @@ class SalesInvoice(SellingController):
 			headers = {'content-type': 'application/json'}
 			if(hasattr(self, "is_dev")):
 				r = requests.post("https://mrstest.ieshealth.net/openmrs/ws/rest/v1/visit", data=json.dumps(payload), headers=headers, auth=HTTPBasicAuth('admin', 'test'))
-				frappe.msgprint("<pre>{}</pre>".format(frappe.as_json(r.json())))
+				#frappe.msgprint("<pre>{}</pre>".format(frappe.as_json(r.json())))
 			else:
 				requests.post("https://142.93.41.252/openmrs/ws/rest/v1/visit", data=json.dumps(payload), headers=headers, auth=HTTPBasicAuth('admin', 'test'))
 
