@@ -215,8 +215,8 @@ class SalesInvoice(SellingController):
 			if(hasattr(self, "is_test")):
 				r = requests.post("https://mrstest.ieshealth.net/openmrs/ws/rest/v1/visit", data=json.dumps(payload), headers=headers, auth=HTTPBasicAuth('admin', 'test'))
 				#frappe.msgprint("<pre>{}</pre>".format(frappe.as_json(r.json())))
-			elif(hasattr(self, "is_dev")):
-				r = requests.post("https://159.89.10.195/openmrs/ws/rest/v1/visit", data=json.dumps(payload), headers=headers, auth=HTTPBasicAuth('admin', 'test'))
+			#elif(hasattr(self, "is_dev")):
+				#r = requests.post("https://159.89.10.195/openmrs/ws/rest/v1/visit", data=json.dumps(payload), headers=headers, auth=HTTPBasicAuth('admin', 'test'))
 				#frappe.msgprint("<pre>{}</pre>".format(frappe.as_json(r.json())))
 			#else:
 				#requests.post("https://142.93.41.252/openmrs/ws/rest/v1/visit", data=json.dumps(payload), headers=headers, auth=HTTPBasicAuth('admin', 'test'))
