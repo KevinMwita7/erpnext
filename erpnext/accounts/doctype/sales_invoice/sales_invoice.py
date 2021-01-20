@@ -203,7 +203,7 @@ class SalesInvoice(SellingController):
 		if "Healthcare" in active_domains:
 			manage_invoice_submit_cancel(self, "on_submit")
 
-		if hasattr(self, "is_dev") and self.charge_type == "Registration Fee Payment" and \
+		if hasattr(self, "is_dev") or hasattr(self, "is_test") and self.charge_type == "Registration Fee Payment" and \
 			hasattr(self, "customer_uuid") and self.customer_uuid and self.status == "Paid":
 			# Make a request to openmrs indicating that the payment has been made
 			payload = {
@@ -212,9 +212,12 @@ class SalesInvoice(SellingController):
 				"location": "1274390e-a7d8-420e-856a-4f60d182e178"
 			}
 			headers = {'content-type': 'application/json'}
-			if(hasattr(self, "is_dev")):
+			if(hasattr(self, "is_test")):
 				r = requests.post("https://mrstest.ieshealth.net/openmrs/ws/rest/v1/visit", data=json.dumps(payload), headers=headers, auth=HTTPBasicAuth('admin', 'test'))
-				frappe.msgprint("<pre>{}</pre>".format(frappe.as_json(r.json())))
+				#frappe.msgprint("<pre>{}</pre>".format(frappe.as_json(r.json())))
+			elif(hasattr(self, "is_dev")):
+				r = requests.post("https://159.89.10.195/openmrs/ws/rest/v1/visit", data=json.dumps(payload), headers=headers, auth=HTTPBasicAuth('admin', 'test'))
+				#frappe.msgprint("<pre>{}</pre>".format(frappe.as_json(r.json())))
 			#else:
 				#requests.post("https://142.93.41.252/openmrs/ws/rest/v1/visit", data=json.dumps(payload), headers=headers, auth=HTTPBasicAuth('admin', 'test'))
 
