@@ -97,7 +97,7 @@ class Item(WebsiteGenerator):
 
 		if not self.description:
 			self.description = self.item_name
-
+		frappe.msgprint("<pre>{}</pre>".format(frappe.as_json(self)))
 		# It's a new item being saved, therefore assign it a new item_code
 		if not hasattr(self, 'item_code'):		
 			if self.item_group == 'Public Health Commodities':
