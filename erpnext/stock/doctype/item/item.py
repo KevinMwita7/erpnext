@@ -102,7 +102,6 @@ class Item(WebsiteGenerator):
 		
 		# If the item code has no prefix then proceed
 		if re.search("^\d+$", self.item_code):
-			frappe.msgprint("<pre>{}</pre>".format(frappe.as_json(self)))
 			if self.item_group == 'Public Health Commodities':
 				self.item_code += 'PH'
 				self.name += 'PH'
