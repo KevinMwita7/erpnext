@@ -8,6 +8,8 @@ import json
 import erpnext
 import frappe
 import copy
+import re
+
 from erpnext.controllers.item_variant import (ItemVariantExistsError,
 		copy_attributes_to_variant, get_variant, make_variant_item_code, validate_item_variant_attributes)
 from erpnext.setup.doctype.item_group.item_group import (get_parent_item_groups, invalidate_cache_for)
@@ -97,9 +99,10 @@ class Item(WebsiteGenerator):
 
 		if not self.description:
 			self.description = self.item_name
-		frappe.msgprint("<pre>{}</pre>".format(frappe.as_json(self)))
-		# It's a new item being saved, therefore assign it a new item_code
-		if not hasattr(self, 'item_code'):		
+		
+		# If the item code has no prefix then proceed
+		if re.search("^\d+$", self.item_code):
+			frappe.msgprint("<pre>{}</pre>".format(frappe.as_json(self)))
 			if self.item_group == 'Public Health Commodities':
 				self.item_code += 'PH'
 				self.name += 'PH'
