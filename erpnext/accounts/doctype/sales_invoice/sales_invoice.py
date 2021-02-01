@@ -221,8 +221,8 @@ class SalesInvoice(SellingController):
 			elif(hasattr(self, "is_dev")):
 				r = requests.post("https://159.89.10.195/openmrs/ws/rest/v1/visit", data=json.dumps(payload), headers=headers, auth=HTTPBasicAuth('admin', 'test'), verify=False)
 				#frappe.msgprint("<pre>{}</pre>".format(frappe.as_json(r.json())))
-			#else:
-				#requests.post("https://142.93.41.252/openmrs/ws/rest/v1/visit", data=json.dumps(payload), headers=headers, auth=HTTPBasicAuth('admin', 'test'))
+			else:
+				requests.post("https://142.93.41.252/openmrs/ws/rest/v1/visit", data=json.dumps(payload), headers=headers, auth=HTTPBasicAuth('admin', 'test'), verify=False)
 
 	def validate_pos_paid_amount(self):
 		if len(self.payments) == 0 and self.is_pos:
