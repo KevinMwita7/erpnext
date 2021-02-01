@@ -30,6 +30,7 @@ from erpnext.accounts.deferred_revenue import validate_service_stop_date
 from erpnext.healthcare.utils import manage_invoice_submit_cancel
 import requests, json
 from requests.auth import HTTPBasicAuth
+from urllib3.exceptions import InsecureRequestWarning
 from six import iteritems
 
 form_grid_templates = {
@@ -204,7 +205,9 @@ class SalesInvoice(SellingController):
 
 		if hasattr(self, "is_dev") or hasattr(self, "is_test") and self.charge_type == "Registration Fee Payment" and \
 			hasattr(self, "customer_uuid") and self.customer_uuid and self.status == "Paid":
-
+			# Suppress only the single warning from urllib3 needed.
+			requests.packages.urllib3.disable_warnings(category=InsecureRequestWarning)
+			
 			# Make a request to openmrs indicating that the payment has been made
 			payload = {
 				"patient": self.customer_uuid,
