@@ -1,6 +1,7 @@
 from __future__ import unicode_literals
 from frappe import _
 from frappe.desk.moduleview import add_setup_section
+import frappe
 
 def get_data():
 	data = [
@@ -111,7 +112,7 @@ def get_data():
 		("buying", _("Buying"), "fa fa-shopping-cart"),
 		("hr", _("Human Resources"), "fa fa-group"),
 		("support", _("Support"), "fa fa-phone")):
-
+		frappe.msgprint(module)
 		add_setup_section(data, "erpnext", module, label, icon)
 
 	return data
