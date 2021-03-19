@@ -112,7 +112,6 @@ def get_data():
 		("buying", _("Buying"), "fa fa-shopping-cart"),
 		("hr", _("Human Resources"), "fa fa-group"),
 		("support", _("Support"), "fa fa-phone")):
-		frappe.msgprint(module)
 		add_setup_section(data, "erpnext", module, label, icon)
 
 	return data
