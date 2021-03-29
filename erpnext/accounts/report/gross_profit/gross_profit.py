@@ -62,19 +62,12 @@ def get_columns(group_wise_columns, filters):
 		"item_group": _("Item Group") + ":Link/Item Group",
 		"brand": _("Brand"),
 		"description": _("Description"),
-		"warehouse": _("Warehouse") + ":Link/Warehouse",
 		"qty": _("Qty") + ":Float",
-		"base_rate": _("Avg. Selling Rate") + ":Currency/currency",
-		"buying_rate": _("Valuation Rate") + ":Currency/currency",
 		"base_amount": _("Selling Amount") + ":Currency/currency",
-		"buying_amount": _("Buying Amount") + ":Currency/currency",
 		"gross_profit": _("Gross Profit") + ":Currency/currency",
-		"gross_profit_percent": _("Gross Profit %") + ":Percent",
-		"project": _("Project") + ":Link/Project",
 		"sales_person": _("Sales person"),
 		"allocated_amount": _("Allocated Amount") + ":Currency/currency",
 		"customer": _("Customer") + ":Link/Customer",
-		"customer_group": _("Customer Group") + ":Link/Customer Group",
 		"territory": _("Territory") + ":Link/Territory"
 	})
 

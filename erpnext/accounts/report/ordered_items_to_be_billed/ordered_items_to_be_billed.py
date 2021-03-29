@@ -15,8 +15,7 @@ def execute(filters=None):
 def get_column():
 	return [
 		_("Sales Order") + ":Link/Sales Order:120", _("Date") + ":Date:100",
-		_("Suplier") + ":Link/Customer:120", _("Customer Name") + "::120",
-		_("Project") + ":Link/Project:120", _("Item Code") + ":Link/Item:120", 
+		_("Customer Name") + "::120", _("Item Code") + ":Link/Item:120", 
 		_("Amount") + ":Currency:100", _("Billed Amount") + ":Currency:100", _("Pending Amount") + ":Currency:100",
 		_("Item Name") + "::120", _("Description") + "::120", _("Company") + ":Link/Company:120",
 	]

@@ -75,8 +75,7 @@ def get_columns(additional_table_columns):
 	columns = [
 		_("Item Code") + ":Link/Item:120", _("Item Name") + "::120",
 		_("Item Group") + ":Link/Item Group:100", "Description::150", _("Invoice") + ":Link/Sales Invoice:120",
-		_("Posting Date") + ":Date:80", _("Customer") + ":Link/Customer:120",
-		_("Customer Name") + "::120"]
+		_("Posting Date") + ":Date:80", _("Customer Name") + "::120"]
 
 	if additional_table_columns:
 		columns += additional_table_columns
@@ -84,12 +83,10 @@ def get_columns(additional_table_columns):
 	columns += [
 		_("Customer Group") + ":Link/Customer Group:120",
 		_("Receivable Account") + ":Link/Account:120",
-		_("Mode of Payment") + "::120", _("Territory") + ":Link/Territory:80",
-		_("Project") + ":Link/Project:80", _("Company") + ":Link/Company:100",
-		_("Sales Order") + ":Link/Sales Order:100", _("Delivery Note") + ":Link/Delivery Note:100",
-		_("Income Account") + ":Link/Account:140", _("Cost Center") + ":Link/Cost Center:140",
+		_("Mode of Payment") + "::120", _("Company") + ":Link/Company:100",
+		_("Sales Order") + ":Link/Sales Order:100",
+		_("Income Account") + ":Link/Account:140",
 		_("Stock Qty") + ":Float:120", _("Stock UOM") + "::100",
-		_("Rate") + ":Currency/currency:120",
 		_("Amount") + ":Currency/currency:120"
 	]
 
@@ -269,6 +266,6 @@ def get_tax_accounts(item_list, columns, company_currency,
 		columns.append(desc + " Rate:Data:80")
 		columns.append(desc + " Amount:Currency/currency:100")
 
-	columns += ["Total Tax:Currency/currency:80", "Total:Currency/currency:100"]
+	columns += ["Total:Currency/currency:100"]
 
 	return itemised_tax, tax_columns

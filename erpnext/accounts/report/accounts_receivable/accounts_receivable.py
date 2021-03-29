@@ -32,15 +32,6 @@ class ReceivablePayableReport(object):
 
 		columns += [_(args.get("party_type")) + ":Link/" + args.get("party_type") + ":200"]
 
-		if args.get("party_type") == 'Customer':
-			columns.append({
-				"label": _("Customer Contact"),
-				"fieldtype": "Link",
-				"fieldname": "contact",
-				"options":"Contact",
-				"width": 100
-			})
-
 		if party_naming_by == "Naming Series":
 			columns += [args.get("party_type") + " Name::110"]
 
@@ -63,8 +54,6 @@ class ReceivablePayableReport(object):
 
 		if args.get("party_type") == "Supplier":
 			columns += [_("Bill No") + "::80", _("Bill Date") + ":Date:80"]
-
-		credit_or_debit_note = "Credit Note" if args.get("party_type") == "Customer" else "Debit Note"
 
 		if self.filters.based_on_payment_terms:
 			columns.append({
@@ -123,39 +112,10 @@ class ReceivablePayableReport(object):
 			"fieldtype": "Link",
 			"options": "Currency",
 			"width": 100
-		},
-		{
-			"fieldname": "pdc/lc_ref",
-			"label": _("PDC/LC Ref"),
-			"fieldtype": "Data",
-			"width": 110
-		},
-		{
-			"fieldname": "pdc/lc_amount",
-			"label": _("PDC/LC Amount"),
-			"fieldtype": "Currency",
-			"options": "currency",
-			"width": 130
-		},
-		{
-			"fieldname": "remaining_balance",
-			"label": _("Remaining Balance"),
-			"fieldtype": "Currency",
-			"options": "currency",
-			"width": 130
 		}]
 
 		if args.get('party_type') == 'Customer':
 			columns += [
-				{
-					"label": _("Customer LPO"),
-					"fieldtype": "Data",
-					"fieldname": "po_no",
-					"width": 100,
-				},
-				_("Delivery Note") + ":Data:100",
-				_("Territory") + ":Link/Territory:80",
-				_("Customer Group") + ":Link/Customer Group:120",
 				{
 					"label": _("Sales Person"),
 					"fieldtype": "Data",
@@ -165,8 +125,6 @@ class ReceivablePayableReport(object):
 			]
 		if args.get("party_type") == "Supplier":
 			columns += [_("Supplier Group") + ":Link/Supplier Group:80"]
-
-		columns.append(_("Remarks") + "::200")
 
 		return columns
 
