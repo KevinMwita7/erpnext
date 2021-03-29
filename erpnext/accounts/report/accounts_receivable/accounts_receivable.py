@@ -70,7 +70,7 @@ class ReceivablePayableReport(object):
 				"width": 120
 			})
 
-		for label in ("Invoiced Amount", "Paid Amount", credit_or_debit_note, "Outstanding Amount"):
+		for label in ("Invoiced Amount", "Paid Amount", "Outstanding Amount"):
 			columns.append({
 				"label": _(label),
 				"fieldname": frappe.scrub(label),
