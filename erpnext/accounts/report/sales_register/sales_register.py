@@ -82,15 +82,18 @@ def get_columns(invoice_list, additional_table_columns):
 	"""return columns based on filters"""
 	columns = [
 		_("Invoice") + ":Link/Sales Invoice:120", _("Posting Date") + ":Date:80",
-		 _("Customer Name") + "::120"
+		_("Customer") + ":Link/Customer:120", _("Customer Name") + "::120"
 	]
 
 	if additional_table_columns:
 		columns += additional_table_columns
 
 	columns +=[
+		_("Customer Group") + ":Link/Customer Group:120", _("Territory") + ":Link/Territory:80",
 		_("Tax Id") + "::80", _("Receivable Account") + ":Link/Account:120", _("Mode of Payment") + "::120",
-		_("Owner") + "::150", _("Sales Order") + ":Link/Sales Order:100",
+		_("Project") +":Link/Project:80", _("Owner") + "::150", _("Remarks") + "::150",
+		_("Sales Order") + ":Link/Sales Order:100", _("Delivery Note") + ":Link/Delivery Note:100",
+		_("Cost Center") + ":Link/Cost Center:100", _("Warehouse") + ":Link/Warehouse:100",
 		{
 			"fieldname": "currency",
 			"label": _("Currency"),
@@ -118,9 +121,9 @@ def get_columns(invoice_list, additional_table_columns):
 		if account not in income_accounts:
 			tax_columns.append(account + ":Currency/currency:120")
 
-	columns = columns + income_columns + tax_columns + \
-		[_("Grand Total") + ":Currency/currency:120",
-		_("Outstanding Amount") + ":Currency/currency:120"]
+	columns = columns + income_columns + [_("Net Total") + ":Currency/currency:120"] + tax_columns + \
+		[_("Total Tax") + ":Currency/currency:120", _("Grand Total") + ":Currency/currency:120",
+		_("Rounded Total") + ":Currency/currency:120", _("Outstanding Amount") + ":Currency/currency:120"]
 
 	return columns, income_accounts, tax_accounts
 

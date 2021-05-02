@@ -35,6 +35,7 @@ def get_columns(filters):
 			_("Owner") + ":Data:200",
 			_("Payment Mode") + ":Data:240",
 			_("Sales and Returns") + ":Currency/currency:120",
+			_("Taxes") + ":Currency/currency:120",
 			_("Payments") + ":Currency/currency:120",
 		]
 
