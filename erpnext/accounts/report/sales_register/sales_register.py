@@ -58,7 +58,7 @@ def _execute(filters, additional_table_columns=None, additional_query_columns=No
 		for income_acc in income_accounts:
 			income_amount = flt(invoice_income_map.get(inv.name, {}).get(income_acc))
 			base_net_total += income_amount
-			row.append(income_amount)
+			#row.append(income_amount)
 
 		# net total
 		row.append(base_net_total or inv.base_net_total)
@@ -124,12 +124,17 @@ def get_columns(invoice_list, additional_table_columns):
 			and parent in (%s) order by account_head""" %
 			', '.join(['%s']*len(invoice_list)), tuple([inv.name for inv in invoice_list]))
 
-	income_columns = [(account + ":Currency/currency:120") for account in income_accounts]
+	# income_columns = [(account + ":Currency/currency:120") for account in income_accounts]
 	for account in tax_accounts:
 		if account not in income_accounts:
 			tax_columns.append(account + ":Currency/currency:120")
 
-	columns = columns + income_columns + [_("Net Total") + ":Currency/currency:120"] + tax_columns + \
+
+	#columns = columns + income_columns + [_("Net Total") + ":Currency/currency:120"] + tax_columns + \
+	#	[_("Total Tax") + ":Currency/currency:120", _("Grand Total") + ":Currency/currency:120",
+	#	_("Rounded Total") + ":Currency/currency:120", _("Outstanding Amount") + ":Currency/currency:120"]			
+
+	columns = columns + [_("Net Total") + ":Currency/currency:120"] + tax_columns + \
 		[_("Total Tax") + ":Currency/currency:120", _("Grand Total") + ":Currency/currency:120",
 		_("Rounded Total") + ":Currency/currency:120"]
 
