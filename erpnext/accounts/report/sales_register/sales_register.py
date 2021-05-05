@@ -47,11 +47,11 @@ def _execute(filters, additional_table_columns=None, additional_query_columns=No
 		row +=[
 			inv.get("customer_group"),
 			inv.get("territory"),
-			inv.get("tax_id"),
+			#inv.get("tax_id"),
 			inv.debit_to, ", ".join(mode_of_payments.get(inv.name, [])),
 			inv.project, inv.owner, inv.remarks,
 			", ".join(sales_order), ", ".join(delivery_note),", ".join(cost_center),
-			", ".join(warehouse), company_currency
+			", ".join(warehouse)#, company_currency
 		]
 		# map income values
 		base_net_total = 0
@@ -72,7 +72,8 @@ def _execute(filters, additional_table_columns=None, additional_query_columns=No
 				row.append(tax_amount)
 
 		# total tax, grand total, outstanding amount & rounded total
-		row += [total_tax, inv.base_grand_total, inv.base_rounded_total, inv.outstanding_amount]
+		#row += [total_tax, inv.base_grand_total, inv.base_rounded_total, inv.outstanding_amount]
+		row += [total_tax, inv.base_grand_total, inv.base_rounded_total]
 
 		data.append(row)
 
@@ -88,19 +89,26 @@ def get_columns(invoice_list, additional_table_columns):
 	if additional_table_columns:
 		columns += additional_table_columns
 
+	#columns +=[
+	#	_("Customer Group") + ":Link/Customer Group:120", _("Territory") + ":Link/Territory:80",
+	#	_("Tax Id") + "::80", _("Receivable Account") + ":Link/Account:120", _("Mode of Payment") + "::120",
+	#	_("Project") +":Link/Project:80", _("Owner") + "::150", _("Remarks") + "::150",
+	#	_("Sales Order") + ":Link/Sales Order:100", _("Delivery Note") + ":Link/Delivery Note:100",
+	#	_("Cost Center") + ":Link/Cost Center:100", _("Warehouse") + ":Link/Warehouse:100",
+	#	{
+	#		"fieldname": "currency",
+	#		"label": _("Currency"),
+	#		"fieldtype": "Data",
+	#		"width": 80
+	#	}
+	#]
 	columns +=[
 		_("Customer Group") + ":Link/Customer Group:120", _("Territory") + ":Link/Territory:80",
-		_("Tax Id") + "::80", _("Receivable Account") + ":Link/Account:120", _("Mode of Payment") + "::120",
+		_("Receivable Account") + ":Link/Account:120", _("Mode of Payment") + "::120",
 		_("Project") +":Link/Project:80", _("Owner") + "::150", _("Remarks") + "::150",
 		_("Sales Order") + ":Link/Sales Order:100", _("Delivery Note") + ":Link/Delivery Note:100",
 		_("Cost Center") + ":Link/Cost Center:100", _("Warehouse") + ":Link/Warehouse:100",
-		{
-			"fieldname": "currency",
-			"label": _("Currency"),
-			"fieldtype": "Data",
-			"width": 80
-		}
-	]
+	]	
 
 	income_accounts = tax_accounts = income_columns = tax_columns = []
 
@@ -123,7 +131,7 @@ def get_columns(invoice_list, additional_table_columns):
 
 	columns = columns + income_columns + [_("Net Total") + ":Currency/currency:120"] + tax_columns + \
 		[_("Total Tax") + ":Currency/currency:120", _("Grand Total") + ":Currency/currency:120",
-		_("Rounded Total") + ":Currency/currency:120", _("Outstanding Amount") + ":Currency/currency:120"]
+		_("Rounded Total") + ":Currency/currency:120"]
 
 	return columns, income_accounts, tax_accounts
 
