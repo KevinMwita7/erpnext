@@ -35,6 +35,8 @@ def _execute(filters, additional_table_columns=None, additional_query_columns=No
 		delivery_note = list(set(invoice_so_dn_map.get(inv.name, {}).get("delivery_note", [])))
 		cost_center = list(set(invoice_cc_wh_map.get(inv.name, {}).get("cost_center", [])))
 		warehouse = list(set(invoice_cc_wh_map.get(inv.name, {}).get("warehouse", [])))
+		item_group = frappe.db.get_list('Sales Invoice Item', filters = { 'parent': inv.name }, fields='item_group')
+		msgprint(item_group)
 
 		row = [
 			inv.name, inv.posting_date, inv.customer, inv.customer_name
