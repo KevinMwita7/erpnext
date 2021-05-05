@@ -36,7 +36,8 @@ def _execute(filters, additional_table_columns=None, additional_query_columns=No
 		cost_center = list(set(invoice_cc_wh_map.get(inv.name, {}).get("cost_center", [])))
 		warehouse = list(set(invoice_cc_wh_map.get(inv.name, {}).get("warehouse", [])))
 		item_group = frappe.db.get_list('Sales Invoice Item', filters = { 'parent': inv.name }, fields='item_group')
-		msgprint(item_group)
+		msgprint("<pre>{}</pre>".format(frappe.as_json(item_group)))
+		msgprint(inv.name)
 
 		row = [
 			inv.name, inv.posting_date, inv.customer, inv.customer_name
