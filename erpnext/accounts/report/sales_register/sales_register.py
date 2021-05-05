@@ -41,8 +41,6 @@ def _execute(filters, additional_table_columns=None, additional_query_columns=No
 		for item_group in item_groups:
 			inv_items += item_group["item_group"]
 
-		msgprint(inv_items)
-
 		row = [
 			inv.name, inv.posting_date, inv.customer, inv.customer_name
 		]
@@ -56,7 +54,10 @@ def _execute(filters, additional_table_columns=None, additional_query_columns=No
 			inv.get("territory"),
 			#inv.get("tax_id"),
 			inv.debit_to, ", ".join(mode_of_payments.get(inv.name, [])),
-			inv.project, inv.owner, inv.remarks,
+			inv.project, 
+			inv.owner, 
+			inv_items,
+			inv.remarks,
 			", ".join(sales_order), ", ".join(delivery_note),", ".join(cost_center),
 			", ".join(warehouse)#, company_currency
 		]
@@ -112,7 +113,7 @@ def get_columns(invoice_list, additional_table_columns):
 	columns +=[
 		_("Customer Group") + ":Link/Customer Group:120", _("Territory") + ":Link/Territory:80",
 		_("Receivable Account") + ":Link/Account:120", _("Mode of Payment") + "::120",
-		_("Project") +":Link/Project:80", _("Owner") + "::150", _("Remarks") + "::150",
+		_("Project") +":Link/Project:80", _("Owner") + "::150", _("Item Group") + "::150" _("Remarks") + "::150",
 		_("Sales Order") + ":Link/Sales Order:100", _("Delivery Note") + ":Link/Delivery Note:100",
 		_("Cost Center") + ":Link/Cost Center:100", _("Warehouse") + ":Link/Warehouse:100",
 	]	
