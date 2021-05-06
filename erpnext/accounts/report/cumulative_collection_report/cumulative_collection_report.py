@@ -5,7 +5,7 @@ from __future__ import unicode_literals
 from frappe import msgprint, _, as_json, db
 
 def execute(filters=None):
-	columns, data = get_columns(), get_data()
+	columns, data = get_columns(), get_data(filters)
 	return columns, data
 
 def get_data(filters):
