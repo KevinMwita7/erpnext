@@ -13,6 +13,7 @@ def get_data(filters):
 	# msgprint("<pre>{}</pre>".format(as_json(filters)))
 	from_date = filters["from_date"] if "from_date" in filters else "26-10-2020"
 	to_date = filters["to_date"] if "to_date" in  filters else datetime.now().strftime('%Y-%m-%d')
+	collection_type = filters["collection_type"] if "collection_type" in filters else ''
 
 	cumulative_data = db.sql("""
 	SELECT sum(base_total) as total_sum, IF(remarks='No Remarks',"Others",remarks) as remarks
