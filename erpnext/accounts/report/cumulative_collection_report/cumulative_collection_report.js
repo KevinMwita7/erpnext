@@ -16,7 +16,7 @@ frappe.query_reports["Cumulative Collection Report"] = {
 			"fieldname":"collection_type",
 			"label": __("Collection Type"),
 			"fieldtype": "Data",
-			"default": ""
+			"default": "Cash"
 		},
     ]
 };
