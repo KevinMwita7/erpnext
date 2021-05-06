@@ -11,14 +11,14 @@ def execute(filters=None):
 def get_data(filters):
 	msgprint("<pre>{}</pre>".format(as_json(filters)))
 	cumulative_data = db.sql("""
-	SELECT sum(base_total), if(remarks='No Remarks',"Others",remarks) 
-	FROM `tabSales Invoice` group by remarks;
+	SELECT sum(base_total) as total_sum, IF(remarks='No Remarks',"Others",remarks) as remarks
+	FROM `tabSales Invoice` GROUP BY remarks;
 	""", as_dict=1)
 	
 	msgprint("<pre>{}</pre>".format(as_json(cumulative_data)))
 	data = [
 		[
-			row['base_total'],
+			row['total_sum'],
 			row['remarks']
 		] for row in cumulative_data]
 
