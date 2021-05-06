@@ -2,6 +2,7 @@
 # For license information, please see license.txt
 
 from __future__ import unicode_literals
+from datetime import datetime
 from frappe import msgprint, _, as_json, db
 
 def execute(filters=None):
@@ -10,10 +11,14 @@ def execute(filters=None):
 
 def get_data(filters):
 	# msgprint("<pre>{}</pre>".format(as_json(filters)))
+	from_date = filters["from_date"] or "26-10-2020"
+	to_date = filters["from_date"] or datetime.now().strftime('%Y-%m-%d')
+
 	cumulative_data = db.sql("""
 	SELECT sum(base_total) as total_sum, IF(remarks='No Remarks',"Others",remarks) as remarks
-	FROM `tabSales Invoice` GROUP BY remarks;
-	""", as_dict=1)
+	FROM `tabSales Invoice` WHERE creation >= {from_date} AND {to_date} GROUP BY remarks;
+	""".format(from_date = from_date, to_date = to_date), as_dict=1)
+	
 	# msgprint(filters["from_date"])
 	data = []
 	grand_total = 0
