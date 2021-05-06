@@ -14,7 +14,12 @@ def get_data(filters):
 	from_date = filters["from_date"] if "from_date" in filters else "26-10-2020"
 	to_date = filters["to_date"] if "to_date" in  filters else datetime.now().strftime('%Y-%m-%d')
 	collection_type = filters["collection_type"] if "collection_type" in filters else ''
-	msgprint(collection_type)
+	msgprint("""
+	SELECT sum(base_total) as total_sum, IF(remarks='No Remarks',"Others",remarks) as remarks
+	FROM `tabSales Invoice` 
+	WHERE creation >= {from_date} AND creation <= {to_date} AND remarks LIKE '%{collection_type}%'
+	GROUP BY remarks;
+	""".format(from_date = from_date, to_date = to_date, collection_type = collection_type))
 
 	cumulative_data = db.sql("""
 	SELECT sum(base_total) as total_sum, IF(remarks='No Remarks',"Others",remarks) as remarks
