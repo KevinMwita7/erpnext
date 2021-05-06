@@ -16,7 +16,7 @@ def get_data(filters):
 	collection_type = "%" + filters["collection_type"] + "%" if "collection_type" in filters else ''
 	
 	cumulative_data = db.get_list('Sales Invoice',
-	fields = ['sum(base_total) as total_sum'], 
+	fields = ['sum(base_total) as total_sum', 'remarks'], 
 	filters = {
 		'creation': ['>=', from_date],
 		'creation': ['<=', to_date],
