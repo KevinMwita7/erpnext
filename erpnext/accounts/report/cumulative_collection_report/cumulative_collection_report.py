@@ -13,7 +13,7 @@ def get_data(filters):
 	cumulative_data = db.sql("""
 	SELECT sum(base_total), if(remarks='No Remarks',"Others",remarks) 
 	FROM `tabSales Invoice` group by remarks;
-	""")
+	""", as_dict=1)
 	
 	msgprint("<pre>{}</pre>".format(as_json(cumulative_data)))
 	data = [
