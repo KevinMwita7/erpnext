@@ -17,14 +17,14 @@ def get_data(filters):
 	msgprint("""
 	SELECT sum(base_total) as total_sum, IF(remarks='No Remarks',"Others",remarks) as remarks
 	FROM `tabSales Invoice` 
-	WHERE creation >= {from_date} AND creation <= {to_date} AND remarks LIKE %{collection_type}%
+	WHERE creation >= {from_date} AND creation <= {to_date} AND remarks LIKE '%%{collection_type}%%'
 	GROUP BY remarks;
 	""".format(from_date = from_date, to_date = to_date, collection_type = collection_type))
 
 	cumulative_data = db.sql("""
 	SELECT sum(base_total) as total_sum, IF(remarks='No Remarks',"Others",remarks) as remarks
 	FROM `tabSales Invoice` 
-	WHERE creation >= {from_date} AND creation <= {to_date} AND remarks LIKE %{collection_type}%
+	WHERE creation >= {from_date} AND creation <= {to_date} AND remarks LIKE '%%{collection_type}%%'
 	GROUP BY remarks;
 	""".format(from_date = from_date, to_date = to_date, collection_type = collection_type), as_dict=1)
 	
