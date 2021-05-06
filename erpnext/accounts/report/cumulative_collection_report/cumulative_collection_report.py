@@ -14,12 +14,14 @@ def get_data(filters):
 	SELECT sum(base_total) as total_sum, IF(remarks='No Remarks',"Others",remarks) as remarks
 	FROM `tabSales Invoice` GROUP BY remarks;
 	""", as_dict=1)
-	msgprint(filters["from_date"])
-	data = [
-		[
-			row['total_sum'],
-			row['remarks']
-		] for row in cumulative_data]
+	# msgprint(filters["from_date"])
+	data = []
+	grand_total = 0
+	for row in cumulative_data:
+		data.append([row['total_sum'], row['remarks']])
+		grand_total += float(row["total_sum"])
+
+	data.append([grand_total], "Grand Total")
 
 	return data	
 
