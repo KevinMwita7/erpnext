@@ -9,13 +9,12 @@ def execute(filters=None):
 	return columns, data
 
 def get_data(filters):
-	msgprint("<pre>{}</pre>".format(as_json(filters)))
+	# msgprint("<pre>{}</pre>".format(as_json(filters)))
 	cumulative_data = db.sql("""
 	SELECT sum(base_total) as total_sum, IF(remarks='No Remarks',"Others",remarks) as remarks
 	FROM `tabSales Invoice` GROUP BY remarks;
 	""", as_dict=1)
-	
-	msgprint("<pre>{}</pre>".format(as_json(cumulative_data)))
+	msgprint(filters["from_date"])
 	data = [
 		[
 			row['total_sum'],
