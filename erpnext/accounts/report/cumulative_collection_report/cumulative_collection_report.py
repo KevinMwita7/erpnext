@@ -21,7 +21,7 @@ def get_data(filters):
 		data.append([row['total_sum'], row['remarks']])
 		grand_total += float(row["total_sum"])
 
-	data.append([grand_total], "Grand Total")
+	data.append([grand_total, "Grand Total"])
 
 	return data	
 
