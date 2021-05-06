@@ -14,7 +14,8 @@ def get_data(filters):
 	SELECT sum(base_total), if(remarks='No Remarks',"Others",remarks) 
 	FROM `tabSales Invoice` group by remarks;
 	""")
-
+	
+	msgprint("<pre>{}</pre>".format(as_json(cumulative_data)))
 	data = [
 		[
 			row['base_total'],
