@@ -45,7 +45,7 @@ def get_pos_sales_payment_data(filters):
 	data = [
 		[
 			row['posting_date'],
-			row['owner'],
+			row['modified_by'] if 'modified_by' in row else row['owner'],
 			row['mode_of_payment'],
 			row['net_total'],
 			row['total_taxes'],
@@ -107,9 +107,41 @@ def get_conditions(filters):
 
 def get_pos_invoice_data(filters):
 	conditions = get_conditions(filters)
+
+	# Original
+	#result = frappe.db.sql(''
+	#						'SELECT '
+	#						'posting_date, owner, sum(net_total) as "net_total", sum(total_taxes) as "total_taxes", '
+	#						'sum(paid_amount) as "paid_amount", sum(outstanding_amount) as "outstanding_amount", '
+	#						'mode_of_payment, warehouse, cost_center '
+	#						'FROM ('
+	#						'SELECT '
+	#						'parent, item_code, sum(amount) as "base_total", warehouse, cost_center '
+	#						'from `tabSales Invoice Item`  group by parent'
+	#						') t1 '
+	#						'left join '
+	#						'(select parent, mode_of_payment from `tabSales Invoice Payment` group by parent) t3 '
+	#						'on (t3.parent = t1.parent) '
+	#						'JOIN ('
+	#						'SELECT '
+	#						'docstatus, company, is_pos, name, posting_date, owner, sum(base_total) as "base_total", '
+	#						'sum(net_total) as "net_total", sum(total_taxes_and_charges) as "total_taxes", '
+	#						'sum(base_paid_amount) as "paid_amount", sum(outstanding_amount) as "outstanding_amount" '
+	#						'FROM `tabSales Invoice` '
+	#						'GROUP BY name'
+	#						') a '
+	#						'ON ('
+	#						't1.parent = a.name and t1.base_total = a.base_total) '
+	#						'WHERE a.docstatus = 1'
+	#						' AND {conditions} '
+	#						'GROUP BY '
+	#						'owner, posting_date, warehouse'.format(conditions=conditions), filters, as_dict=1
+	#						)
+
+	# modified
 	result = frappe.db.sql(''
 							'SELECT '
-							'posting_date, modified_by as owner, sum(net_total) as "net_total", sum(total_taxes) as "total_taxes", '
+							'posting_date, owner, sum(net_total) as "net_total", sum(total_taxes) as "total_taxes", '
 							'sum(paid_amount) as "paid_amount", sum(outstanding_amount) as "outstanding_amount", '
 							'mode_of_payment, warehouse, cost_center '
 							'FROM ('
@@ -122,7 +154,7 @@ def get_pos_invoice_data(filters):
 							'on (t3.parent = t1.parent) '
 							'JOIN ('
 							'SELECT '
-							'docstatus, company, is_pos, name, posting_date, owner, sum(base_total) as "base_total", '
+							'docstatus, company, is_pos, name, posting_date, IFNULL(modified_by, owner), sum(base_total) as "base_total", '
 							'sum(net_total) as "net_total", sum(total_taxes_and_charges) as "total_taxes", '
 							'sum(base_paid_amount) as "paid_amount", sum(outstanding_amount) as "outstanding_amount" '
 							'FROM `tabSales Invoice` '
@@ -134,7 +166,7 @@ def get_pos_invoice_data(filters):
 							' AND {conditions} '
 							'GROUP BY '
 							'owner, posting_date, warehouse'.format(conditions=conditions), filters, as_dict=1
-							)
+							)	
 	return result
 
 
