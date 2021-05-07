@@ -154,7 +154,7 @@ def get_pos_invoice_data(filters):
 							'on (t3.parent = t1.parent) '
 							'JOIN ('
 							'SELECT '
-							'docstatus, company, is_pos, name, posting_date, IFNULL(modified_by, owner), sum(base_total) as "base_total", '
+							'docstatus, company, is_pos, name, posting_date, modified_by, sum(base_total) as "base_total", '
 							'sum(net_total) as "net_total", sum(total_taxes_and_charges) as "total_taxes", '
 							'sum(base_paid_amount) as "paid_amount", sum(outstanding_amount) as "outstanding_amount" '
 							'FROM `tabSales Invoice` '
@@ -165,7 +165,7 @@ def get_pos_invoice_data(filters):
 							'WHERE a.docstatus = 1'
 							' AND {conditions} '
 							'GROUP BY '
-							'IFNULL(modified_by, owner), posting_date, warehouse'.format(conditions=conditions), filters, as_dict=1
+							'modified_by, posting_date, warehouse'.format(conditions=conditions), filters, as_dict=1
 							)	
 	return result
 
