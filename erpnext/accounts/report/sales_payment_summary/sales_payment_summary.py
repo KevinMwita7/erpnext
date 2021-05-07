@@ -109,7 +109,7 @@ def get_pos_invoice_data(filters):
 	conditions = get_conditions(filters)
 	result = frappe.db.sql(''
 							'SELECT '
-							'posting_date, owner, sum(net_total) as "net_total", sum(total_taxes) as "total_taxes", '
+							'posting_date, modified_by as owner, sum(net_total) as "net_total", sum(total_taxes) as "total_taxes", '
 							'sum(paid_amount) as "paid_amount", sum(outstanding_amount) as "outstanding_amount", '
 							'mode_of_payment, warehouse, cost_center '
 							'FROM ('
