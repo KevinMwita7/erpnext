@@ -165,7 +165,7 @@ def get_pos_invoice_data(filters):
 							'WHERE a.docstatus = 1'
 							' AND {conditions} '
 							'GROUP BY '
-							'owner, posting_date, warehouse'.format(conditions=conditions), filters, as_dict=1
+							'IFNULL(modified_by, owner), posting_date, warehouse'.format(conditions=conditions), filters, as_dict=1
 							)	
 	return result
 
