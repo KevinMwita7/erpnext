@@ -22,12 +22,12 @@ def _execute(filters=None, additional_table_columns=None, additional_query_colum
 	item_list = get_items(filters, additional_query_columns)
 	if item_list:
 		itemised_tax, tax_columns = get_tax_accounts(item_list, columns, company_currency)
-	columns.append({
-		"fieldname": "currency",
-		"label": _("Currency"),
-		"fieldtype": "Data",
-		"width": 80
-	})
+	#columns.append({
+	#	"fieldname": "currency",
+	#	"label": _("Currency"),
+	#	"fieldtype": "Data",
+	#	"width": 80
+	#})
 	mode_of_payments = get_mode_of_payments(set([d.parent for d in item_list]))
 	so_dn_map = get_delivery_notes_against_sales_order(item_list)
 
@@ -42,16 +42,34 @@ def _execute(filters=None, additional_table_columns=None, additional_query_colum
 		if not delivery_note and d.update_stock:
 			delivery_note = d.parent
 
-		row = [d.item_code, d.item_name, d.item_group, d.description, d.parent, d.posting_date, d.customer, d.customer_name]
+		row = [
+			d.item_code, 
+			d.item_name, 
+			d.item_group, 
+			d.description, 
+			d.parent, 
+			d.posting_date, 
+			d.customer, 
+			d.customer_name
+			]
 
 		if additional_query_columns:
 			for col in additional_query_columns:
 				row.append(d.get(col))
 
 		row += [
-			d.customer_group, d.debit_to, ", ".join(mode_of_payments.get(d.parent, [])),
-			d.territory, d.project, d.company, d.sales_order,
-			delivery_note, d.income_account, d.cost_center, d.stock_qty, d.stock_uom
+			# d.customer_group, 
+			# d.debit_to, 
+			", ".join(mode_of_payments.get(d.parent, [])),
+			# d.territory, 
+			d.project, 
+			# d.company, 
+			# d.sales_order,
+			delivery_note, 
+			# d.income_account, 
+			d.cost_center, 
+			# d.stock_qty, 
+			# d.stock_uom
 		]
 
 		if d.stock_uom != d.uom and d.stock_qty:
@@ -65,7 +83,11 @@ def _execute(filters=None, additional_table_columns=None, additional_query_colum
 			row += [item_tax.get("tax_rate", 0), item_tax.get("tax_amount", 0)]
 			total_tax += flt(item_tax.get("tax_amount"))
 
-		row += [total_tax, d.base_net_amount + total_tax, company_currency]
+		row += [
+			total_tax, 
+			d.base_net_amount + total_tax, 
+			# company_currency
+		]
 
 		data.append(row)
 
@@ -73,22 +95,32 @@ def _execute(filters=None, additional_table_columns=None, additional_query_colum
 
 def get_columns(additional_table_columns):
 	columns = [
-		_("Item Code") + ":Link/Item:120", _("Item Name") + "::120",
-		_("Item Group") + ":Link/Item Group:100", "Description::150", _("Invoice") + ":Link/Sales Invoice:120",
-		_("Posting Date") + ":Date:80", _("Customer") + ":Link/Customer:120",
-		_("Customer Name") + "::120"]
+		_("Item Code") + ":Link/Item:120", 
+		_("Item Name") + "::120",
+		_("Item Group") + ":Link/Item Group:100", 
+		"Description::150", 
+		_("Invoice") + ":Link/Sales Invoice:120",
+		_("Posting Date") + ":Date:80", 
+		_("Customer") + ":Link/Customer:120",
+		_("Customer Name") + "::120"
+	]
 
 	if additional_table_columns:
 		columns += additional_table_columns
 
 	columns += [
-		_("Customer Group") + ":Link/Customer Group:120",
-		_("Receivable Account") + ":Link/Account:120",
-		_("Mode of Payment") + "::120", _("Territory") + ":Link/Territory:80",
-		_("Project") + ":Link/Project:80", _("Company") + ":Link/Company:100",
-		_("Sales Order") + ":Link/Sales Order:100", _("Delivery Note") + ":Link/Delivery Note:100",
-		_("Income Account") + ":Link/Account:140", _("Cost Center") + ":Link/Cost Center:140",
-		_("Stock Qty") + ":Float:120", _("Stock UOM") + "::100",
+		# _("Customer Group") + ":Link/Customer Group:120",
+		# _("Receivable Account") + ":Link/Account:120",
+		_("Mode of Payment") + "::120", 
+		# _("Territory") + ":Link/Territory:80",
+		_("Project") + ":Link/Project:80", 
+		# _("Company") + ":Link/Company:100",
+		# _("Sales Order") + ":Link/Sales Order:100", 
+		_("Delivery Note") + ":Link/Delivery Note:100",
+		# _("Income Account") + ":Link/Account:140", 
+		_("Cost Center") + ":Link/Cost Center:140",
+		# _("Stock Qty") + ":Float:120", 
+		# _("Stock UOM") + "::100",
 		_("Rate") + ":Currency/currency:120",
 		_("Amount") + ":Currency/currency:120"
 	]
