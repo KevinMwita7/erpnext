@@ -71,7 +71,8 @@ def get_sales_payment_data(filters, columns):
 		show_payment_detail = False
 
 	for inv in sales_invoice_data:
-		owner_posting_date = inv["owner"]+cstr(inv["posting_date"])
+		# owner_posting_date = inv["owner"]+cstr(inv["posting_date"])
+		owner_posting_date = inv["modified_by"]+cstr(inv["posting_date"])
 		if show_payment_detail:
 			row = [inv.posting_date, inv.owner," ",inv.net_total,inv.total_taxes, 0]
 			data.append(row)
