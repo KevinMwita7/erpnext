@@ -72,19 +72,23 @@ def get_sales_payment_data(filters, columns):
 		show_payment_detail = False
 
 	for inv in sales_invoice_data:
-		# owner_posting_date = inv["owner"]+cstr(inv["posting_date"])
 		owner_posting_date = inv["owner"]+cstr(inv["posting_date"])
+		# Get the user's full name
+		full_name = frappe.db.get_value('User', inv['owner'], 'full_name')
 		if show_payment_detail:
-			row = [inv.posting_date, inv.owner," ",inv.net_total,inv.total_taxes, 0]
+			# row = [inv.posting_date, inv.owner," ",inv.net_total,inv.total_taxes, 0]
+			row = [inv.posting_date, full_name," ",inv.net_total,inv.total_taxes, 0]
 			data.append(row)
 			for mop_detail in mode_of_payment_details.get(owner_posting_date,[]):
-				row = [inv.posting_date, inv.owner,mop_detail[0],0,0,mop_detail[1],0]
+				# row = [inv.posting_date, inv.owner,mop_detail[0],0,0,mop_detail[1],0]
+				row = [inv.posting_date, full_name,mop_detail[0],0,0,mop_detail[1],0]
 				data.append(row)
 		else:
 			total_payment = 0
 			for mop_detail in mode_of_payment_details.get(owner_posting_date,[]):
 				total_payment = total_payment + mop_detail[1]
-			row = [inv.posting_date, inv.owner,", ".join(mode_of_payments.get(owner_posting_date, [])),
+			# row = [inv.posting_date, inv.owner,", ".join(mode_of_payments.get(owner_posting_date, [])),
+			row = [inv.posting_date, full_name,", ".join(mode_of_payments.get(owner_posting_date, [])),
 			inv.net_total,inv.total_taxes,total_payment]
 			data.append(row)
 	return data
@@ -172,7 +176,7 @@ def get_sales_invoice_data(filters):
 			where a.docstatus = 1
 				and {conditions}
 				group by
-				owner, a.posting_date
+				a.owner, a.posting_date
 		""".format(conditions=conditions), filters, as_dict=1)	
 
 
@@ -299,7 +303,7 @@ def get_mode_of_payment_details(filters):
 			where a.name = b.parent
 			and a.docstatus = 1
 			and a.name in ({invoice_list_names})
-			group by owner, a.posting_date, mode_of_payment
+			group by a.owner, a.posting_date, mode_of_payment
 			union
 			select IFNULL(a.modified_by, a.owner) as "owner",a.posting_date,
 			ifnull(b.mode_of_payment, '') as mode_of_payment, sum(b.base_paid_amount) as paid_amount
@@ -308,7 +312,7 @@ def get_mode_of_payment_details(filters):
 			and b.name = c.parent
 			and b.docstatus = 1
 			and a.name in ({invoice_list_names})
-			group by owner, a.posting_date, mode_of_payment
+			group by a.owner, a.posting_date, mode_of_payment
 			union
 			select IFNULL(a.modified_by, a.owner) as "owner", a.posting_date,
 			ifnull(a.voucher_type,'') as mode_of_payment, sum(b.credit)
@@ -317,7 +321,7 @@ def get_mode_of_payment_details(filters):
 			and a.docstatus = 1
 			and b.reference_type = "Sales Invoice"
 			and b.reference_name in ({invoice_list_names})
-			group by owner, a.posting_date, mode_of_payment
+			group by a.owner, a.posting_date, mode_of_payment
 			""".format(invoice_list_names=invoice_list_names), as_dict=1)
 
 		inv_change_amount = frappe.db.sql("""select IFNULL(a.modified_by, a.owner) as "owner", a.posting_date,
@@ -327,7 +331,7 @@ def get_mode_of_payment_details(filters):
 			and a.name in ({invoice_list_names})
 			and b.mode_of_payment = 'Cash'
 			and a.base_change_amount > 0
-			group by owner, a.posting_date, mode_of_payment""".format(invoice_list_names=invoice_list_names), as_dict=1)
+			group by a.owner, a.posting_date, mode_of_payment""".format(invoice_list_names=invoice_list_names), as_dict=1)
 
 		for d in inv_change_amount:
 			for det in inv_mop_detail:
