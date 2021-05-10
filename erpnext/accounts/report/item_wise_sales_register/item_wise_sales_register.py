@@ -89,7 +89,7 @@ def _execute(filters=None, additional_table_columns=None, additional_query_colum
 
 		row += [
 			#total_tax, 
-			d.base_net_amount + total_tax, 
+			d.base_net_amount # + total_tax, 
 			# company_currency #comment this
 		]
 
