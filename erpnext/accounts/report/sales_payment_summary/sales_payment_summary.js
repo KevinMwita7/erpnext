@@ -7,7 +7,7 @@ frappe.query_reports["Sales Payment Summary"] = {
 			"label": __("From Date"),
 			"fieldtype": "Date",
 			// "default": frappe.datetime.get_today(),
-			"default": "26-10-2020",
+			"default": "2020-10-26",
 			"reqd": 1,
 			"width": "80"
 		},
