@@ -35,7 +35,7 @@ def get_columns(filters):
 			_("Owner") + ":Data:200",
 			_("Payment Mode") + ":Data:240",
 			_("Sales and Returns") + ":Currency/currency:120",
-			_("Taxes") + ":Currency/currency:120",
+			# _("Taxes") + ":Currency/currency:120",
 			_("Payments") + ":Currency/currency:120",
 		]
 
@@ -88,8 +88,9 @@ def get_sales_payment_data(filters, columns):
 			for mop_detail in mode_of_payment_details.get(owner_posting_date,[]):
 				total_payment = total_payment + mop_detail[1]
 			# row = [inv.posting_date, inv.owner,", ".join(mode_of_payments.get(owner_posting_date, [])),
+			# inv.net_total,inv.total_taxes,total_payment]
 			row = [inv.posting_date, full_name,", ".join(mode_of_payments.get(owner_posting_date, [])),
-			inv.net_total,inv.total_taxes,total_payment]
+			inv.net_total,total_payment]
 			data.append(row)
 	return data
 
