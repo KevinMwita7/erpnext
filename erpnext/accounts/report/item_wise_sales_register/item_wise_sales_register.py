@@ -60,14 +60,14 @@ def _execute(filters=None, additional_table_columns=None, additional_query_colum
 		row += [
 			# d.customer_group, #comment this
 			#d.debit_to, #comment this
-			#", ".join(mode_of_payments.get(d.parent, [])),
+			", ".join(mode_of_payments.get(d.parent, [])),
 			#d.territory, #comment this
-			#d.project, 
+			d.project, 
 			#d.company, #comment this
 			#d.sales_order, #comment this
-			#delivery_note, 
+			delivery_note, 
 			#d.income_account, #comment this
-			#d.cost_center, 
+			d.cost_center, 
 			#d.stock_qty, #comment this
 			#d.stock_uom #comment this
 		]
@@ -86,7 +86,7 @@ def _execute(filters=None, additional_table_columns=None, additional_query_colum
 		row += [
 			total_tax, 
 			d.base_net_amount + total_tax, 
-			company_currency #comment this
+			# company_currency #comment this
 		]
 
 		data.append(row)
