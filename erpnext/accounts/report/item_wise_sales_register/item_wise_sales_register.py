@@ -49,7 +49,7 @@ def _execute(filters=None, additional_table_columns=None, additional_query_colum
 			d.description, 
 			d.parent, 
 			d.posting_date, 
-			d.customer, 
+			# d.customer, 
 			d.customer_name
 			]
 
@@ -62,29 +62,33 @@ def _execute(filters=None, additional_table_columns=None, additional_query_colum
 			#d.debit_to, #comment this
 			", ".join(mode_of_payments.get(d.parent, [])),
 			#d.territory, #comment this
-			d.project, 
+			# d.project, 
 			#d.company, #comment this
 			#d.sales_order, #comment this
-			delivery_note, 
+			# delivery_note, 
 			#d.income_account, #comment this
-			d.cost_center, 
+			# d.cost_center, 
 			#d.stock_qty, #comment this
 			#d.stock_uom #comment this
 		]
 
 		if d.stock_uom != d.uom and d.stock_qty:
-			row += [(d.base_net_rate * d.qty)/d.stock_qty, d.base_net_amount]
+			row += [
+			#(d.base_net_rate * d.qty)/d.stock_qty, 
+			d.base_net_amount]
 		else:
-			row += [d.base_net_rate, d.base_net_amount]
+			row += [
+			#d.base_net_rate, 
+			d.base_net_amount]
 
-		total_tax = 0
-		for tax in tax_columns:
-			item_tax = itemised_tax.get(d.name, {}).get(tax, {})
-			row += [item_tax.get("tax_rate", 0), item_tax.get("tax_amount", 0)]
-			total_tax += flt(item_tax.get("tax_amount"))
+		#total_tax = 0
+		#for tax in tax_columns:
+		#	item_tax = itemised_tax.get(d.name, {}).get(tax, {})
+		#	row += [item_tax.get("tax_rate", 0), item_tax.get("tax_amount", 0)]
+		#	total_tax += flt(item_tax.get("tax_amount"))
 
 		row += [
-			total_tax, 
+			#total_tax, 
 			d.base_net_amount + total_tax, 
 			# company_currency #comment this
 		]
@@ -101,7 +105,7 @@ def get_columns(additional_table_columns):
 		"Description::150", 
 		_("Invoice") + ":Link/Sales Invoice:120",
 		_("Posting Date") + ":Date:80", 
-		_("Customer") + ":Link/Customer:120",
+		# _("Customer") + ":Link/Customer:120",
 		_("Customer Name") + "::120"
 	]
 
@@ -113,15 +117,15 @@ def get_columns(additional_table_columns):
 		#_("Receivable Account") + ":Link/Account:120", #comment this
 		_("Mode of Payment") + "::120", 
 		#_("Territory") + ":Link/Territory:80", #comment this
-		_("Project") + ":Link/Project:80", 
+		# _("Project") + ":Link/Project:80", 
 		#_("Company") + ":Link/Company:100", #comment this
 		#_("Sales Order") + ":Link/Sales Order:100", #comment this
-		_("Delivery Note") + ":Link/Delivery Note:100",
+		#_("Delivery Note") + ":Link/Delivery Note:100",
 		#_("Income Account") + ":Link/Account:140", #comment this
-		_("Cost Center") + ":Link/Cost Center:140",
+		#_("Cost Center") + ":Link/Cost Center:140",
 		#_("Stock Qty") + ":Float:120", #comment this
 		#_("Stock UOM") + "::100", #comment this
-		_("Rate") + ":Currency/currency:120",
+		#_("Rate") + ":Currency/currency:120",
 		_("Amount") + ":Currency/currency:120"
 	]
 
@@ -301,6 +305,6 @@ def get_tax_accounts(item_list, columns, company_currency,
 		columns.append(desc + " Rate:Data:80")
 		columns.append(desc + " Amount:Currency/currency:100")
 
-	columns += ["Total Tax:Currency/currency:80", "Total:Currency/currency:100"]
+	#columns += ["Total Tax:Currency/currency:80", "Total:Currency/currency:100"]
 
 	return itemised_tax, tax_columns
