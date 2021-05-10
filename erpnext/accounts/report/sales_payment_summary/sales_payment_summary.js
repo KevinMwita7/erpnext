@@ -24,13 +24,13 @@ frappe.query_reports["Sales Payment Summary"] = {
 			"options": "Company",
 			"default": frappe.defaults.get_user_default("Company")
 		},
-		{
+		/*{
 			"fieldname":"owner",
 			"label": __("Owner"),
 			"fieldtype": "Link",
 			"options": "User",
 			"defaults": user
-		}, // comment this out
+		},*/
 		{
 			"fieldname":"is_pos",
 			"label": __("Show only POS"),

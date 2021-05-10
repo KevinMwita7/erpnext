@@ -22,12 +22,12 @@ def _execute(filters=None, additional_table_columns=None, additional_query_colum
 	item_list = get_items(filters, additional_query_columns)
 	if item_list:
 		itemised_tax, tax_columns = get_tax_accounts(item_list, columns, company_currency)
-	columns.append({
-		"fieldname": "currency",
-		"label": _("Currency"),
-		"fieldtype": "Data",
-		"width": 80
-	}) # comment this
+	#columns.append({
+	#	"fieldname": "currency",
+	#	"label": _("Currency"),
+	#	"fieldtype": "Data",
+	#	"width": 80
+	#})
 	mode_of_payments = get_mode_of_payments(set([d.parent for d in item_list]))
 	so_dn_map = get_delivery_notes_against_sales_order(item_list)
 
@@ -58,18 +58,18 @@ def _execute(filters=None, additional_table_columns=None, additional_query_colum
 				row.append(d.get(col))
 
 		row += [
-			d.customer_group, #comment this
-			d.debit_to, #comment this
-			", ".join(mode_of_payments.get(d.parent, [])),
-			d.territory, #comment this
-			d.project, 
-			d.company, #comment this
-			d.sales_order, #comment this
-			delivery_note, 
-			d.income_account, #comment this
-			d.cost_center, 
-			d.stock_qty, #comment this
-			d.stock_uom #comment this
+			# d.customer_group, #comment this
+			#d.debit_to, #comment this
+			#", ".join(mode_of_payments.get(d.parent, [])),
+			#d.territory, #comment this
+			#d.project, 
+			#d.company, #comment this
+			#d.sales_order, #comment this
+			#delivery_note, 
+			#d.income_account, #comment this
+			#d.cost_center, 
+			#d.stock_qty, #comment this
+			#d.stock_uom #comment this
 		]
 
 		if d.stock_uom != d.uom and d.stock_qty:
@@ -109,18 +109,18 @@ def get_columns(additional_table_columns):
 		columns += additional_table_columns
 
 	columns += [
-		_("Customer Group") + ":Link/Customer Group:120", #comment this
-		_("Receivable Account") + ":Link/Account:120", #comment this
+		#_("Customer Group") + ":Link/Customer Group:120", #comment this
+		#_("Receivable Account") + ":Link/Account:120", #comment this
 		_("Mode of Payment") + "::120", 
-		_("Territory") + ":Link/Territory:80", #comment this
+		#_("Territory") + ":Link/Territory:80", #comment this
 		_("Project") + ":Link/Project:80", 
-		_("Company") + ":Link/Company:100", #comment this
-		_("Sales Order") + ":Link/Sales Order:100", #comment this
+		#_("Company") + ":Link/Company:100", #comment this
+		#_("Sales Order") + ":Link/Sales Order:100", #comment this
 		_("Delivery Note") + ":Link/Delivery Note:100",
-		_("Income Account") + ":Link/Account:140", #comment this
+		#_("Income Account") + ":Link/Account:140", #comment this
 		_("Cost Center") + ":Link/Cost Center:140",
-		_("Stock Qty") + ":Float:120", #comment this
-		_("Stock UOM") + "::100", #comment this
+		#_("Stock Qty") + ":Float:120", #comment this
+		#_("Stock UOM") + "::100", #comment this
 		_("Rate") + ":Currency/currency:120",
 		_("Amount") + ":Currency/currency:120"
 	]
