@@ -36,6 +36,7 @@ def _execute(filters, additional_table_columns=None, additional_query_columns=No
 		cost_center = list(set(invoice_cc_wh_map.get(inv.name, {}).get("cost_center", [])))
 		warehouse = list(set(invoice_cc_wh_map.get(inv.name, {}).get("warehouse", [])))
 		item_groups = frappe.db.get_list('Sales Invoice Item', filters = { 'parent': inv.name }, fields='item_group')
+		full_name = frappe.db.get_value('User', inv.owner, 'full_name')
 
 		inv_items = ""
 		for item_group in item_groups:
@@ -55,7 +56,7 @@ def _execute(filters, additional_table_columns=None, additional_query_columns=No
 			# inv.get("tax_id"),
 			inv.debit_to, ", ".join(mode_of_payments.get(inv.name, [])),
 			inv.project, 
-			inv.owner, 
+			full_name,
 			inv_items,
 			inv.remarks,
 			", ".join(sales_order), ", ".join(delivery_note),", ".join(cost_center),
