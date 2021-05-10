@@ -158,7 +158,8 @@ def get_conditions(filters):
 	if filters.get("from_date"): conditions += " and posting_date >= %(from_date)s"
 	if filters.get("to_date"): conditions += " and posting_date <= %(to_date)s"
 
-	if filters.get("owner"): conditions += " and owner = %(owner)s"
+	# if filters.get("owner"): conditions += " and owner = %(owner)s"
+	if filters.get("owner"): conditions += " and modified_by = %(owner)s"
 
 	if filters.get("mode_of_payment"):
 		conditions += """ and exists(select name from `tabSales Invoice Payment`
@@ -194,7 +195,7 @@ def get_invoices(filters, additional_query_columns):
 	conditions = get_conditions(filters)
 	return frappe.db.sql("""
 		select name, posting_date, debit_to, project, customer,
-		customer_name, owner, remarks, territory, tax_id, customer_group,
+		customer_name, IFNULL(modified_by, owner) as "owner", remarks, territory, tax_id, customer_group,
 		base_net_total, base_grand_total, base_rounded_total, outstanding_amount {0}
 		from `tabSales Invoice`
 		where docstatus = 1 %s order by posting_date desc, name desc""".format(additional_query_columns or '') %
