@@ -14,6 +14,7 @@ def get_data(filters):
 	from_date = filters["from_date"] if "from_date" in filters else "26-10-2020"
 	to_date = filters["to_date"] if "to_date" in  filters else datetime.now().strftime('%Y-%m-%d')
 	collection_type = "%" + filters["collection_type"] + "%" if "collection_type" in filters else '%%'
+	
 	cumulative_data = frappe.db.get_list('Sales Invoice',
 	fields = ['sum(base_total) as total_sum', 'remarks'], 
 	filters = {
@@ -24,6 +25,7 @@ def get_data(filters):
 	group_by = 'remarks'
 	)
 	
+	frappe.msgprint("<pre>{}</pre>".format(frappe.as_json(cumulative_data)))
 	# frappe.msgprint(filters["from_date"])
 	data = []
 	grand_total = 0
