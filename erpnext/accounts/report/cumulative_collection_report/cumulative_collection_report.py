@@ -18,7 +18,7 @@ def get_data(filters):
 	cumulative_data = frappe.db.get_list('Sales Invoice',
 	fields = ['sum(base_total) as total_sum', 'remarks'], 
 	filters = {
-		'creation': ['>=', from_date],
+		'creation': ['between', [from_date, to_date]],
 		#'creation': ['<=', to_date],
 		'remarks': ['like', collection_type if collection_type != "%Others%" else "%No Remarks%"]
 	},
