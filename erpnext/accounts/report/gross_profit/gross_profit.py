@@ -18,25 +18,115 @@ def execute(filters=None):
 	data = []
 
 	group_wise_columns = frappe._dict({
-		"invoice": ["parent", "customer", "customer_group", "posting_date","item_code", "item_name","item_group", "brand", "description", \
-			"warehouse", "qty", "base_rate", "buying_rate", "base_amount",
-			"buying_amount", "gross_profit", "gross_profit_percent", "project"],
-		"item_code": ["item_code", "item_name", "brand", "description", "qty", "base_rate",
-			"buying_rate", "base_amount", "buying_amount", "gross_profit", "gross_profit_percent"],
-		"warehouse": ["warehouse", "qty", "base_rate", "buying_rate", "base_amount", "buying_amount",
-			"gross_profit", "gross_profit_percent"],
-		"brand": ["brand", "qty", "base_rate", "buying_rate", "base_amount", "buying_amount",
-			"gross_profit", "gross_profit_percent"],
-		"item_group": ["item_group", "qty", "base_rate", "buying_rate", "base_amount", "buying_amount",
-			"gross_profit", "gross_profit_percent"],
-		"customer": ["customer", "customer_group", "qty", "base_rate", "buying_rate", "base_amount", "buying_amount",
-			"gross_profit", "gross_profit_percent"],
-		"customer_group": ["customer_group", "qty", "base_rate", "buying_rate", "base_amount", "buying_amount",
-			"gross_profit", "gross_profit_percent"],
-		"sales_person": ["sales_person", "allocated_amount", "qty", "base_rate", "buying_rate", "base_amount", "buying_amount",
-			"gross_profit", "gross_profit_percent"],
-		"project": ["project", "base_amount", "buying_amount", "gross_profit", "gross_profit_percent"],
-		"territory": ["territory", "base_amount", "buying_amount", "gross_profit", "gross_profit_percent"]
+		"invoice": [
+			"parent", 
+			"customer", 
+			#"customer_group", 
+			"posting_date",
+			"item_code", 
+			"item_name",
+			"item_group", 
+			"brand", 
+			"description", \
+			#"warehouse", 
+			"qty", 
+			#"base_rate", 
+			#"buying_rate", 
+			"base_amount",
+			#"buying_amount", 
+			"gross_profit", 
+			#"gross_profit_percent", 
+			#"project"
+			],
+		"item_code": [
+			"item_code", 
+			"item_name", 
+			"brand", 
+			"description", 
+			"qty", 
+			#"base_rate",
+			#"buying_rate", 
+			"base_amount", 
+			#"buying_amount", 
+			"gross_profit", 
+			#"gross_profit_percent"
+			],
+		"warehouse": [
+			#"warehouse", 
+			"qty", 
+			#"base_rate", 
+			#"buying_rate", 
+			"base_amount", 
+			#"buying_amount",
+			"gross_profit", 
+			#"gross_profit_percent"
+			],
+		"brand": [
+			"brand", 
+			"qty", 
+			#"base_rate", 
+			#"buying_rate", 
+			"base_amount", 
+			#"buying_amount",
+			"gross_profit", 
+			#"gross_profit_percent"
+			],
+		"item_group": [
+			"item_group", 
+			"qty", 
+			#"base_rate", 
+			#"buying_rate", 
+			"base_amount", 
+			#"buying_amount",
+			"gross_profit", 
+			#"gross_profit_percent"
+			],
+		"customer": [
+			"customer", 
+			#"customer_group", 
+			"qty", 
+			#"base_rate", 
+			#"buying_rate", 
+			"base_amount", 
+			#"buying_amount",
+			"gross_profit", 
+			#"gross_profit_percent"
+			],
+		"customer_group": [
+			#"customer_group", 
+			"qty", 
+			#"base_rate", 
+			#"buying_rate", 
+			"base_amount", 
+			#"buying_amount",
+			"gross_profit", 
+			#"gross_profit_percent"
+			],
+		"sales_person": [
+			"sales_person", 
+			"allocated_amount", 
+			"qty", 
+			#"base_rate", 
+			#"buying_rate", 
+			"base_amount", 
+			#"buying_amount",
+			"gross_profit", 
+			#"gross_profit_percent"
+			],
+		"project": [
+			"project", 
+			"base_amount", 
+			#"buying_amount", 
+			"gross_profit", 
+			#"gross_profit_percent"
+			],
+		"territory": [
+			#"territory", 
+			"base_amount", 
+			#"buying_amount", 
+			"gross_profit", 
+			#"gross_profit_percent"
+			]
 	})
 
 	columns = get_columns(group_wise_columns, filters)
@@ -62,20 +152,20 @@ def get_columns(group_wise_columns, filters):
 		"item_group": _("Item Group") + ":Link/Item Group",
 		"brand": _("Brand"),
 		"description": _("Description"),
-		"warehouse": _("Warehouse") + ":Link/Warehouse",
+		#"warehouse": _("Warehouse") + ":Link/Warehouse",
 		"qty": _("Qty") + ":Float",
-		"base_rate": _("Avg. Selling Rate") + ":Currency/currency",
-		"buying_rate": _("Valuation Rate") + ":Currency/currency",
+		#"base_rate": _("Avg. Selling Rate") + ":Currency/currency",
+		#"buying_rate": _("Valuation Rate") + ":Currency/currency",
 		"base_amount": _("Selling Amount") + ":Currency/currency",
-		"buying_amount": _("Buying Amount") + ":Currency/currency",
+		#"buying_amount": _("Buying Amount") + ":Currency/currency",
 		"gross_profit": _("Gross Profit") + ":Currency/currency",
-		"gross_profit_percent": _("Gross Profit %") + ":Percent",
-		"project": _("Project") + ":Link/Project",
+		#"gross_profit_percent": _("Gross Profit %") + ":Percent",
+		#"project": _("Project") + ":Link/Project",
 		"sales_person": _("Sales person"),
 		"allocated_amount": _("Allocated Amount") + ":Currency/currency",
 		"customer": _("Customer") + ":Link/Customer",
-		"customer_group": _("Customer Group") + ":Link/Customer Group",
-		"territory": _("Territory") + ":Link/Territory"
+		#"customer_group": _("Customer Group") + ":Link/Customer Group",
+		#"territory": _("Territory") + ":Link/Territory"
 	})
 
 	for col in group_wise_columns.get(scrub(filters.group_by)):
