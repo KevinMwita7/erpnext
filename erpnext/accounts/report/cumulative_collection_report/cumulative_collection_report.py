@@ -29,12 +29,12 @@ def get_data(filters):
 	grand_total = 0
 	for row in cumulative_data:
 		data.append([
-			frappe.utils.fmt_money(row["total_sum"], currency="$"), 
+			frappe.utils.fmt_money(row["total_sum"], currency="KES"),
 			row['remarks'] if row['remarks'] != "No Remarks" else "Others"
 		])
 		grand_total += float(row["total_sum"])
 
-	data.append([grand_total, "Grand Total"])
+	data.append([frappe.utils.fmt_money(grand_total, currency="KES"), "Grand Total"])
 
 	return data	
 
