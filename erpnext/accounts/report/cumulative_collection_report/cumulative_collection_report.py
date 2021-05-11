@@ -29,11 +29,15 @@ def get_data(filters):
 	data = []
 	grand_total = 0
 	for row in cumulative_data:
-		data.append([
-			frappe.utils.fmt_money(row["total_sum"], currency="KES"),
-			row['remarks'] if row['remarks'] != "No Remarks" else "Others"
-		])
-		grand_total += float(row["total_sum"])
+		# Only include cash, NHIF, linda mama, child under five and prisoner
+		if(row["remarks"] != "Old Age" and row["remarks"] != "Unable to Meet Cost" and \
+			row["remarks"] != "Exception - Person Aged 65 or Above" and row["remarks"] != "No Remarks"):
+			data.append([
+				frappe.utils.fmt_money(row["total_sum"], currency="KES"),
+				# row['remarks'] if row['remarks'] != "No Remarks" else "Others"
+				row['remarks']
+			])
+			grand_total += float(row["total_sum"])
 
 	data.append([frappe.utils.fmt_money(grand_total, currency="KES"), "Grand Total"])
 
