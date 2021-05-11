@@ -20,7 +20,7 @@ def get_data(filters):
 	filters = {
 		'creation': ['>=', from_date],
 		'creation': ['<=', to_date],
-		'remarks': ['like', collection_type]
+		'remarks': ['like', collection_type if collection_type != "Others" else "No Remarks"]
 	},
 	group_by = 'remarks'
 	)
@@ -29,7 +29,7 @@ def get_data(filters):
 	data = []
 	grand_total = 0
 	for row in cumulative_data:
-		data.append([row['total_sum'], row['remarks']])
+		data.append([row['total_sum'], row['remarks'] if row['remarks'] != "No Remarks" else "Others"])
 		grand_total += float(row["total_sum"])
 
 	data.append([grand_total, "Grand Total"])
