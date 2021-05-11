@@ -34,7 +34,8 @@ def get_data(filters):
 		])
 		grand_total += float(row["total_sum"])
 
-	data.append([frappe.utils.fmt_money(grand_total, currency="KES"), "Grand Total"])
+	if(collection_type not in filters):
+		data.append([frappe.utils.fmt_money(grand_total, currency="KES"), "Grand Total"])
 
 	return data	
 
