@@ -3,19 +3,18 @@
 
 from __future__ import unicode_literals
 from datetime import datetime
-from frappe import msgprint, _, as_json, db
+import frappe
 
 def execute(filters=None):
 	columns, data = get_columns(), get_data(filters)
 	return columns, data
 
 def get_data(filters):
-	# msgprint("<pre>{}</pre>".format(as_json(filters)))
+	# frappe.msgprint("<pre>{}</pre>".format(frappe.as_json(filters)))
 	from_date = filters["from_date"] if "from_date" in filters else "26-10-2020"
 	to_date = filters["to_date"] if "to_date" in  filters else datetime.now().strftime('%Y-%m-%d')
 	collection_type = "%" + filters["collection_type"] + "%" if "collection_type" in filters else '%%'
-	msgprint(collection_type)
-	cumulative_data = db.get_list('Sales Invoice',
+	cumulative_data = frappe.db.get_list('Sales Invoice',
 	fields = ['sum(base_total) as total_sum', 'remarks'], 
 	filters = {
 		'creation': ['>=', from_date],
@@ -25,11 +24,14 @@ def get_data(filters):
 	group_by = 'remarks'
 	)
 	
-	# msgprint(filters["from_date"])
+	# frappe.msgprint(filters["from_date"])
 	data = []
 	grand_total = 0
 	for row in cumulative_data:
-		data.append([row['total_sum'], row['remarks'] if row['remarks'] != "No Remarks" else "Others"])
+		data.append([
+			frappe.utils.fmt_money(row["total_sum"], currency="$"), 
+			row['remarks'] if row['remarks'] != "No Remarks" else "Others"
+		])
 		grand_total += float(row["total_sum"])
 
 	data.append([grand_total, "Grand Total"])
@@ -39,13 +41,13 @@ def get_data(filters):
 def get_columns():
 	return [{
 		"fieldname": "total_amount",
-		"label": _("Total Amount"),
+		"label": frappe._("Total Amount"),
 		"fieldtype": "Data",
 		"width": 550
 	},
 	{
 		"fieldname": "collection_type",
-		"label": _("Collection Type"),
+		"label": frappe._("Collection Type"),
 		"fieldtype": "Data",
 		"width": 550
 	}]
