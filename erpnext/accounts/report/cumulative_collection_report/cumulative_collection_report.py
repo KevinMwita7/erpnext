@@ -19,13 +19,12 @@ def get_data(filters):
 	fields = ['sum(base_total) as total_sum', 'remarks'], 
 	filters = {
 		'creation': ['>=', from_date],
-		'creation': ['<=', to_date],
+		#'creation': ['<=', to_date],
 		'remarks': ['like', collection_type if collection_type != "%Others%" else "%No Remarks%"]
 	},
 	group_by = 'remarks'
 	)
-	
-	frappe.msgprint("<pre>{}</pre>".format(frappe.as_json(cumulative_data)))
+
 	# frappe.msgprint(filters["from_date"])
 	data = []
 	grand_total = 0
