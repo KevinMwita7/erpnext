@@ -32,14 +32,14 @@ class ReceivablePayableReport(object):
 
 		columns += [_(args.get("party_type")) + ":Link/" + args.get("party_type") + ":200"]
 
-		if args.get("party_type") == 'Customer':
-			columns.append({
-				"label": _("Customer Contact"),
-				"fieldtype": "Link",
-				"fieldname": "contact",
-				"options":"Contact",
-				"width": 100
-			})
+		#if args.get("party_type") == 'Customer':
+		#	columns.append({
+		#		"label": _("Customer Contact"),
+		#		"fieldtype": "Link",
+		#		"fieldname": "contact",
+		#		"options":"Contact",
+		#		"width": 100
+		#	})
 
 		if party_naming_by == "Naming Series":
 			columns += [args.get("party_type") + " Name::110"]
@@ -81,7 +81,8 @@ class ReceivablePayableReport(object):
 				"width": 120
 			})
 
-		for label in ("Invoiced Amount", "Paid Amount", credit_or_debit_note, "Outstanding Amount"):
+		# for label in ("Invoiced Amount", "Paid Amount", credit_or_debit_note, "Outstanding Amount"):
+		for label in ("Invoiced Amount", "Paid Amount", "Outstanding Amount"):
 			columns.append({
 				"label": _(label),
 				"fieldname": frappe.scrub(label),
@@ -124,49 +125,50 @@ class ReceivablePayableReport(object):
 			"options": "Currency",
 			"width": 100
 		},
-		{
-			"fieldname": "pdc/lc_ref",
-			"label": _("PDC/LC Ref"),
-			"fieldtype": "Data",
-			"width": 110
-		},
-		{
-			"fieldname": "pdc/lc_amount",
-			"label": _("PDC/LC Amount"),
-			"fieldtype": "Currency",
-			"options": "currency",
-			"width": 130
-		},
-		{
-			"fieldname": "remaining_balance",
-			"label": _("Remaining Balance"),
-			"fieldtype": "Currency",
-			"options": "currency",
-			"width": 130
-		}]
+		#{
+		#	"fieldname": "pdc/lc_ref",
+		#	"label": _("PDC/LC Ref"),
+		#	"fieldtype": "Data",
+		#	"width": 110
+		#},
+		#{
+		#	"fieldname": "pdc/lc_amount",
+		#	"label": _("PDC/LC Amount"),
+		#	"fieldtype": "Currency",
+		#	"options": "currency",
+		#	"width": 130
+		#},
+		#{
+		#	"fieldname": "remaining_balance",
+		#	"label": _("Remaining Balance"),
+		#	"fieldtype": "Currency",
+		#	"options": "currency",
+		#	"width": 130
+		#}
+		]
 
 		if args.get('party_type') == 'Customer':
 			columns += [
-				{
-					"label": _("Customer LPO"),
-					"fieldtype": "Data",
-					"fieldname": "po_no",
-					"width": 100,
-				},
-				_("Delivery Note") + ":Data:100",
-				_("Territory") + ":Link/Territory:80",
-				_("Customer Group") + ":Link/Customer Group:120",
+				#{
+				#	"label": _("Customer LPO"),
+				#	"fieldtype": "Data",
+				#	"fieldname": "po_no",
+				#	"width": 100,
+				#},
+				#_("Delivery Note") + ":Data:100",
+				#_("Territory") + ":Link/Territory:80",
+				#_("Customer Group") + ":Link/Customer Group:120",
 				{
 					"label": _("Sales Person"),
 					"fieldtype": "Data",
 					"fieldname": "sales_person",
-					"width": 120,
+					"width": 120
 				}
 			]
 		if args.get("party_type") == "Supplier":
 			columns += [_("Supplier Group") + ":Link/Supplier Group:80"]
 
-		columns.append(_("Remarks") + "::200")
+		#columns.append(_("Remarks") + "::200")
 
 		return columns
 
@@ -293,8 +295,8 @@ class ReceivablePayableReport(object):
 		if party_naming_by == "Naming Series":
 			row += [self.get_party_name(gle.party_type, gle.party)]
 
-		if args.get("party_type") == 'Customer':
-			row += [self.get_customer_contact(gle.party_type, gle.party)]
+		#if args.get("party_type") == 'Customer':
+		#	row += [self.get_customer_contact(gle.party_type, gle.party)]
 
 		# get due date
 		if not due_date:
@@ -320,7 +322,8 @@ class ReceivablePayableReport(object):
 
 		if not payment_term_amount:
 			paid_amt = invoiced_amount - outstanding_amount - credit_note_amount
-		row += [invoiced_amount, paid_amt, credit_note_amount, outstanding_amount]
+		# row += [invoiced_amount, paid_amt, credit_note_amount, outstanding_amount]
+		row += [invoiced_amount, paid_amt, outstanding_amount]
 
 		# ageing data
 		if self.filters.ageing_based_on == "Due Date":
@@ -350,23 +353,24 @@ class ReceivablePayableReport(object):
 
 		remaining_balance = outstanding_amount - flt(pdc_amount)
 		pdc_details = ", ".join(pdc_details)
-		row += [pdc_details, pdc_amount, remaining_balance]
+		# row += [pdc_details, pdc_amount, remaining_balance]
 
-		if args.get('party_type') == 'Customer':
+		#if args.get('party_type') == 'Customer':
 			# customer LPO
-			row += [self.voucher_details.get(gle.voucher_no, {}).get("po_no")]
+		#	row += [self.voucher_details.get(gle.voucher_no, {}).get("po_no")]
 
 			# Delivery Note
-			row += [self.voucher_details.get(gle.voucher_no, {}).get("delivery_note")]
+		#	row += [self.voucher_details.get(gle.voucher_no, {}).get("delivery_note")]
 
 		# customer territory / supplier group
 		if args.get("party_type") == "Customer":
-			row += [self.get_territory(gle.party), self.get_customer_group(gle.party),
-				self.voucher_details.get(gle.voucher_no, {}).get("sales_person")]
+			#row += [self.get_territory(gle.party), self.get_customer_group(gle.party),
+			#	self.voucher_details.get(gle.voucher_no, {}).get("sales_person")]
+			row += [self.voucher_details.get(gle.voucher_no, {}).get("sales_person")]
 		if args.get("party_type") == "Supplier":
 			row += [self.get_supplier_group(gle.party)]
 
-		row.append(gle.remarks)
+		#row.append(gle.remarks)
 
 		return row
 
