@@ -151,6 +151,7 @@ def get_items(filters, additional_query_columns):
 		from `tabSales Invoice`, `tabSales Invoice Item`
 		where `tabSales Invoice`.name = `tabSales Invoice Item`.parent
 			and `tabSales Invoice`.docstatus = 1 %s %s
+		group by `tabSales Invoice Item`.item_name
 		order by `tabSales Invoice`.posting_date desc, `tabSales Invoice Item`.item_code desc
 		""".format(additional_query_columns or '') % (conditions, match_conditions), filters, as_dict=1)
 
