@@ -33,9 +33,9 @@ def get_data(filters):
 		if(row["remarks"] != "Old Age" and row["remarks"] != "Unable to Meet Cost" and \
 			row["remarks"] != "Exception - Person Aged 65 or Above" and row["remarks"] != "No Remarks"):
 			data.append([
-				frappe.utils.fmt_money(row["total_sum"], currency="KES"),
 				# row['remarks'] if row['remarks'] != "No Remarks" else "Others"
-				row['remarks']
+				row['remarks'],
+				frappe.utils.fmt_money(row["total_sum"], currency="KES"),
 			])
 			grand_total += float(row["total_sum"])
 
@@ -44,15 +44,16 @@ def get_data(filters):
 	return data	
 
 def get_columns():
-	return [{
-		"fieldname": "total_amount",
-		"label": frappe._("Total Amount"),
+	return [
+	{
+		"fieldname": "collection_type",
+		"label": frappe._("Collection Type"),
 		"fieldtype": "Data",
 		"width": 550
 	},
 	{
-		"fieldname": "collection_type",
-		"label": frappe._("Collection Type"),
+		"fieldname": "total_amount",
+		"label": frappe._("Total Amount"),
 		"fieldtype": "Data",
 		"width": 550
 	}]
