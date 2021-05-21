@@ -39,7 +39,6 @@ def _execute(filters=None, additional_table_columns=None, additional_query_colum
 			d.description, 
 			d.parent, 
 			d.posting_date, 
-			d.customer_name
 			]
 
 		if additional_query_columns:
@@ -74,7 +73,6 @@ def get_columns(additional_table_columns):
 		"Description::150", 
 		_("Invoice") + ":Link/Sales Invoice:120",
 		_("Posting Date") + ":Date:80", 
-		_("Customer Name") + "::120"
 	]
 
 	if additional_table_columns:
@@ -91,7 +89,6 @@ def get_conditions(filters):
 	conditions = ""
 
 	for opts in (("company", " and company=%(company)s"),
-		("customer", " and `tabSales Invoice`.customer = %(customer)s"),
 		("item_code", " and `tabSales Invoice Item`.item_code = %(item_code)s"),
 		("from_date", " and `tabSales Invoice`.posting_date>=%(from_date)s"),
 		("to_date", " and `tabSales Invoice`.posting_date<=%(to_date)s"),
@@ -138,15 +135,14 @@ def get_items(filters, additional_query_columns):
 		select
 			`tabSales Invoice Item`.name, `tabSales Invoice Item`.parent,
 			`tabSales Invoice`.posting_date, `tabSales Invoice`.debit_to,
-			`tabSales Invoice`.project, `tabSales Invoice`.customer, `tabSales Invoice`.remarks,
+			`tabSales Invoice`.project, `tabSales Invoice`.remarks,
 			`tabSales Invoice`.territory, `tabSales Invoice`.company, `tabSales Invoice`.base_net_total,
 			`tabSales Invoice Item`.item_code, `tabSales Invoice Item`.item_name,
 			`tabSales Invoice Item`.item_group, `tabSales Invoice Item`.description, `tabSales Invoice Item`.sales_order,
 			`tabSales Invoice Item`.delivery_note, `tabSales Invoice Item`.income_account,
 			`tabSales Invoice Item`.cost_center, `tabSales Invoice Item`.stock_qty,
 			`tabSales Invoice Item`.stock_uom, `tabSales Invoice Item`.base_net_rate,
-			`tabSales Invoice Item`.base_net_amount, `tabSales Invoice`.customer_name,
-			`tabSales Invoice`.customer_group, `tabSales Invoice Item`.so_detail,
+			`tabSales Invoice Item`.base_net_amount, `tabSales Invoice Item`.so_detail,
 			`tabSales Invoice`.update_stock, `tabSales Invoice Item`.uom, `tabSales Invoice Item`.qty {0}
 		from `tabSales Invoice`, `tabSales Invoice Item`
 		where `tabSales Invoice`.name = `tabSales Invoice Item`.parent

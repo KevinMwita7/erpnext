@@ -12,12 +12,6 @@ frappe.query_reports["Item-wise Sales Summary"] = {
 			"reqd": 1
 		},
 		{
-			"fieldname":"customer",
-			"label": __("Customer"),
-			"fieldtype": "Link",
-			"options": "Customer"
-		},
-		{
 			"fieldname":"company",
 			"label": __("Company"),
 			"fieldtype": "Link",
