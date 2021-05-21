@@ -142,7 +142,7 @@ def get_items(filters, additional_query_columns):
 			`tabSales Invoice Item`.delivery_note, `tabSales Invoice Item`.income_account,
 			`tabSales Invoice Item`.cost_center, `tabSales Invoice Item`.stock_qty,
 			`tabSales Invoice Item`.stock_uom, `tabSales Invoice Item`.base_net_rate,
-			sum(`tabSales Invoice Item`.base_net_amount), `tabSales Invoice Item`.so_detail,
+			sum(`tabSales Invoice Item`.base_net_amount) as base_net_amount, `tabSales Invoice Item`.so_detail,
 			`tabSales Invoice`.update_stock, `tabSales Invoice Item`.uom, `tabSales Invoice Item`.qty {0}
 		from `tabSales Invoice`, `tabSales Invoice Item`
 		where `tabSales Invoice`.name = `tabSales Invoice Item`.parent
