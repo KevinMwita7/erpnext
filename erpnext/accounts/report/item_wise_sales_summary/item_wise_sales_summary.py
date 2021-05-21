@@ -135,15 +135,11 @@ def get_items(filters, additional_query_columns):
 		select
 			`tabSales Invoice Item`.name, `tabSales Invoice Item`.parent,
 			`tabSales Invoice`.posting_date, `tabSales Invoice`.debit_to,
-			`tabSales Invoice`.project, `tabSales Invoice`.remarks,
-			`tabSales Invoice`.territory, `tabSales Invoice`.company, `tabSales Invoice`.base_net_total,
 			`tabSales Invoice Item`.item_code, `tabSales Invoice Item`.item_name,
 			`tabSales Invoice Item`.item_group, `tabSales Invoice Item`.description, `tabSales Invoice Item`.sales_order,
 			`tabSales Invoice Item`.delivery_note, `tabSales Invoice Item`.income_account,
-			`tabSales Invoice Item`.cost_center, `tabSales Invoice Item`.stock_qty,
-			`tabSales Invoice Item`.stock_uom, `tabSales Invoice Item`.base_net_rate,
-			`tabSales Invoice Item`.base_net_amount, `tabSales Invoice Item`.so_detail,
-			`tabSales Invoice`.update_stock, `tabSales Invoice Item`.uom, `tabSales Invoice Item`.qty {0}
+			`tabSales Invoice Item`.stock_uom, `tabSales Invoice Item`.base_net_amount, `tabSales Invoice Item`.so_detail,
+			{0}
 		from `tabSales Invoice`, `tabSales Invoice Item`
 		where `tabSales Invoice`.name = `tabSales Invoice Item`.parent
 			and `tabSales Invoice`.docstatus = 1 %s %s
