@@ -71,8 +71,8 @@ def get_columns(additional_table_columns):
 		_("Item Name") + "::120",
 		_("Item Group") + ":Link/Item Group:100", 
 		"Description::150", 
-		_("Invoice") + ":Link/Sales Invoice:120",
-		_("Posting Date") + ":Date:80", 
+		_("Invoice") + ":Link/Sales Invoice:150",
+		_("Posting Date") + ":Date:120", 
 	]
 
 	if additional_table_columns:
