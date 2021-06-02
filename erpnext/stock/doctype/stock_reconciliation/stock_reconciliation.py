@@ -33,9 +33,6 @@ class StockReconciliation(StockController):
 		self.set_zero_value_for_customer_provided_items()
 		self.set_total_qty_and_amount()
 
-		if self._action=="submit":
-			self.make_batches('warehouse')
-
 	def on_submit(self):
 		self.update_stock_ledger()
 		self.make_gl_entries()
