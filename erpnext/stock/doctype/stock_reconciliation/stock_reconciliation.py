@@ -328,9 +328,6 @@ class StockReconciliation(StockController):
 	def get_sle_for_items(self, row, serial_nos=None):
 		"""Insert Stock Ledger Entries"""
 
-		if not serial_nos and row.serial_no:
-			serial_nos = get_serial_nos(row.serial_no)
-
 		data = frappe._dict({
 			"doctype": "Stock Ledger Entry",
 			"item_code": row.item_code,
