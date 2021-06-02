@@ -30,7 +30,6 @@ class StockReconciliation(StockController):
 		self.remove_items_with_no_change()
 		self.validate_data()
 		self.validate_expense_account()
-		self.validate_customer_provided_item()
 		self.set_zero_value_for_customer_provided_items()
 		self.set_total_qty_and_amount()
 
