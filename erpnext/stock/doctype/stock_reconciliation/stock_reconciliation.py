@@ -10,7 +10,7 @@ from erpnext.stock.stock_ledger import update_entries_after
 from erpnext.controllers.stock_controller import StockController
 from erpnext.accounts.utils import get_company_default
 from erpnext.stock.doctype.serial_no.serial_no import get_serial_nos
-from erpnext.stock.utils import get_stock_balance, get_incoming_rate, get_available_serial_nos
+from erpnext.stock.utils import get_stock_balance
 from erpnext.stock.doctype.batch.batch import get_batch_qty
 
 class OpeningEntryAccountError(frappe.ValidationError): pass
