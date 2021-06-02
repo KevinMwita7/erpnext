@@ -537,13 +537,12 @@ def get_stock_balance_for(item_code, warehouse,
 	item_dict = frappe.db.get_value("Item", item_code,
 		["has_serial_no", "has_batch_no"], as_dict=1)
 
-	serial_nos = ""
 	with_serial_no = True if item_dict.get("has_serial_no") else False
 	data = get_stock_balance(item_code, warehouse, posting_date, posting_time,
-		with_valuation_rate=with_valuation_rate, with_serial_no=with_serial_no)
+		with_valuation_rate=with_valuation_rate)
 
 	if with_serial_no:
-		qty, rate, serial_nos = data
+		qty, rate = data
 	else:
 		qty, rate = data
 
@@ -553,7 +552,6 @@ def get_stock_balance_for(item_code, warehouse,
 	return {
 		'qty': qty,
 		'rate': rate,
-		'serial_nos': serial_nos
 	}
 
 @frappe.whitelist()
