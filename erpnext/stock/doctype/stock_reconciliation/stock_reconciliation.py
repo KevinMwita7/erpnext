@@ -37,8 +37,8 @@ class StockReconciliation(StockController):
 		self.update_stock_ledger()
 		self.make_gl_entries()
 
-		from erpnext.stock.doctype.serial_no.serial_no import update_serial_nos_after_submit
-		update_serial_nos_after_submit(self, "items")
+		# from erpnext.stock.doctype.serial_no.serial_no import update_serial_nos_after_submit
+		# update_serial_nos_after_submit(self, "items")
 
 	def on_cancel(self):
 		self.delete_and_repost_sle()
