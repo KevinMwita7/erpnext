@@ -103,7 +103,7 @@ class StockReconciliation(StockController):
 		for row_num, row in enumerate(self.items):
 			# find duplicates
 			key = [row.item_code, row.warehouse]
-			for field in ['serial_no', 'batch_no']:
+			for field in ['serial_no']:
 				if row.get(field):
 					key.append(row.get(field))
 
@@ -175,7 +175,7 @@ class StockReconciliation(StockController):
 				row.serial_no = ''
 
 			# item managed batch-wise not allowed
-			if item.has_batch_no and not row.batch_no and not frappe.flags.in_test:
+			if item.has_batch_no and not frappe.flags.in_test:
 				if not item.create_new_batch or self.purpose != 'Opening Stock':
 					raise frappe.ValidationError(_("Batch no is required for the batched item {0}").format(item_code))
 
@@ -224,9 +224,6 @@ class StockReconciliation(StockController):
 
 				sle_data = self.get_sle_for_items(row)
 
-				if row.batch_no:
-					sle_data.actual_qty = row.quantity_difference
-
 				sl_entries.append(sle_data)
 
 			else:
@@ -261,7 +258,6 @@ class StockReconciliation(StockController):
 				args.update({
 					'actual_qty': -1 * row.current_qty,
 					'serial_no': row.current_serial_no,
-					'batch_no': row.batch_no,
 					'valuation_rate': row.current_valuation_rate
 				})
 
@@ -355,12 +351,8 @@ class StockReconciliation(StockController):
 			"stock_uom": frappe.db.get_value("Item", row.item_code, "stock_uom"),
 			"is_cancelled": "No" if self.docstatus != 2 else "Yes",
 			"serial_no": '\n'.join(serial_nos) if serial_nos else '',
-			"batch_no": row.batch_no,
 			"valuation_rate": flt(row.valuation_rate, row.precision("valuation_rate"))
 		})
-
-		if not row.batch_no:
-			data.qty_after_transaction = flt(row.qty, row.precision("qty"))
 
 		return data
 
@@ -530,7 +522,7 @@ def get_items(warehouse, posting_date, posting_time, company):
 
 @frappe.whitelist()
 def get_stock_balance_for(item_code, warehouse,
-	posting_date, posting_time, batch_no=None, with_valuation_rate= True):
+	posting_date, posting_time, with_valuation_rate= True):
 	frappe.has_permission("Stock Reconciliation", "write", throw = True)
 
 	item_dict = frappe.db.get_value("Item", item_code,
@@ -546,7 +538,7 @@ def get_stock_balance_for(item_code, warehouse,
 		qty, rate = data
 
 	if item_dict.get("has_batch_no"):
-		qty = get_batch_qty(batch_no, warehouse, posting_date=posting_date, posting_time=posting_time) or 0
+		qty = get_batch_qty(warehouse, posting_date=posting_date, posting_time=posting_time) or 0
 
 	return {
 		'qty': qty,
