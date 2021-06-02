@@ -104,7 +104,7 @@ def get_columns(invoice_list, additional_table_columns):
 	columns = [
 		_("Invoice") + ":Link/Sales Invoice:120",
 		_("Posting Date") + ":Date:80",
-		_("Posting Time") + ":Date:80",
+		_("Posting Time") + ":Data:80",
 		# _("Customer") + ":Link/Customer:120", 
 		_("Customer Name") + "::120"
 	]
