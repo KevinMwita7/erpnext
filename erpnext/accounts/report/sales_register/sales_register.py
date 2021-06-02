@@ -31,7 +31,7 @@ def _execute(filters, additional_table_columns=None, additional_query_columns=No
 	data = []
 	for inv in invoice_list:
 		# invoice details
-		sales_order = list(set(invoice_so_dn_map.get(inv.name, {}).get("sales_order", [])))
+		# sales_order = list(set(invoice_so_dn_map.get(inv.name, {}).get("sales_order", [])))
 		delivery_note = list(set(invoice_so_dn_map.get(inv.name, {}).get("delivery_note", [])))
 		cost_center = list(set(invoice_cc_wh_map.get(inv.name, {}).get("cost_center", [])))
 		warehouse = list(set(invoice_cc_wh_map.get(inv.name, {}).get("warehouse", [])))
@@ -45,6 +45,7 @@ def _execute(filters, additional_table_columns=None, additional_query_columns=No
 		row = [
 			inv.name, 
 			inv.posting_date, 
+			inv.posting_time,
 			# inv.customer, 
 			inv.customer_name
 		]
@@ -62,7 +63,7 @@ def _execute(filters, additional_table_columns=None, additional_query_columns=No
 			full_name,
 			inv_items,
 			# inv.remarks,
-			", ".join(sales_order), 
+			# ", ".join(sales_order), 
 			# ", ".join(delivery_note),
 			# ", ".join(cost_center),
 			# ", ".join(warehouse)
@@ -102,7 +103,8 @@ def get_columns(invoice_list, additional_table_columns):
 	"""return columns based on filters"""
 	columns = [
 		_("Invoice") + ":Link/Sales Invoice:120",
-		 _("Posting Date") + ":Date:80",
+		_("Posting Date") + ":Date:80",
+		_("Posting Time") + ":Date:80",
 		# _("Customer") + ":Link/Customer:120", 
 		_("Customer Name") + "::120"
 	]
@@ -129,10 +131,10 @@ def get_columns(invoice_list, additional_table_columns):
 		_("Receivable Account") + ":Link/Account:120", 
 		_("Mode of Payment") + "::120",
 		#_("Project") +":Link/Project:80", 
-		_("Owner") + "::150", 
+		_("Cashier") + "::150", 
 		_("Item Group") + "::150", 
 		#_("Remarks") + "::150",
-		_("Sales Order") + ":Link/Sales Order:100", 
+		# _("Sales Order") + ":Link/Sales Order:100", 
 		#_("Delivery Note") + ":Link/Delivery Note:100",
 		#_("Cost Center") + ":Link/Cost Center:100", 
 		#_("Warehouse") + ":Link/Warehouse:100",
