@@ -193,10 +193,6 @@ class StockReconciliation(StockController):
 		for row in self.items:
 			item = frappe.get_cached_doc("Item", row.item_code)
 			if not (item.has_serial_no):
-				if row.serial_no:
-					frappe.throw(_("Row #{0}: Item {1} is not a Serialized/Batched Item. It cannot have a Serial No/Batch No against it.") \
-						.format(row.idx, frappe.bold(row.item_code)))
-
 				previous_sle = get_previous_sle({
 					"item_code": row.item_code,
 					"warehouse": row.warehouse,
