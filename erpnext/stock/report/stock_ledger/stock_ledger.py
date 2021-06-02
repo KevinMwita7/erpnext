@@ -30,9 +30,9 @@ def execute(filters=None):
 
 	update_included_uom_in_report(columns, data, include_uom, conversion_factors)
 	# Filter suppliers
-	if(filters.get("supplier")):
+	# if(filters.get("supplier")):
 		#frappe.msgprint("<pre>{}</pre>".format(frappe.as_json(data)))
-		data = list(filter(lambda el : True if el.supplier == filters.get("supplier") else False, data))
+		# data = list(filter(lambda el : True if el.supplier == filters.get("supplier") else False, data))
 
 	return columns, data
 
@@ -44,8 +44,8 @@ def get_columns():
 		{"label": _("Item Group"), "fieldname": "item_group", "fieldtype": "Link", "options": "Item Group", "width": 100},
 		#{"label": _("Brand"), "fieldname": "brand", "fieldtype": "Link", "options": "Brand", "width": 100},
 		# {"label": _("Description"), "fieldname": "description", "width": 200},
-		{"label": _("Supplier"), "fieldname": "supplier", "fieldtype": "Link", "options": "Supplier", "width": 100},
-		{"label": _("Through"), "fieldname": "acquired_through", "fieldtype": "Select","options": ["Purchase", "Donation", "Other Government Entities"], "width": 100},
+		# {"label": _("Supplier"), "fieldname": "supplier", "fieldtype": "Link", "options": "Supplier", "width": 100},
+		# {"label": _("Through"), "fieldname": "acquired_through", "fieldtype": "Select","options": ["Purchase", "Donation", "Other Government Entities"], "width": 100},
 		{"label": _("Warehouse"), "fieldname": "warehouse", "fieldtype": "Link", "options": "Warehouse", "width": 100},
 		{"label": _("Stock UOM"), "fieldname": "stock_uom", "fieldtype": "Link", "options": "UOM", "width": 100},
 		{"label": _("Qty"), "fieldname": "actual_qty", "fieldtype": "Float", "width": 50, "convertible": "qty"},
@@ -89,7 +89,7 @@ def get_stock_ledger_entries(filters, items):
 	#	), filters, as_dict=1)
 	return frappe.db.sql("""select concat_ws(" ", posting_date, posting_time) as date,
 		item_code, warehouse, actual_qty, qty_after_transaction, incoming_rate, valuation_rate,
-		stock_value, voucher_type, voucher_no, batch_no, serial_no, company, project
+		stock_value, voucher_type, voucher_no, batch_no, serial_no, company, project, stock_value_difference
 		from `tabStock Ledger Entry` sle
 		where company = %(company)s and
 			posting_date between %(from_date)s and %(to_date)s
