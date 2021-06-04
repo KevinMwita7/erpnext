@@ -58,9 +58,10 @@ def _execute(filters, additional_table_columns=None, additional_query_columns=No
 			# inv.get("customer_group"),
 			# inv.get("territory"),
 			# inv.get("tax_id"),
-			inv.debit_to, ", ".join(mode_of_payments.get(inv.name, [])),
+			inv.debit_to, 
+			inv.remarks if inv.remarks else ", ".join(mode_of_payments.get(inv.name, [])), # show remarks as mode of payment. handles situations where users are exempted from payment hence no mode of payment
 			# inv.project, 
-			full_name,
+			"" if full_name == "Administrator" else full_name, # exclude owner name if the middleware created and submitted the invoice
 			inv_items,
 			# inv.remarks,
 			# ", ".join(sales_order), 
